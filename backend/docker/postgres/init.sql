@@ -1,0 +1,1 @@
+-- backend/docker/postgres.init.sql is empty
