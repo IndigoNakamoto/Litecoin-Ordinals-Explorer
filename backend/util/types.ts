@@ -1,3 +1,5 @@
+// backend/util/types.ts
+
 export interface Inscription {
     address: string;
     charms: string[];
@@ -18,10 +20,19 @@ export interface Inscription {
     timestamp: string;
 }
 
+/* 
+The Block interface defines blockchain block data:
+
+genesis_height: Block's position in the blockchain sequence.
+inscriptions: Array of up to 100 inscription IDs contained in the block.
+more: Boolean indicating if additional inscription pages exist (true) or not (false).
+page_index: Current page number for viewing block inscriptions, supporting pagination.
+*/
+
 export interface Block { 
+    genesis_height: number;
     inscriptions: string[];
     more: boolean;
     page_index: number;
-    parent_hash: string;
 }
 

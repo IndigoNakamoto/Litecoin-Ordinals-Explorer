@@ -1,57 +1,105 @@
 // backend/util/databaseSetup.ts
 
-import { Pool } from 'pg';
+import { Client } from 'pg';
 
-// Setup the connection pool
-const pool = new Pool({
-    // Your database connection details
-    user: 'your_username',
-    host: 'localhost',
-    database: 'ordinals',
-    password: 'your_password',
-    port: 5432, // Default PostgreSQL port
+// Initialize the client with your database connection details
+const client = new Client({
+    user: 'ord_lite_user',  // Use the actual username from docker-compose.yml
+    password: 'ord_lite_pass',  // Use the actual password from docker-compose.yml
+    host: 'localhost',  // Use 'localhost' if running from the host machine
+    port: 5432,  // Default PostgreSQL port
+    database: 'ord_lite_db',  // Use the actual database name from docker-compose.yml
 });
 
-// Function to create the tables
-const createTables = async () => {
-    await pool.query(`
-        CREATE TABLE IF NOT EXISTS blocks (
-            block_number INTEGER PRIMARY KEY,
-            total_pages INTEGER NOT NULL,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            parent_hash VARCHAR(255)
-        );
-        CREATE TABLE IF NOT EXISTS inscriptions (
-            inscription_id VARCHAR(255) PRIMARY KEY,
-            address VARCHAR(255),
-            content_length INTEGER,
-            content_type VARCHAR(255),
-            genesis_fee BIGINT,
-            genesis_height INTEGER,
-            inscription_number INTEGER,
-            next VARCHAR(255),
-            output_value BIGINT,
-            parent VARCHAR(255),
-            previous VARCHAR(255),
-            rune VARCHAR(255),
-            sat VARCHAR(255),
-            satpoint VARCHAR(255),
-            timestamp TIMESTAMP,
-            -- Storing arrays as JSON for flexibility; adjust based on your use case
-            charms TEXT[],
-            children TEXT[]
-        );
-        CREATE TABLE IF NOT EXISTS block_inscriptions (
-            block_number INTEGER,
-            inscription_id VARCHAR(255),
-            page_index INTEGER NOT NULL,
-            PRIMARY KEY (block_number, inscription_id),
-            FOREIGN KEY (block_number) REFERENCES blocks (block_number) ON DELETE CASCADE,
-            FOREIGN KEY (inscription_id) REFERENCES inscriptions(inscription_id) ON DELETE CASCADE
-        );
-    `).then(() => console.log('Tables created successfully'))
-      .catch(e => console.error('Error creating tables', e.stack))
-      .finally(() => pool.end());
+// Function to create the tables and materialized views with unique indexes
+const createDatabase = async () => {
+    try {
+        await client.connect();
+        console.log('Connected to the database successfully.');
+
+        // Create tables
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS update_progress (
+                progress_key VARCHAR(255) PRIMARY KEY,
+                last_processed_block INTEGER,
+                last_processed_page INTEGER
+            );
+
+            CREATE TABLE IF NOT EXISTS inscriptions (
+                inscription_id VARCHAR(255) PRIMARY KEY,
+                address VARCHAR(255),
+                content_length INTEGER,
+                content_type VARCHAR(255),
+                genesis_fee BIGINT,
+                genesis_height INTEGER,
+                inscription_number INTEGER,
+                next VARCHAR(255),
+                output_value BIGINT,
+                parent VARCHAR(255),
+                previous VARCHAR(255),
+                rune VARCHAR(255),
+                sat VARCHAR(255),
+                satpoint VARCHAR(255),
+                timestamp TIMESTAMP,
+                charms TEXT[],
+                children TEXT[]
+            );
+        `);
+        console.log('Tables created successfully.');
+
+        // Create indexes for the inscriptions table
+        await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_inscriptions_content_length ON inscriptions(content_length);
+            CREATE INDEX IF NOT EXISTS idx_inscriptions_content_type ON inscriptions(content_type);
+            CREATE INDEX IF NOT EXISTS idx_inscriptions_genesis_fee ON inscriptions(genesis_fee);
+            CREATE INDEX IF NOT EXISTS idx_inscriptions_genesis_height ON inscriptions(genesis_height);
+            CREATE INDEX IF NOT EXISTS idx_inscriptions_inscription_number ON inscriptions(inscription_number);
+        `);
+        console.log('Indexes created successfully.');
+
+        // Create materialized views
+        await client.query(`
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_images_all AS
+            SELECT * FROM inscriptions WHERE content_type LIKE 'image/%';
+            
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_images_svg AS
+            SELECT * FROM inscriptions WHERE content_type = 'image/svg+xml';
+            
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_html AS
+            SELECT * FROM inscriptions WHERE content_type = 'text/html;charset=utf-8';
+            
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_video AS
+            SELECT * FROM inscriptions WHERE content_type LIKE 'video/%';
+            
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_audio AS
+            SELECT * FROM inscriptions WHERE content_type LIKE 'audio/%';
+
+            CREATE MATERIALIZED VIEW total_content_length AS
+            SELECT SUM(content_length) AS total FROM inscriptions;
+
+            CREATE MATERIALIZED VIEW total_genesis_fee AS
+            SELECT SUM(genesis_fee) AS total FROM inscriptions;
+
+            CREATE MATERIALIZED VIEW total_inscriptions AS
+            SELECT COUNT(*) AS total FROM inscriptions;                       
+        `);
+        console.log('Materialized views created successfully.');
+
+        // Create unique indexes on materialized views for concurrent refresh capability
+        await client.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_images_all_inscription_number_uindex ON inscriptions_images_all(inscription_number);
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_images_svg_inscription_number_uindex ON inscriptions_images_svg(inscription_number);
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_html_inscription_number_uindex ON inscriptions_html(inscription_number);
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_video_inscription_number_uindex ON inscriptions_video(inscription_number);
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_audio_inscription_number_uindex ON inscriptions_audio(inscription_number);
+        `);
+        console.log('Unique indexes on materialized views created successfully.');
+    } catch (e) {
+        console.error('Error during database setup:', e);
+    } finally {
+        await client.end();
+        console.log('Database setup complete. Client disconnected.');
+    }
 };
 
-createTables();
+createDatabase();

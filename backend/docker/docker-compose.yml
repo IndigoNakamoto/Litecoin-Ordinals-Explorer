@@ -1,15 +1,15 @@
-# docker/docker-compose.yml
+# backend/docker/docker-compose.yml
 version: '3'
 
 services:
   postgres:
     image: postgres:14
     ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: your_username
-      POSTGRES_PASSWORD: your_password
-      POSTGRES_DB: ordinals
+      - 5432:5432
     volumes:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ../../database/postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=ord_lite_user
+      - POSTGRES_PASSWORD=ord_lite_pass
+      - POSTGRES_DB=ord_lite_db

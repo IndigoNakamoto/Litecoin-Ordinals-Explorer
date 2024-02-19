@@ -1,4 +1,4 @@
-//util/ord-litecoin.ts
+// backend/util/ord-litecoin.ts
 
 import fetch from 'isomorphic-fetch';
 import BitcoinJsonRpc from 'bitcoin-json-rpc';
@@ -14,7 +14,6 @@ async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number)
         }
 
         const data = await response.json();
-        console.log(`block: ${blockNumber} page: ${pageNumber}`);
         return data;
     } catch (error) {
         console.error('Fetch error:', error);
