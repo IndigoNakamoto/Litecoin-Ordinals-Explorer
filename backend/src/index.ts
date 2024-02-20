@@ -1,6 +1,6 @@
 // backend/src/index.ts
 import express from 'express';
-import { getBlockInscriptionsPage, getInscriptionData, getBlockHeight } from '../util/ord-litecoin';
+import { getBlockInscriptionsPage, getInscriptionData, getBlockHeight, getInscriptionContent } from '../util/ord-litecoin';
 import {
   getTotalContentLength,
   getContentLengthPerGenesisHeight,
@@ -24,7 +24,13 @@ app.get('/', (req, res) => {
 });
 
 app.get('/inscriptions', async (req, res) => {
-  const contentType = typeof req.query.contentType === 'string' ? req.query.contentType : 'All';
+  let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : 'All';
+  if (contentType === "SVG") contentType = 'image/svg+xml'
+  else if (contentType === "GIF") contentType = 'image/gif'
+  else if (contentType === "HTML") contentType = 'text/html;charset=utf-8'
+  else if (contentType === "JavaScript") contentType = 'text/javascript'
+  else if (contentType === "PDF") contentType = 'application/pdf'
+  else if (contentType === "JSON") contentType = 'application/json'
   
   const sortByOptions: ('newest' | 'oldest' | 'largestFile' | 'largestFee')[] = ['newest', 'oldest', 'largestFile', 'largestFee'];
   let sortBy: 'newest' | 'oldest' | 'largestFile' | 'largestFee' = 'newest';
@@ -44,6 +50,40 @@ app.get('/inscriptions', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
+app.get('/content', async (req, res) => {
+  // Ensure that content_type and inscription_id are treated as strings even if they are arrays or ParsedQs
+  const content_type = typeof req.query.content_type === 'string' ? req.query.content_type : undefined;
+  const inscription_id = typeof req.query.inscription_id === 'string' ? req.query.inscription_id : undefined;
+
+  if (!content_type || !inscription_id) {
+    return res.status(400).json({ error: 'Missing or invalid content_type or inscription_id query parameter' });
+  }
+
+  try {
+    const data = await getInscriptionContent(inscription_id, content_type);
+
+    // Content-Type check should be safe now since we ensured they are not undefined
+    if (content_type.includes('application/json')) {
+      // Send JSON content
+      res.json(data);
+    } else if (content_type.includes('text')) {
+      // Send text content
+      res.type('text').send(data);
+    } else if (content_type.includes('image') || content_type.includes('application/octet-stream')) {
+      // For binary data like images or files
+      res.type(content_type).send(data);
+    } else {
+      // Handle other content types as needed
+      res.status(415).send('Unsupported Media Type');
+    }
+  } catch (error) {
+    console.error('Error fetching inscription content:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+
 
 
 

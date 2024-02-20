@@ -45,6 +45,10 @@ npx ts-node ./backend/src/blockUpdater.ts
 ### Update Inscriptions
 npx ts-node ./backend/src/inscriptionUpdater.ts
 
+### Update Materialized Views
+npx ts-node ./backend/src/materializedViewUpdater.ts
+
+
 ### Connect to the PostgreSQL Database: 
 Run Command: psql -h localhost -U ord_lite_user -d ord_lite_db -W
 Other Command: \q

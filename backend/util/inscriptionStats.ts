@@ -62,7 +62,7 @@ export const getContentTypesDistribution = async () => {
 };
 
 // Function to get the distribution of content types
-export const getContentTypesDistribution2 = async () => {
+export const getContentTypesDistribution_ = async () => {
     const result = await pool.query('SELECT content_type, COUNT(*) AS count FROM inscriptions GROUP BY content_type ORDER BY count DESC');
     const rows = result.rows;
 
@@ -70,8 +70,8 @@ export const getContentTypesDistribution2 = async () => {
     let categorizedCounts = {
         "Text": 0,
         "ImagesAll": 0,
-        "ImagesSVG": 0,
-        "ImagesGIFs": 0,
+        "ImagesSVG": 0, // ERROR returns 0 
+        "ImagesGIFs": 0, // ERROR returns 0 
         "HTML": 0,
         "3D": 0,
         "Video": 0,

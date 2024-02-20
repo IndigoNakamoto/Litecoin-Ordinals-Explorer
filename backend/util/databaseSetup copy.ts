@@ -1,3 +1,5 @@
+// backend/util/databaseSetup.ts
+
 import { Client } from 'pg';
 
 // Initialize the client with your database connection details
@@ -57,40 +59,26 @@ const createDatabase = async () => {
         `);
         console.log('Indexes created successfully.');
 
-        // Create materialized views and indexes on those views
-        const materializedViews = [
-            { name: 'inscriptions_image', filter: "content_type_type = 'image'" },
-            { name: 'inscriptions_model', filter: "content_type_type = 'model'" },
-            { name: 'inscriptions_text', filter: "content_type_type = 'text'" },
-            { name: 'inscriptions_video', filter: "content_type_type = 'video'" },
-            { name: 'inscriptions_audio', filter: "content_type_type = 'audio'" },
-            { name: 'inscriptions_application', filter: "content_type_type = 'application'" }
-        ];
-
-        for (const view of materializedViews) {
-            await client.query(`
-                CREATE MATERIALIZED VIEW IF NOT EXISTS ${view.name} AS
-                SELECT * FROM inscriptions WHERE ${view.filter};
-            `);
-
-            // Create unique index for concurrent refresh capability
-            await client.query(`
-                CREATE UNIQUE INDEX IF NOT EXISTS ${view.name}_inscription_number_uindex ON ${view.name}(inscription_number);
-            `);
-
-            // Additional indexes based on inscriptions table
-            await client.query(`
-                CREATE INDEX IF NOT EXISTS ${view.name}_content_length ON ${view.name}(content_length);
-                CREATE INDEX IF NOT EXISTS ${view.name}_content_type ON ${view.name}(content_type);
-                CREATE INDEX IF NOT EXISTS ${view.name}_genesis_fee ON ${view.name}(genesis_fee);
-                CREATE INDEX IF NOT EXISTS ${view.name}_genesis_height ON ${view.name}(genesis_height);
-            `);
-        }
-
-        console.log('Materialized views and indexes on materialized views created successfully.');
-
-        // Create additional materialized views for aggregated data
+        // Create materialized views
         await client.query(`
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_image AS
+            SELECT * FROM inscriptions WHERE content_type_type = 'image';
+
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_model AS
+            SELECT * FROM inscriptions WHERE content_type_type = 'model';
+
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_text AS
+            SELECT * FROM inscriptions WHERE content_type_type = 'text';
+        
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_video AS
+            SELECT * FROM inscriptions WHERE content_type_type = 'video';
+            
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_audio AS
+            SELECT * FROM inscriptions WHERE content_type_type = 'audio';
+            
+            CREATE MATERIALIZED VIEW IF NOT EXISTS inscriptions_application AS
+            SELECT * FROM inscriptions WHERE content_type_type = 'application';
+            
             CREATE MATERIALIZED VIEW IF NOT EXISTS total_content_length AS
             SELECT SUM(content_length) AS total FROM inscriptions;
 
@@ -100,8 +88,23 @@ const createDatabase = async () => {
             CREATE MATERIALIZED VIEW IF NOT EXISTS total_inscriptions AS
             SELECT COUNT(*) AS total FROM inscriptions;                       
         `);
+        console.log('Materialized views created successfully.');
 
-        console.log('Materialized views for aggregated data created successfully.');
+        // Create unique indexes on materialized views for concurrent refresh capability
+        await client.query(`
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_image_inscription_number_uindex ON inscriptions_image(inscription_number);
+
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_model_inscription_number_uindex ON inscriptions_model(inscription_number);
+
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_text_inscription_number_uindex ON inscriptions_text(inscription_number);
+            
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_video_inscription_number_uindex ON inscriptions_video(inscription_number);
+
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_audio_inscription_number_uindex ON inscriptions_audio(inscription_number);
+
+            CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_application_inscription_number_uindex ON inscriptions_application(inscription_number);    
+        `);
+        console.log('Unique indexes on materialized views created successfully.');
     } catch (e) {
         console.error('Error during database setup:', e);
     } finally {

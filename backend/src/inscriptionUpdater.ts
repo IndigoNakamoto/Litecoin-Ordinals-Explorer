@@ -13,6 +13,18 @@ const pool = new Pool({
     database: 'ord_lite_db',  // Use the actual database name from docker-compose.yml
 });
 
+let shutdownRequested = false;
+
+process.on('SIGINT', () => {
+    console.log('Shutdown signal received. Finishing current block before shutting down...');
+    shutdownRequested = true;
+});
+
+process.on('SIGTERM', () => {
+    console.log('Shutdown signal received. Finishing current block before shutting down...');
+    shutdownRequested = true;
+});
+
 async function getLastProcessedBlock(): Promise<number> {
     try {
         const res = await pool.query('SELECT MAX(genesis_height) as last_processed_block FROM inscriptions');
@@ -48,12 +60,13 @@ async function storeInscriptionsBatch(inscriptionsData: Inscription[]) {
         await client.query('BEGIN');
         const insertPromises = inscriptionsData.map(inscription => {
             const { inscription_id, address, content_length, content_type, genesis_fee, genesis_height, inscription_number, next, output_value, parent, previous, rune, sat, satpoint, timestamp, charms, children } = inscription;
+            const content_type_type = content_type.split('/')[0]; // Extract the "type" from "type/subtype"
             const timestampIso = new Date(parseInt(timestamp) * 1000).toISOString();
             return client.query(`
-                INSERT INTO inscriptions (inscription_id, address, content_length, content_type, genesis_fee, genesis_height, inscription_number, next, output_value, parent, previous, rune, sat, satpoint, timestamp, charms, children)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+                INSERT INTO inscriptions (inscription_id, address, content_length, content_type, content_type_type, genesis_fee, genesis_height, inscription_number, next, output_value, parent, previous, rune, sat, satpoint, timestamp, charms, children)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
                 ON CONFLICT (inscription_id) DO NOTHING`, 
-                [inscription_id, address, content_length, content_type, genesis_fee, genesis_height, inscription_number, next, output_value, parent, previous, rune, sat, satpoint, timestampIso, charms, children]
+                [inscription_id, address, content_length, content_type, content_type_type, genesis_fee, genesis_height, inscription_number, next, output_value, parent, previous, rune, sat, satpoint, timestampIso, charms, children]
             );
         });
         await Promise.all(insertPromises);
@@ -67,8 +80,8 @@ async function storeInscriptionsBatch(inscriptionsData: Inscription[]) {
     }
 }
 
-async function updateInscriptions() {
-    // Adjusted to collect inscriptions and use batch saving
+
+async function updateInscriptions(): Promise<void> {
     console.log('Starting the update process.');
 
     const lastProcessedBlock = await getLastProcessedBlock();
@@ -76,13 +89,11 @@ async function updateInscriptions() {
     const CONFIRMATIONS_REQUIRED = 2;
     const safeHeight = currentHeight - CONFIRMATIONS_REQUIRED;
 
-    for (let blockNumber = lastProcessedBlock + 1; blockNumber <= safeHeight; blockNumber++) {
+    for (let blockNumber = lastProcessedBlock + 1; blockNumber <= safeHeight && !shutdownRequested; blockNumber++) {
         let pageNumber = 0;
         let more = true;
 
-        
-
-        while (more) {
+        while (more && !shutdownRequested) {
             const { inscriptions, more: morePages } = await getBlockInscriptionsPage(blockNumber, pageNumber);
             const inscriptionsData = [];
 
@@ -90,30 +101,32 @@ async function updateInscriptions() {
                 try {
                     const inscriptionData = await getInscriptionData(inscriptionId);
                     inscriptionsData.push(inscriptionData);
-                    // console.log('Store inscription #', inscriptionData.inscription_number)
                 } catch (error) {
                     console.error(`Error fetching inscription ${inscriptionId}:`, error);
                 }
             }
 
             if (inscriptionsData.length > 0) {
-                // console.log(`${inscriptionsData.length} inscriptions to be stored.`)
                 await storeInscriptionsBatch(inscriptionsData);
             }
-            console.log(`Block: ${blockNumber} - Page: ${pageNumber}`)
+
+            console.log(`Block: ${blockNumber} - Page: ${pageNumber}`);
 
             more = morePages;
             pageNumber++;
         }
 
         await updateLastProcessedBlock(blockNumber, pageNumber - 1);
+
+        if (shutdownRequested) {
+            console.log('Shutdown requested, finishing up...');
+            break;
+        }
     }
 
-    console.log('Finished processing new blocks.');
-    setTimeout(updateInscriptions, 15000);
+    console.log('Finished processing or shutdown requested. Exiting.');
+    await pool.end();
 }
-
-
 
 // Start the update process
 updateInscriptions().catch(error => console.error('Error in update process:', error));

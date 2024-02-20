@@ -2,6 +2,7 @@
 'use client';
 import React, { useEffect, useState, useCallback } from 'react';
 
+
 interface ContentTypeDistribution {
   content_type: string;
   count: number;
@@ -56,14 +57,7 @@ export default function Home() {
   const [currentBlockHeight, setCurrentBlockHeight] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {
-    // const distributionResponse = await fetchStats('stats/contentTypesDistribution');
-    // // Since the data is wrapped under a "distribution" key, extract it directly
-    // if (distributionResponse && Array.isArray(distributionResponse.distribution)) {
-    //   setContentTypeDistribution(distributionResponse.distribution);
-    // } else {
-    //   console.error('Expected an array for content type distribution, received:', distributionResponse);
-    //   setContentTypeDistribution([]); // Fallback to an empty array
-    // }
+
 
     // Fetch each stat and update state accordingly
     const totalContentLengthStat = await fetchStats('stats/totalContentLength');
@@ -83,6 +77,15 @@ export default function Home() {
       ...prevStats,
       totalGenesisFee: parseInt(totalGenesisFeeStat.totalGenesisFee)
     }));
+
+    const distributionResponse = await fetchStats('stats/contentTypesDistribution');
+    // Since the data is wrapped under a "distribution" key, extract it directly
+    if (distributionResponse && Array.isArray(distributionResponse.distribution)) {
+      setContentTypeDistribution(distributionResponse.distribution);
+    } else {
+      console.error('Expected an array for content type distribution, received:', distributionResponse);
+      setContentTypeDistribution([]); // Fallback to an empty array
+    }
 
     // const inscriptionNumberHighLowStat = await fetchStats('stats/inscriptionNumberHighLow');
     // setGeneralStats(prevStats => ({
@@ -113,17 +116,17 @@ export default function Home() {
   }, [currentBlockHeight, fetchData]); // Ensure fetchData is stable (useCallback)
 
   useEffect(() => {
+    fetchData();
     const interval = setInterval(() => {
       fetchData();
       checkForNewBlock();
-    }, 60000); // Adjust interval as needed
+    }, 30000); // Adjust interval as needed
     return () => clearInterval(interval);
   }, [checkForNewBlock, fetchData]);
   
 
   return (
-    <main className="max-w-4xl mx-auto p-4">
-
+    <main className="mx-auto p-4 max-w-screen-2xl">
       <section className="mb-8">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">General Stats</h2>
         <div className="space-y-2">
@@ -147,8 +150,19 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Content</h2>
+
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Latest Inscriptions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        </div>
+      </section>
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Featured</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        </div>
+      </section>
+      <section className="mb-8">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Content Count</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {contentTypeDistribution.map((item) => (
             <div key={item.content_type} className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
@@ -157,7 +171,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </section> */}
+      </section>
     </main>
   );
   
