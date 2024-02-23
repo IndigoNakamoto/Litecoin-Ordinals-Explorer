@@ -52,39 +52,51 @@ async function updateMaterializedViews() {
         'total_inscriptions',
     ];
 
-    for (const view of views) {
-        try {
-            await refreshMaterializedView(view);
-        } catch (error) {
-            console.error(`Failed to refresh view ${view}, retrying...`);
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds before retrying
+    let toUpdateViews = [...views]; // Assuming views is an array of strings
+
+    while (toUpdateViews.length > 0) {
+        const view = toUpdateViews.shift(); // This can return string | undefined
+        if (view !== undefined) { // Check that view is not undefined
             try {
-                await refreshMaterializedView(view); // Retry once
-            } catch (retryError) {
-                console.error(`Failed to refresh view ${view} after retry:`, retryError);
+                await refreshMaterializedView(view);
+                console.log(`Successfully updated ${view}.`);
+            } catch (error) {
+                console.error(`Failed to refresh view ${view}, retrying...`);
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for 5 seconds before retrying
+                toUpdateViews.push(view); // Add back for a retry, now guaranteed to be a string
             }
         }
     }
 }
 
+
 let lastKnownBlockHeight = 0;
+let updateInProgress = false;
 
 async function checkForNewBlockAndUpdateViews() {
     try {
         const currentBlockHeight = await getBlockHeight();
         console.log(`\nChecking for new block... Current height: ${currentBlockHeight}, Last known height: ${lastKnownBlockHeight}`);
 
-        if (currentBlockHeight > lastKnownBlockHeight) {
+        if (currentBlockHeight > lastKnownBlockHeight && !updateInProgress) {
             console.log(`New block found: ${currentBlockHeight}. Updating materialized views...`);
+            updateInProgress = true; // Set flag to true to indicate the update process has started
             await updateMaterializedViews();
             lastKnownBlockHeight = currentBlockHeight;
+            updateInProgress = false; // Reset flag after updates are complete
         } else {
-            console.log('No new block found or block height has not changed.');
+            if(updateInProgress) {
+                console.log('Update already in progress. Skipping this cycle.');
+            } else {
+                console.log('No new block found or block height has not changed.');
+            }
         }
     } catch (error) {
         console.error('Error checking for new block:', error);
+        updateInProgress = false; // Ensure to reset flag in case of error
     }
 }
+
 
 // Setup graceful shutdown
 process.on('SIGINT', () => {

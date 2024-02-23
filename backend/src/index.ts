@@ -12,16 +12,20 @@ import {
 } from '../util/inscriptionStats';
 import { filterAndSortInscriptions } from '../util/inscriptionQueries'
 import cors from 'cors';
-
+import multer from 'multer';
+import * as mimeTypes from 'mime-types'; // Import mime-types package
 
 const app = express();
 const port = 3005;
 
 app.use(cors());
 
+// Default route
 app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
+
+
 
 app.get('/inscriptions', async (req, res) => {
   let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : 'All';
@@ -32,10 +36,10 @@ app.get('/inscriptions', async (req, res) => {
   else if (contentType === "PDF") contentType = 'application/pdf'
   else if (contentType === "JSON") contentType = 'application/json'
   
-  const sortByOptions: ('newest' | 'oldest' | 'largestFile' | 'largestFee')[] = ['newest', 'oldest', 'largestFile', 'largestFee'];
-  let sortBy: 'newest' | 'oldest' | 'largestFile' | 'largestFee' = 'newest';
+  const sortByOptions: ('newest' | 'oldest' | 'largestfile' | 'largestfee')[] = ['newest', 'oldest', 'largestfile', 'largestfee'];
+  let sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee' = 'newest';
   if (typeof req.query.sortBy === 'string' && sortByOptions.includes(req.query.sortBy as any)) {
-    sortBy = req.query.sortBy as 'newest' | 'oldest' | 'largestFile' | 'largestFee';
+    sortBy = req.query.sortBy as 'newest' | 'oldest' | 'largestfile' | 'largestfee';
   }
 
   const limit = parseInt(req.query.limit as string, 10) || 200;
@@ -83,8 +87,53 @@ app.get('/content', async (req, res) => {
   }
 });
 
+// Set up multer for file uploads
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: function(req, file, cb) {
+    // Generate a unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix);
+  }
+});
 
+// Set up multer for file uploads with size limit
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 399 * 1024, // 400 KB in bytes
+  }
+});
 
+// File upload endpoint with metadata and size validation
+app.post('/upload', upload.single('file'), (req, res) => {
+  // Check if req.file exists
+  if (!req.file) {
+    return res.status(400).send('No file uploaded');
+  }
+
+  // Access uploaded file via req.file
+  const uploadedFile = req.file;
+  console.log('Uploaded file:', uploadedFile);
+
+  // Check file size
+  if (uploadedFile.size > 399 * 1024) {
+    return res.status(400).send('File size exceeds the limit of 399KB');
+  }
+
+  //IP address
+  const ipAddress = req.ip;
+
+  // request body
+  const { username, order_id, inscription_fee, service_fee, payment_address, receiving_address } = req.body
+
+  // MIME type
+  const mimeType = mimeTypes.lookup(uploadedFile.originalname);
+  
+
+  // Respond with success message
+  res.send('File uploaded successfully');
+});
 
 
 

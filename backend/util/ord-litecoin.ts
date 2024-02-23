@@ -3,6 +3,42 @@
 import fetch from 'isomorphic-fetch';
 import BitcoinJsonRpc from 'bitcoin-json-rpc';
 
+async function getInscriptionContent(inscriptionId: string, contentType: string) {
+    const url = `http://0.0.0.0:80/content/${inscriptionId}`;
+
+    // Set the Accept header dynamically based on the known content type
+    const headers = { 'Accept': contentType };
+
+    try {
+        const response = await fetch(url, { headers });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        // Process the response based on the content type
+        let data;
+        if (contentType.includes('application/json')) {
+            data = await response.json();
+        } else if (contentType.includes('text')) {
+            data = await response.text();
+        } else if (contentType.includes('image') || contentType.includes('application/octet-stream')) {
+            // For binary data like images or other files
+            data = await response.blob();
+        } else {
+            // Add more conditions as needed for other content types
+            console.error('Unhandled content type:', contentType);
+            throw new Error('Unhandled content type');
+        }
+
+        return data; 
+    } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+    }
+}
+
+
 async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number) {
     const url = `http://0.0.0.0:80/inscriptions/block/${blockNumber}/${pageNumber}`;
 
@@ -49,40 +85,7 @@ async function getInscriptionData(inscriptionId: string) {
     }
 }
 
-async function getInscriptionContent(inscriptionId: string, contentType: string) {
-    const url = `http://0.0.0.0:80/content/${inscriptionId}`;
 
-    // Set the Accept header dynamically based on the known content type
-    const headers = { 'Accept': contentType };
-
-    try {
-        const response = await fetch(url, { headers });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        // Process the response based on the content type
-        let data;
-        if (contentType.includes('application/json')) {
-            data = await response.json();
-        } else if (contentType.includes('text')) {
-            data = await response.text();
-        } else if (contentType.includes('image') || contentType.includes('application/octet-stream')) {
-            // For binary data like images or other files
-            data = await response.blob();
-        } else {
-            // Add more conditions as needed for other content types
-            console.error('Unhandled content type:', contentType);
-            throw new Error('Unhandled content type');
-        }
-
-        return data; 
-    } catch (error) {
-        console.error('Fetch error:', error);
-        throw error;
-    }
-}
 
 
 export { getBlockInscriptionsPage, getInscriptionData, getBlockHeight, getInscriptionContent };

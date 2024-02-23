@@ -1,6 +1,7 @@
-'use client';
-import { useEffect, useState, useRef } from 'react';
-import { InscriptionPreview } from '../components/inscription-preview'; // Adjust the path as necessary
+'use client'
+import React, { useEffect, useState, useRef } from 'react';
+import { InscriptionPreview } from '../components/inscription-preview';
+import { debounce } from 'lodash'; 
 
 interface Inscription {
     address: string;
@@ -31,39 +32,47 @@ export default function Home() {
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [activeFilterButton, setActiveFilterButton] = useState('All');
+    const [selectedSortOption, setSelectedSortOption] = useState<string>('Oldest');
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const loader = useRef(null);
 
-    // Update filter for content type using buttons
     const handleFilterClick = (filterType: string) => {
         setActiveFilterButton(filterType);
         updateFilter('contentType', filterType);
     };
 
     const fetchInscriptions = async () => {
-        if (!hasMore) return; // Prevent fetching if no more inscriptions are available
+        if (!hasMore) return;
 
         setLoading(true);
-        const query = new URLSearchParams({
-            lastInscriptionNumber: lastInscriptionNumber?.toString() || '',
-            sortBy: filter.sortBy,
-            contentType: filter.contentType,
-            cursed: filter.cursed.toString(),
-        }).toString();
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${query}`);
-        const data = await response.json();
+        try {
+            const query = new URLSearchParams({
+                lastInscriptionNumber: lastInscriptionNumber?.toString() || '',
+                sortBy: filter.sortBy,
+                contentType: filter.contentType,
+                cursed: filter.cursed.toString(),
+            }).toString();
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${query}`);
+            const data = await response.json();
 
-        setInscriptions(prev => [...prev, ...data]);
-        setLastInscriptionNumber(data[data.length - 1]?.inscription_number);
-        setHasMore(data.length > 0); // Update based on whether data was returned
-        setLoading(false);
+            setInscriptions(prev => [...prev, ...data]);
+            setLastInscriptionNumber(data[data.length - 1]?.inscription_number);
+            setHasMore(data.length > 0);
+            setLoading(false);
+        } catch (error) {
+            console.error("Failed to fetch inscriptions:", error);
+            // Handle error (e.g., show error message to user)
+        } finally {
+            setLoading(false);
+        }
     };
 
-
+    // Debounce scroll event
     useEffect(() => {
-        const handleScroll = () => setShowScrollButton(window.scrollY > window.innerHeight);
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        const debouncedHandleScroll = debounce(() => setShowScrollButton(window.scrollY > window.innerHeight), 100);
+        window.addEventListener('scroll', debouncedHandleScroll);
+        return () => window.removeEventListener('scroll', debouncedHandleScroll);
     }, []);
 
     useEffect(() => {
@@ -75,63 +84,70 @@ export default function Home() {
     }, [filter, lastInscriptionNumber, loading]);
 
     useEffect(() => {
-        setInscriptions([]); // Reset on filter change
-        setLastInscriptionNumber(undefined); // Reset pagination
+        setInscriptions([]);
+        setLastInscriptionNumber(undefined);
         fetchInscriptions();
     }, [filter]);
 
     const updateFilter = (type: 'sortBy' | 'contentType' | 'cursed', value: string | boolean) => {
-        // Reset the pagination state whenever a filter is updated
         setLastInscriptionNumber(undefined);
         setHasMore(true);
         setFilter(prev => ({ ...prev, [type]: value }));
-    };;
+    };
+
+    const handleSortOptionSelect = (option: string) => {
+        setInscriptions([])
+        setSelectedSortOption(option);
+        setDropdownOpen(false);
+        updateFilter('sortBy', option.toLowerCase().replace(' ', ''));
+    };
+
+    const toggleDropdown = () => {
+        setDropdownOpen(prevState => !prevState);
+    };
 
     return (
         <div className="mx-auto p-4 max-w-screen-2xl">
             <h1 className="text-2xl font-bold">Inscriptions</h1>
-            {/* Sorting & Filtering UI */}
-            <div className="pt-6 pb-10">
-                {/* Content type filter buttons with side-scroll for narrow screens */}
-                <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                    {['All', 'Image', 'SVG', 'GIF', 'Model', 'Text', 'HTML', 'Audio', 'Video', 'Application', 'PDF', 'JSON'].map((type) => ( //'JavaScript', 
-                        <button
-                            key={type}
-                            onClick={() => handleFilterClick(type)}
-                            className={`px-3 py-1.5 text-sm rounded-3xl ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-500 to-blue-800 text-white' : 'bg-gradient-to-br from-white to-gray-400 text-black'}`}
-                        >
-                            {type}
-                        </button>
-                    ))}
-                </div>
 
-                {/* Sort buttons now below and justified to the left */}
-                <div className="flex gap-2 mt-4">
+            {/* Filter Buttons */}
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pt-2">
+                {['All', 'Image', 'SVG', 'GIF', 'Model', 'Text', 'HTML', 'Audio', 'Video', 'Application', 'PDF', 'JSON'].map((type) => (
                     <button
-                        onClick={() => updateFilter('sortBy', 'newest')}
-                        className={`px-3 py-1.5 text-sm rounded ${filter.sortBy === 'newest' ? 'bg-gradient-to-br from-blue-500 to-blue-800 text-white' : 'bg-gradient-to-br from-white to-gray-400 text-black'}`}
+                        key={type}
+                        onClick={() => handleFilterClick(type)}
+                        className={`px-3 py-1 text-sm rounded-3xl ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-400 to-blue-700 text-white' : 'bg-gradient-to-br from-white to-gray-400 text-black'}`}
                     >
-                        Newest
+                        {type}
                     </button>
-                    <button
-                        onClick={() => updateFilter('sortBy', 'oldest')}
-                        className={`px-3 py-1.5 text-sm rounded ${filter.sortBy === 'oldest' ? 'bg-gradient-to-br from-blue-500 to-blue-800 text-white' : 'bg-gradient-to-br from-white to-gray-400 text-black'}`}
-                    >
-                        Oldest
-                    </button>
-                </div>
+                ))}
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="relative inline-block pt-4">
+                <button onClick={toggleDropdown} className="w-32 px-3 py-1.5 text-sm rounded-lg bg-gradient-to-br from-blue-400 to-blue-700 text-white">
+                    {selectedSortOption} <svg className="inline-block w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                {dropdownOpen && (
+                    <div className="absolute z-10 mt-1 bg-gradient-to-br from-white to-gray-200 border border-gray-200 rounded-lg shadow-lg right-0 w-32">
+                        {['Newest', 'Oldest', 'Largest File', 'Largest Fee'].map((option) => (
+                            <button key={option} onClick={() => handleSortOptionSelect(option)} className="block px-4 py-2 text-sm text-gray-800 hover:text-blue-700 w-full text-left">
+                                {option}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
 
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 pt-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
                 {inscriptions.map(inscription => (
                     <div key={inscription.inscription_id}>
                         <InscriptionPreview {...inscription} />
                     </div>
                 ))}
             </div>
-            {loading && <p className="text-center">Loading...</p>}
+            {/* {loading && <p className="text-center pt-80 text-2xl">Loading...</p>} */}
             <div ref={loader} className="h-10" />
             {showScrollButton && (
                 <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}

@@ -1,3 +1,5 @@
+//backend/util/inscriptionQueries.ts
+
 import { Pool } from 'pg';
 
 // Initialize a connection pool
@@ -31,7 +33,7 @@ const determineQuerySource = (contentType: string): string => {
 
 export const filterAndSortInscriptions = async (
   contentType: string,
-  sortBy: 'newest' | 'oldest' | 'largestFile' | 'largestFee',
+  sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee',
   limit: number = 200,
   lastInscriptionNumber?: number,
   cursed: boolean = false
@@ -48,13 +50,12 @@ export const filterAndSortInscriptions = async (
       break;
     case 'oldest':
       orderByClause = 'ORDER BY inscription_number ASC';
-      // Corrected pagination logic for the oldest sort order
       paginationClause = lastInscriptionNumber ? `AND inscription_number > ${lastInscriptionNumber}` : '';
       break;
-    case 'largestFile':
+    case 'largestfile':
       orderByClause = 'ORDER BY content_length DESC';
       break;
-    case 'largestFee':
+    case 'largestfee':
       orderByClause = 'ORDER BY genesis_fee DESC';
       break;
   }

@@ -1,4 +1,4 @@
-//components/social-icons/index.tsx
+//app/components/social-icons/index.tsx
 import Mail from './mail.svg'
 import Github from './github.svg'
 import Facebook from './facebook.svg'
@@ -15,7 +15,11 @@ import Discord from './discord.svg'
 // Icons taken from: https://simpleicons.org/
 // and from: https://www.flaticon.com/icon-fonts-most-downloaded
 
-const components = {
+interface Components {
+  [key: string]: React.ComponentType<{ className?: string }>
+}
+
+const components: Components = {
   mail: Mail,
   github: Github,
   discord: Discord,
@@ -30,7 +34,13 @@ const components = {
   website: Globe,
 }
 
-const SocialIcon = ({ kind, href, size = 8 }) => {
+interface SocialIconProps {
+  kind: keyof Components; // specify kind as key of Components interface
+  href?: string; // href is optional and of type string
+  size?: number; // size is optional and of type number
+}
+
+const SocialIcon: React.FC<SocialIconProps> = ({ kind, href, size = 8 }) => {
   if (
     !href ||
     (kind === 'mail' &&

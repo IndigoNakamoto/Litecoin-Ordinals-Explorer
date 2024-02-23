@@ -151,7 +151,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mb-8">
+      {/* <section className="mb-8">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Latest Inscriptions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         </div>
@@ -160,7 +160,7 @@ export default function Home() {
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Featured</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         </div>
-      </section>
+      </section> */}
       <section className="mb-8">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Content Count</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -50,6 +50,31 @@ const useFetchContent = (inscription_id: string, content_type: string) => {
     return { content, loading, error };
 };
 
+const getContentTypeDescription = (contentType: string): string => {
+    // Split the content type by '/'
+    const [type, fullSubtype] = contentType.split('/');
+    // Extract the part of the subtype before any semicolon
+    const subtype = fullSubtype.split(';')[0].trim();
+    
+    switch (type) {
+        case 'text':
+            return subtype.toUpperCase(); // Text, HTML, CSS, JavaScript
+        case 'image':
+            return subtype.toUpperCase(); // JPEG, GIF, PNG, SVG
+        case 'application':
+            return subtype.toUpperCase(); // PDF, JSON, GZip
+        case 'video':
+            return subtype.toUpperCase(); // OGG, AVI, MP4, MPEG
+        case 'audio':
+            return subtype.toUpperCase(); // WAV, WebM, AAC
+        case 'font':
+            return subtype.toUpperCase();
+        default:
+            return 'Unknown Content Type';
+    }
+};
+
+
 export const InscriptionPreview: React.FC<InscriptionPreviewProps> = ({
     inscription_id,
     inscription_number,
@@ -58,13 +83,15 @@ export const InscriptionPreview: React.FC<InscriptionPreviewProps> = ({
 }) => {
     const { content, loading, error } = useFetchContent(inscription_id, content_type);
 
+    const formattedInscriptionNumber = inscription_number.toLocaleString(); // This will format the number with commas
+
     const renderContent = () => {
         if (loading) return <p className="text-white">Loading...</p>;
         if (error) return <p className="text-white">{error}</p>;
         if (!content) return null;
 
         if (content_type.startsWith('image/')) {
-            return <Image src={content} alt={`Inscription ${inscription_number}`} layout="fill" objectFit="cover" />;
+            return <Image src={content} alt={`Inscription ${formattedInscriptionNumber}`} layout="fill" objectFit="cover" />;
         } else if (content_type.startsWith('text/') || content_type === 'application/json') {
             return <pre className="text-white">{content}</pre>;
         } else if (content_type === 'application/pdf') {
@@ -86,8 +113,8 @@ export const InscriptionPreview: React.FC<InscriptionPreviewProps> = ({
 
             </Link>
             <div className="pt-2 p-4">
-                <p>#{inscription_number}</p>
-                <p className="text-gray-500 text-sm">{content_type_type}</p>
+                <p>#{formattedInscriptionNumber}</p>
+                <p className="text-gray-500 text-sm">{getContentTypeDescription(content_type)}</p>
             </div>
         </div>
     );

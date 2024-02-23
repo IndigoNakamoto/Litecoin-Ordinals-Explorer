@@ -44,6 +44,26 @@ const createDatabase = async () => {
                 children TEXT[]
             );
         `);
+
+        // CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+        // CREATE TABLE inscription_orders (
+        //     blockchain_transaction_id VARCHAR(100),
+        //     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        //     order_id SERIAL PRIMARY KEY,
+        //     order_status TEXT,
+        //     user_id TEXT,
+        //     fee_ord_postage DECIMAL(12, 8),
+        //     fee_service DECIMAL(12, 8),
+        //     fee_send DECIMAL(12, 8),
+        //     fee_inscribe DECIMAL(12, 8),
+        //     encrypted_data BYTEA -- Encrypted data column,
+        //     customer_oauth_ACCOUNT  //RESEARCH BEST WAY // TO BE encrypted_data
+        //     customer_email VARCHAR(100), // TO BE encrypted_data
+        //     customer_name VARCHAR(100), // TO BE encrypted_data
+        //     customer_upload_ip TEXT // TO BE encrypted_data
+        // );
+
         console.log('Tables created successfully.');
 
         // Create indexes for the inscriptions table

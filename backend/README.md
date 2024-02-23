@@ -1,4 +1,15 @@
 
+## Mac Mini 
+
+### Litecoind
+cd /usr/local/bin
+./litecoind
+
+### Ord
+cd /Volumes/SanDisk/ord-litecoin-0.15.0
+./ord --bitcoin-rpc-pass 'your_rpc_password' --bitcoin-rpc-user 'your_rpc_username' server -j
+
+
 ## Docker Postgres Server
 ### Start docker postgres server
 Change Directory: cd backend/docker 
@@ -39,8 +50,6 @@ docker exec -it docker-postgres-1 psql -U ord_lite_user -d ord_lite_db -c "\du"
 ### Setup Database:
 Run Command: npx ts-node ./backend/util/databaseSetup.ts
 
-### Update Blocks:
-npx ts-node ./backend/src/blockUpdater.ts  
 
 ### Update Inscriptions
 npx ts-node ./backend/src/inscriptionUpdater.ts
