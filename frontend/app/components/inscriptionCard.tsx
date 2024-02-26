@@ -1,0 +1,68 @@
+// app/components/inscriptionCard.tsx
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import ModelViewer from './model-viewer';
+import { ContentRenderer } from './ContentRenderer';
+
+
+interface InscriptionCardProps {
+    inscription_id: string;
+    inscription_number: number;
+    content_type: string;
+    content_type_type: string;
+}
+
+const getContentTypeDescription = (contentType: string): string => {
+    // Split the content type by '/'
+    const [type, fullSubtype] = contentType.split('/');
+    // Extract the part of the subtype before any semicolon
+    const subtype = fullSubtype.split(';')[0].trim();
+
+    switch (type) {
+        case 'text':
+            return subtype.toUpperCase(); // Text, HTML, CSS, JavaScript
+        case 'image':
+            return subtype.toUpperCase(); // JPEG, GIF, PNG, SVG
+        case 'application':
+            return subtype.toUpperCase(); // PDF, JSON, GZip
+        case 'video':
+            return subtype.toUpperCase(); // OGG, AVI, MP4, MPEG
+        case 'audio':
+            return subtype.toUpperCase(); // WAV, WebM, AAC
+        case 'font':
+            return subtype.toUpperCase();
+        default:
+            return 'Unknown Content Type';
+    }
+};
+
+export const InscriptionCard: React.FC<InscriptionCardProps> = ({
+    inscription_id,
+    inscription_number,
+    content_type
+}) => {
+
+    const formattedInscriptionNumber = inscription_number.toLocaleString(); // This will format the number with commas
+
+    return (
+        <div className="overflow-hidden shadow-lg cursor-pointer transition-transform duration-200 ease-in-out hover:scale-105">
+            <Link href={`/inscription/${inscription_id}`} target="_blank" rel="noopener">
+
+                <div className="aspect-w-1 aspect-h-1 min-w-full min-h-[200px] max-h-[200px] overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-transparent flex items-center justify-center relative">
+                    <ContentRenderer
+                        inscription_id={inscription_id}
+                        contentType={content_type}
+                        formattedInscriptionNumber={formattedInscriptionNumber}
+                    />
+                </div>
+
+                <div className="pt-2 p-4">
+                    <p>#{formattedInscriptionNumber}</p>
+                    <p className="text-gray-500 text-sm">{getContentTypeDescription(content_type)}</p>
+                </div>
+            </Link>
+        </div>
+    );
+};
+

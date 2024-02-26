@@ -18,10 +18,8 @@ const Menu = () => {
           </Link>
         </div>
         <div className="flex-initial">
-          <Link href="/Inscribe" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl">
-
+          <Link href="/inscribe" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl">
             Inscribe
-
           </Link>
         </div>
       </div>

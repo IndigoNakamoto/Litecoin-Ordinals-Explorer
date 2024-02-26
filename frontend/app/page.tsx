@@ -139,7 +139,7 @@ export default function Home() {
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
             <span className="text-4xl font-semibold dark:text-gray-200">{generalStats.totalGenesisFee !== undefined ? formatLitsToLitecoin(generalStats.totalGenesisFee) : '0'}</span>
             <span className="ml-2 text-gray-600 dark:text-gray-400">
-              Total Inscription fees
+              LTC Inscription fees
             </span>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">

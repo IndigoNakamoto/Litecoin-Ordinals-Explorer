@@ -9,10 +9,12 @@ export interface Inscription {
     genesis_height: number;
     inscription_id: string;
     inscription_number: number;
+    nsfw: boolean;
     next: string;
     output_value: number;
     parent: string;
     previous: string;
+    processed: boolean;
     rune: string;
     sat: string;
     satpoint: string;

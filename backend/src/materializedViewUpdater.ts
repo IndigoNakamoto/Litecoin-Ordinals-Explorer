@@ -43,13 +43,13 @@ async function updateMaterializedViews() {
     const views = [
         'inscriptions_image',
         'inscriptions_model',
-        'inscriptions_text',
         'inscriptions_video',
         'inscriptions_audio',
         'inscriptions_application',
         'total_content_length',
         'total_genesis_fee',
         'total_inscriptions',
+        // 'inscriptions_text',
     ];
 
     let toUpdateViews = [...views]; // Assuming views is an array of strings

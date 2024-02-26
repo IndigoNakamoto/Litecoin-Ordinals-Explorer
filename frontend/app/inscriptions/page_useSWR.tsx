@@ -1,8 +1,9 @@
 'use client'
 // app/inscriptions/page.tsx
-import React, { useEffect, useState, useRef } from 'react';
-import { InscriptionCard } from '../components/inscriptionCard';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { InscriptionPreview } from '../components/inscriptionCard';
 import { debounce } from 'lodash';
+import useSWR from 'swr';
 
 interface Inscription {
     address: string;
@@ -25,41 +26,75 @@ interface Inscription {
     timestamp: string;
 }
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+
+
 export default function Home() {
-    const [inscriptions, setInscriptions] = useState<Inscription[]>([]);
-    const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState({ sortBy: 'oldest', contentType: 'All', cursed: false });
-    const [lastInscriptionNumber, setLastInscriptionNumber] = useState<number | undefined>();
     const [showScrollButton, setShowScrollButton] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+
+    const [loading, setLoading] = useState(false);
+    const [lastInscriptionNumber, setLastInscriptionNumber] = useState<number | undefined>();
     const [hasMore, setHasMore] = useState(true);
     const [activeFilterButton, setActiveFilterButton] = useState('All');
-    const [selectedSortOption, setSelectedSortOption] = useState<string>('Oldest');
-    const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [rightPosition, setRightPosition] = useState('0px');
+    // const [selectedSortOption, setSelectedSortOption] = useState<string>('Oldest');
+
+    // Construct the API URL based on the current filter state.
+    // const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?lastInscriptionNumber=${undefined}&sortBy=${filter.sortBy}&contentType=${filter.contentType}&cursed=${filter.cursed}`;
+
+
+
+    // Use the useState hook to manage filter and sort state
+    const [selectedSortOption, setSelectedSortOption] = useState('Oldest');
+
+    // Construct the API URL dynamically based on the current state
+    const apiUrl = useMemo(() => {
+        const params = new URLSearchParams({
+            sortBy: filter.sortBy,
+            contentType: filter.contentType,
+            cursed: filter.cursed.toString(),
+        }).toString();
+        return `${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${params}`;
+    }, [filter]);
+
+
+    // Use the useSWR hook to fetch inscriptions. Adjust the key and fetcher based on your API structure.
+    const { data: inscriptions, error } = useSWR<Inscription[]>(apiUrl, fetcher);
+
+    // Handling filter changes
+    const handleFilterClick = useCallback((filterType: string) => {
+        setFilter((prevFilter) => ({
+            ...prevFilter,
+            contentType: filterType,
+        }));
+    }, []);
+
+    // Handling sort option changes
+    const handleSortOptionSelect = useCallback((option: string) => {
+        const sortValue = option.toLowerCase().replace(' ', '');
+        setFilter((prevFilter) => ({
+            ...prevFilter,
+            sortBy: sortValue,
+        }));
+        setSelectedSortOption(option);
+        setDropdownOpen(false);
+    }, []);
+
+    // const handleSortOptionSelect = (option: string) => {
+    //     setInscriptions([])
+    //     setSelectedSortOption(option);
+    //     setDropdownOpen(false);
+    //     updateFilter('sortBy', option.toLowerCase().replace(' ', ''));
+    // };
 
     const loader = useRef(null);
 
-    const handleFilterClick = (filterType: string) => {
-        setActiveFilterButton(filterType);
-        updateFilter('contentType', filterType);
-    };
-
-    // Function to update the button's right position dynamically
-    const updateButtonPosition = () => {
-        const viewportWidth = window.innerWidth;
-        const maxWidth = 1520; // Assuming 'xl' corresponds to 1280px in your Tailwind config
-        // Ensure the button stays within the max-width boundary of its container
-        const excessWidth = Math.max(0, viewportWidth - maxWidth);
-        const calculatedRightPosition = excessWidth / 2 + 'px';
-        setRightPosition(calculatedRightPosition);
-    };
-
-    useEffect(() => {
-        window.addEventListener('resize', updateButtonPosition);
-        updateButtonPosition(); // Update position on component mount
-
-        return () => window.removeEventListener('resize', updateButtonPosition);
-    }, []);
+    // const handleFilterClick = (filterType: string) => {
+    //     setActiveFilterButton(filterType);
+    //     updateFilter('contentType', filterType);
+    // };
 
     const fetchInscriptions = async () => {
         if (!hasMore) return;
@@ -75,7 +110,7 @@ export default function Home() {
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${query}`);
             const data = await response.json();
 
-            setInscriptions(prev => [...prev, ...data]);
+            // setInscriptions(prev => [...prev, ...data]);
             setLastInscriptionNumber(data[data.length - 1]?.inscription_number);
             setHasMore(data.length > 0);
             setLoading(false);
@@ -103,7 +138,7 @@ export default function Home() {
     }, [filter, lastInscriptionNumber, loading]);
 
     useEffect(() => {
-        setInscriptions([]);
+        // setInscriptions([]);
         setLastInscriptionNumber(undefined);
         fetchInscriptions();
     }, [filter]);
@@ -114,12 +149,7 @@ export default function Home() {
         setFilter(prev => ({ ...prev, [type]: value }));
     };
 
-    const handleSortOptionSelect = (option: string) => {
-        setInscriptions([])
-        setSelectedSortOption(option);
-        setDropdownOpen(false);
-        updateFilter('sortBy', option.toLowerCase().replace(' ', ''));
-    };
+
 
     const toggleDropdown = () => {
         setDropdownOpen(prevState => !prevState);
@@ -160,18 +190,19 @@ export default function Home() {
 
 
             <div className="grid grid-cols-2 pt-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                {inscriptions.map(inscription => (
+                {inscriptions?.map(inscription => (
                     <div key={inscription.inscription_id}>
-                        <InscriptionCard {...inscription} />
+                        <InscriptionPreview {...inscription} />
                     </div>
                 ))}
             </div>
+
             {/* {loading && <p className="text-center pt-80 text-2xl">Loading...</p>} */}
             <div ref={loader} className="h-10" />
             {showScrollButton && (
                 <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    className="fixed bottom-20 bg-gradient-to-br from-blue-500 to-blue-800 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full z-50"
-                    style={{ transition: 'opacity 0.3s', right: rightPosition }}>
+                    className="fixed bottom-4 right-4 bg-gradient-to-br from-blue-500 to-blue-800 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-full z-50"
+                    style={{ transition: 'opacity 0.3s' }}>
                     ↑ Top
                 </button>
             )}

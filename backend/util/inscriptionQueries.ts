@@ -1,6 +1,7 @@
 //backend/util/inscriptionQueries.ts
 
 import { Pool } from 'pg';
+import { Inscription } from './types';
 
 // Initialize a connection pool
 const pool = new Pool({
@@ -10,6 +11,42 @@ const pool = new Pool({
   port: 5432,
   database: 'ord_lite_db',
 });
+
+export const getInscriptionById = async (inscriptionId: string): Promise<Inscription | null> => { 
+  try { 
+    const query = 'SELECT * FROM inscriptions WHERE inscription_id = $1';
+    const params = [inscriptionId];
+    const { rows } = await pool.query(query, params);
+
+    if (rows.length > 0) {
+      return rows[0] as Inscription; // Ensure the returned type matches your inscription type
+    } else {
+      return null; // Return null if no inscription found
+    }
+
+  } catch (error) {
+    console.error('Error fetching inscription:', error);
+    throw error; // Rethrow to allow caller to handle the error
+  }
+}
+
+// Fetch the content type of an inscription by its ID
+export const getInscriptionContentType = async (inscriptionId: string): Promise<string | null> => {
+  try {
+    const query = 'SELECT content_type FROM inscriptions WHERE inscription_id = $1';
+    const params = [inscriptionId];
+    const { rows } = await pool.query(query, params);
+    
+    if (rows.length > 0) {
+      return rows[0].content_type; // Return the content type if found
+    } else {
+      return null; // Return null if no inscription found
+    }
+  } catch (error) {
+    console.error('Error fetching content type for inscription:', error);
+    throw error; // Rethrow to allow caller to handle the error
+  }
+};
 
 // Function to determine the query source based on contentType
 const determineQuerySource = (contentType: string): string => {
@@ -89,3 +126,4 @@ export const filterAndSortInscriptions = async (
     throw error;
   }
 };
+

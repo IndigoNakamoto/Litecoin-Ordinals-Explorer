@@ -1,7 +1,9 @@
+//frontend/app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Menu from './components/menu';
+import StickyFooter from "./components/StickyFooter";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,6 +22,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Menu />
         {children}
+        <StickyFooter />
       </body>
     </html>
   );

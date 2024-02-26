@@ -10,10 +10,11 @@ import {
   getInscriptionNumberHighLow,
   getContentTypesDistribution
 } from '../util/inscriptionStats';
-import { filterAndSortInscriptions } from '../util/inscriptionQueries'
+import { filterAndSortInscriptions, getInscriptionContentType, getInscriptionById } from '../util/inscriptionQueries'
 import cors from 'cors';
 import multer from 'multer';
 import * as mimeTypes from 'mime-types'; // Import mime-types package
+import fs from 'fs'
 
 const app = express();
 const port = 3005;
@@ -25,35 +26,32 @@ app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
-
-
-app.get('/inscriptions', async (req, res) => {
-  let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : 'All';
-  if (contentType === "SVG") contentType = 'image/svg+xml'
-  else if (contentType === "GIF") contentType = 'image/gif'
-  else if (contentType === "HTML") contentType = 'text/html;charset=utf-8'
-  else if (contentType === "JavaScript") contentType = 'text/javascript'
-  else if (contentType === "PDF") contentType = 'application/pdf'
-  else if (contentType === "JSON") contentType = 'application/json'
-  
-  const sortByOptions: ('newest' | 'oldest' | 'largestfile' | 'largestfee')[] = ['newest', 'oldest', 'largestfile', 'largestfee'];
-  let sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee' = 'newest';
-  if (typeof req.query.sortBy === 'string' && sortByOptions.includes(req.query.sortBy as any)) {
-    sortBy = req.query.sortBy as 'newest' | 'oldest' | 'largestfile' | 'largestfee';
-  }
-
-  const limit = parseInt(req.query.limit as string, 10) || 200;
-  const lastInscriptionNumber = req.query.lastInscriptionNumber ? parseInt(req.query.lastInscriptionNumber as string, 10) : undefined;
-  const cursed = req.query.cursed === 'true'; // Check if 'cursed' query parameter is true
+app.get('/media/:inscription_id', async (req, res) => {
+  const { inscription_id } = req.params;
+  const mediaPath = `app/backend/media/${inscription_id}`;
 
   try {
-    const inscriptions = await filterAndSortInscriptions(contentType, sortBy, limit, lastInscriptionNumber, cursed);
-    res.json(inscriptions);
+    const contentType = await getInscriptionContentType(inscription_id);
+    
+    // Check if 'contentType' is not null
+    if (!contentType) {
+      return res.status(404).send('Content type not found or media not found');
+    }
+
+    const extension = contentType.startsWith('image/') ? '.webp' : '.webm';
+    const filePath = `${mediaPath}${extension}`;
+
+    if (fs.existsSync(filePath)) {
+      res.sendFile(filePath);
+    } else {
+      res.status(404).send('File not found');
+    }
   } catch (error) {
-    console.error(error);
+    console.error('Error serving media file:', error);
     res.status(500).send('Server error');
   }
 });
+
 
 app.get('/content', async (req, res) => {
   // Ensure that content_type and inscription_id are treated as strings even if they are arrays or ParsedQs
@@ -86,6 +84,38 @@ app.get('/content', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
+
+
+app.get('/inscriptions', async (req, res) => {
+  let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : 'All';
+  if (contentType === "SVG") contentType = 'image/svg+xml'
+  else if (contentType === "GIF") contentType = 'image/gif'
+  else if (contentType === "HTML") contentType = 'text/html;charset=utf-8'
+  else if (contentType === "JavaScript") contentType = 'text/javascript'
+  else if (contentType === "PDF") contentType = 'application/pdf'
+  else if (contentType === "JSON") contentType = 'application/json'
+  
+  const sortByOptions: ('newest' | 'oldest' | 'largestfile' | 'largestfee')[] = ['newest', 'oldest', 'largestfile', 'largestfee'];
+  let sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee' = 'newest';
+  if (typeof req.query.sortBy === 'string' && sortByOptions.includes(req.query.sortBy as any)) {
+    sortBy = req.query.sortBy as 'newest' | 'oldest' | 'largestfile' | 'largestfee';
+  }
+
+  const limit = parseInt(req.query.limit as string, 10) || 200;
+  const lastInscriptionNumber = req.query.lastInscriptionNumber ? parseInt(req.query.lastInscriptionNumber as string, 10) : undefined;
+  const cursed = req.query.cursed === 'true'; // Check if 'cursed' query parameter is true
+
+  try {
+    const inscriptions = await filterAndSortInscriptions(contentType, sortBy, limit, lastInscriptionNumber, cursed);
+    res.json(inscriptions);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+});
+
+
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
@@ -162,7 +192,9 @@ app.get('/blockHeight', async (req, res) => {
 app.get('/inscription/:inscriptionId', async (req, res) => {
   const { inscriptionId } = req.params;
   try {
-    const data = await getInscriptionData(inscriptionId);
+    // const data = await getInscriptionData(inscriptionId);
+    const data = await getInscriptionById(inscriptionId);
+    
     res.json(data);
   } catch (error) {
     console.error(error);

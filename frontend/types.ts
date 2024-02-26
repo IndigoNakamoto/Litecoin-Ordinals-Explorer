@@ -1,3 +1,4 @@
+// frontend/types.ts
 export interface Inscription {
     address: string;
     charms: string[];
@@ -9,16 +10,14 @@ export interface Inscription {
     genesis_height: number;
     inscription_id: string;
     inscription_number: number;
-    next: string;
+    next: boolean;
+    nsfw: string;
     output_value: number;
     parent: string;
     previous: string;
+    processed: boolean;
     rune: string;
     sat: string;
     satpoint: string;
     timestamp: string;
 }
-
-
-
-

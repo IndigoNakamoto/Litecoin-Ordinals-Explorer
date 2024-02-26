@@ -1,3 +1,5 @@
+// backend/util/databaseSetup.ts
+
 import { Client } from 'pg';
 
 // Initialize the client with your database connection details
@@ -36,6 +38,8 @@ const createDatabase = async () => {
                 output_value BIGINT,
                 parent VARCHAR(255),
                 previous VARCHAR(255),
+                processed BOOLEAN DEFAULT FALSE,
+                nsfw BOOLEAN DEFAULT FALSE,
                 rune VARCHAR(255),
                 sat VARCHAR(255),
                 satpoint VARCHAR(255),
@@ -45,8 +49,12 @@ const createDatabase = async () => {
             );
         `);
 
-        // CREATE EXTENSION IF NOT EXISTS pgcrypto;
+        await client.query(`
+            ALTER TABLE inscriptions ADD COLUMN IF NOT EXISTS processed BOOLEAN DEFAULT FALSE;
+        `);
 
+        // Future Feature, Ignore.
+        // CREATE EXTENSION IF NOT EXISTS pgcrypto;
         // CREATE TABLE inscription_orders (
         //     blockchain_transaction_id VARCHAR(100),
         //     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
