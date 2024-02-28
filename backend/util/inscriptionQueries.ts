@@ -12,6 +12,24 @@ const pool = new Pool({
   database: 'ord_lite_db',
 });
 
+export const getInscriptionByNumber = async (inscription_number: string): Promise<Inscription | null> => { 
+  try { 
+    const query = 'SELECT * FROM inscriptions WHERE inscription_number = $1';
+    const params = [inscription_number];
+    const { rows } = await pool.query(query, params);
+
+    if (rows.length > 0) {
+      return rows[0] as Inscription; // Ensure the returned type matches your inscription type
+    } else {
+      return null; // Return null if no inscription found
+    }
+
+  } catch (error) {
+    console.error('Error fetching inscription:', error);
+    throw error; // Rethrow to allow caller to handle the error
+  }
+}
+
 export const getInscriptionById = async (inscriptionId: string): Promise<Inscription | null> => { 
   try { 
     const query = 'SELECT * FROM inscriptions WHERE inscription_id = $1';

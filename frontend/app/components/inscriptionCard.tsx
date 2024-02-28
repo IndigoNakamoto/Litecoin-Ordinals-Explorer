@@ -5,7 +5,6 @@ import Image from 'next/image';
 import ModelViewer from './model-viewer';
 import { ContentRenderer } from './ContentRenderer';
 
-
 interface InscriptionCardProps {
     inscription_id: string;
     inscription_number: number;
@@ -21,7 +20,8 @@ const getContentTypeDescription = (contentType: string): string => {
 
     switch (type) {
         case 'text':
-            return subtype.toUpperCase(); // Text, HTML, CSS, JavaScript
+            if(subtype === 'plain') return type.toUpperCase()
+            else return subtype.toUpperCase(); // Text, HTML, CSS, JavaScript
         case 'image':
             return subtype.toUpperCase(); // JPEG, GIF, PNG, SVG
         case 'application':
@@ -32,6 +32,9 @@ const getContentTypeDescription = (contentType: string): string => {
             return subtype.toUpperCase(); // WAV, WebM, AAC
         case 'font':
             return subtype.toUpperCase();
+        case 'model':
+            if(subtype.startsWith('gltf')) return 'GLTF'; // GLTF+JSON, GLTF-BINARY
+            else return subtype.toUpperCase()
         default:
             return 'Unknown Content Type';
     }
@@ -47,7 +50,7 @@ export const InscriptionCard: React.FC<InscriptionCardProps> = ({
 
     return (
         <div className="overflow-hidden shadow-lg cursor-pointer transition-transform duration-200 ease-in-out hover:scale-105">
-            <Link href={`/inscription/${inscription_id}`} target="_blank" rel="noopener">
+            <Link href={`/${inscription_number}`} target="_blank" rel="noopener">
 
                 <div className="aspect-w-1 aspect-h-1 min-w-full min-h-[200px] max-h-[200px] overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-transparent flex items-center justify-center relative">
                     <ContentRenderer

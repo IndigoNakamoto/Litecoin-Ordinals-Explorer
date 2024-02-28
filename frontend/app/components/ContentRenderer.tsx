@@ -1,13 +1,21 @@
 // app/components/ContentRenderer.tsx
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 
-// Adjusted ContentRendererProps to include `inscription_id`
-interface ContentRendererProps {
+// Component for rendering GLB/GLTF models
+const ModelViewer = ({ modelUrl }: { modelUrl: string }) => {
+    const { scene } = useGLTF(modelUrl) as any;
+    return <primitive object={scene} />;
+  };
+  
+
+  interface ContentRendererProps {
     inscription_id: string;
     contentType: string;
     formattedInscriptionNumber: string;
-}
+  }
 
 const useFetchContent = (inscription_id: string, content_type: string) => {
     const [content, setContent] = useState<string | null>(null);
@@ -30,7 +38,19 @@ const useFetchContent = (inscription_id: string, content_type: string) => {
                 } else if (content_type.startsWith('text/') || content_type === 'application/json') {
                     const text = await response.text();
                     setContent(text);
-                }
+                } else   if (content_type === 'model/gltf-binary' || content_type === 'model/gltf+json') {
+                    return (
+                      <div style={{ height: '500px', width: '100%' }}>
+                        <Canvas>
+                          <ambientLight intensity={0.5} />
+                          <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+                          <pointLight position={[-10, -10, -10]} />
+                          {content && <ModelViewer modelUrl={content} />}
+                          <OrbitControls />
+                        </Canvas>
+                      </div>
+                    );
+                  }
                 else {
                     setContent('Unsupported content type');
                 }
@@ -57,7 +77,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ inscription_id
     // Render logic remains the same, but now includes loading and error handling
     if (loading) return <p>Loading...</p>;
     if (error) return <p>{error}</p>;
-    if (!content) return <p>No content available</p>;
+    if (!content) return <p>No preview available</p>;
 
     if (!content) return null;
 
@@ -75,3 +95,5 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ inscription_id
 
     return <p className="text-white">Unsupported content type</p>;
 };
+
+export default ContentRenderer;

@@ -13,14 +13,14 @@ const Menu = () => {
           OrdLite.io
         </Link>
         <div className="flex-initial">
-          <Link href="/inscriptions" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl">
-            Inscriptions
+          <Link href="/stats" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl">
+            Stats
           </Link>
         </div>
         <div className="flex-initial">
-          <Link href="/inscribe" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl">
+          {/* <Link href="/inscribe" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl">
             Inscribe
-          </Link>
+          </Link> */}
         </div>
       </div>
     </div>

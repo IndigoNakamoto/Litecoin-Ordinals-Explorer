@@ -10,7 +10,7 @@ import {
   getInscriptionNumberHighLow,
   getContentTypesDistribution
 } from '../util/inscriptionStats';
-import { filterAndSortInscriptions, getInscriptionContentType, getInscriptionById } from '../util/inscriptionQueries'
+import { filterAndSortInscriptions, getInscriptionContentType, getInscriptionById, getInscriptionByNumber } from '../util/inscriptionQueries'
 import cors from 'cors';
 import multer from 'multer';
 import * as mimeTypes from 'mime-types'; // Import mime-types package
@@ -194,6 +194,19 @@ app.get('/inscription/:inscriptionId', async (req, res) => {
   try {
     // const data = await getInscriptionData(inscriptionId);
     const data = await getInscriptionById(inscriptionId);
+    
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error);
+  }
+});
+
+app.get('/inscription_number/:inscription_number', async (req, res) => {
+  const { inscription_number } = req.params;
+  try {
+    // const data = await getInscriptionData(inscription_number);
+    const data = await getInscriptionByNumber(inscription_number);
     
     res.json(data);
   } catch (error) {

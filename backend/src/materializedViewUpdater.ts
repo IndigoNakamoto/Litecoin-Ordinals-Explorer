@@ -10,7 +10,7 @@ const pool = new Pool({
     database: 'ord_lite_db',
 });
 
-const REFRESH_INTERVAL = 120000; // Default to 6000 seconds
+
 
 async function refreshMaterializedView(viewName: string, concurrently: boolean = true): Promise<void> {
     try {
@@ -106,7 +106,7 @@ process.on('SIGINT', () => {
         process.exit(0);
     });
 });
-
+const REFRESH_INTERVAL = 120000; // Default to 6000 seconds
 // Run the check every REFRESH_INTERVAL milliseconds
 setInterval(checkForNewBlockAndUpdateViews, REFRESH_INTERVAL);
 

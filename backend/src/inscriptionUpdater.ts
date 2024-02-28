@@ -83,11 +83,12 @@ async function storeInscriptionsBatch(inscriptionsData: Inscription[]) {
 
 async function updateInscriptions(): Promise<void> {
     console.log('Starting the update process.');
-
     const lastProcessedBlock = await getLastProcessedBlock();
     const currentHeight = await getBlockHeight();
+    console.log('Current height: ', currentHeight)
     const CONFIRMATIONS_REQUIRED = 2;
     const safeHeight = currentHeight - CONFIRMATIONS_REQUIRED;
+    console.log('Safe height: ', safeHeight)
 
     for (let blockNumber = lastProcessedBlock + 1; blockNumber <= safeHeight && !shutdownRequested; blockNumber++) {
         let pageNumber = 0;
@@ -99,7 +100,9 @@ async function updateInscriptions(): Promise<void> {
 
             for (const inscriptionId of inscriptions) {
                 try {
+                    console.log('Get inscription: ', inscriptionId)
                     const inscriptionData = await getInscriptionData(inscriptionId);
+                    console.log('Got inscription: ', inscriptionData.inscription_number)
                     inscriptionsData.push(inscriptionData);
                 } catch (error) {
                     console.error(`Error fetching inscription ${inscriptionId}:`, error);
@@ -117,16 +120,55 @@ async function updateInscriptions(): Promise<void> {
         }
 
         await updateLastProcessedBlock(blockNumber, pageNumber - 1);
+        console.log('Updated Inscriptions Table \n')
 
         if (shutdownRequested) {
             console.log('Shutdown requested, finishing up...');
             break;
         }
     }
-
-    console.log('Finished processing or shutdown requested. Exiting.');
-    await pool.end();
 }
 
-// Start the update process
-updateInscriptions().catch(error => console.error('Error in update process:', error));
+
+
+let iterationCounter = 0; // Initialize the counter
+
+function checkForNewBlockAndUpdateViews() {
+    iterationCounter++; // Increment the counter each time the function is called
+    let currentTime = new Date(); // Get the current time
+    console.log(`Iteration ${iterationCounter} at ${currentTime.toISOString()}: Checking for new block and updating views.`);
+    updateInscriptions().catch(error => console.error('Error in update process:', error));
+    currentTime = new Date(); // Get the current time
+    console.log(`Iteation ${iterationCounter} at ${currentTime.toISOString()}`)
+}
+
+const REFRESH_INTERVAL = 30000; // 30 seconds in milliseconds
+
+// Setup graceful shutdown
+process.on('SIGINT', () => {
+    console.log('\nGracefully shutting down...');
+    pool.end().then(() => {
+        console.log('Pool has ended');
+        process.exit(0);
+    }).catch((error) => {
+        console.error('Error during pool shutdown:', error);
+        process.exit(1);
+    });
+});
+
+// Optionally handle SIGTERM as well
+process.on('SIGTERM', () => {
+    console.log('\nGracefully shutting down from SIGTERM...');
+    pool.end().then(() => {
+        console.log('Pool has ended');
+        process.exit(0);
+    }).catch((error) => {
+        console.error('Error during pool shutdown:', error);
+        process.exit(1);
+    });
+});
+
+setInterval(checkForNewBlockAndUpdateViews, REFRESH_INTERVAL);
+
+checkForNewBlockAndUpdateViews();
+
