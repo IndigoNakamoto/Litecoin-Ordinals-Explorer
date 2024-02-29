@@ -58,7 +58,7 @@ async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number)
     }
 }
 
-async function getBlockHeight() {
+async function getBlockHeight(): Promise<number>  {
     let blockHeight;
     
     try {
@@ -88,7 +88,7 @@ async function getBlockHeight() {
       }
     }
   
-    return blockHeight;
+    return Number(blockHeight);
   }
 
 
