@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image'; // Import Next.js Image component for optimized images
+import Image from "next/legacy/image"; // Import Next.js Image component for optimized images
 
 const Menu = () => {
   return (

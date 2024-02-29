@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 
 // Example useAuth hook. Replace this with your actual authentication hook/context
 const useAuth = () => {

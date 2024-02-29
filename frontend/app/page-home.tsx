@@ -2,7 +2,7 @@
 // app/page-home.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { InscriptionCard } from './components/inscriptionCard';
-import { debounce } from 'lodash';
+import { debounce, sortBy } from 'lodash';
 
 
 interface Inscription {
@@ -56,6 +56,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
             const data = await response.json();
 
             setInscriptions(prev => [...prev, ...data]);
+
             setLastInscriptionNumber(data[data.length - 1]?.inscription_number);
             setHasMore(data.length > 0 && data.length >= 200); // Check if there are more than 200 items
         } catch (error) {

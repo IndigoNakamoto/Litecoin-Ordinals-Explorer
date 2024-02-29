@@ -1,6 +1,6 @@
 // app/components/ContentRenderer.tsx
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 

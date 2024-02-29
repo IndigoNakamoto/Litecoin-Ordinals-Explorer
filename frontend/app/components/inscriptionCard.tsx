@@ -1,7 +1,7 @@
 // app/components/inscriptionCard.tsx
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import ModelViewer from './model-viewer';
 import { ContentRenderer } from './ContentRenderer';
 

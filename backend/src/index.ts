@@ -26,6 +26,34 @@ app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
+app.get('/inscriptions', async (req, res) => {
+  let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : 'All';
+  if (contentType === "SVG") contentType = 'image/svg+xml'
+  else if (contentType === "GIF") contentType = 'image/gif'
+  else if (contentType === "HTML") contentType = 'text/html;charset=utf-8'
+  else if (contentType === "JavaScript") contentType = 'text/javascript'
+  else if (contentType === "PDF") contentType = 'application/pdf'
+  else if (contentType === "JSON") contentType = 'application/json'
+  
+  const sortByOptions: ('newest' | 'oldest' | 'largestfile' | 'largestfee')[] = ['newest', 'oldest', 'largestfile', 'largestfee'];
+  let sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee' = 'newest';
+  if (typeof req.query.sortBy === 'string' && sortByOptions.includes(req.query.sortBy as any)) {
+    sortBy = req.query.sortBy as 'newest' | 'oldest' | 'largestfile' | 'largestfee';
+  }
+
+  const limit = parseInt(req.query.limit as string, 10) || 200;
+  const lastInscriptionNumber = req.query.lastInscriptionNumber ? parseInt(req.query.lastInscriptionNumber as string, 10) : undefined;
+  const cursed = req.query.cursed === 'true'; // Check if 'cursed' query parameter is true
+
+  try {
+    const inscriptions = await filterAndSortInscriptions(contentType, sortBy, limit, lastInscriptionNumber, cursed);
+    res.json(inscriptions);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+});
+
 app.get('/media/:inscription_id', async (req, res) => {
   const { inscription_id } = req.params;
   const mediaPath = `app/backend/media/${inscription_id}`;
@@ -87,33 +115,7 @@ app.get('/content', async (req, res) => {
 
 
 
-app.get('/inscriptions', async (req, res) => {
-  let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : 'All';
-  if (contentType === "SVG") contentType = 'image/svg+xml'
-  else if (contentType === "GIF") contentType = 'image/gif'
-  else if (contentType === "HTML") contentType = 'text/html;charset=utf-8'
-  else if (contentType === "JavaScript") contentType = 'text/javascript'
-  else if (contentType === "PDF") contentType = 'application/pdf'
-  else if (contentType === "JSON") contentType = 'application/json'
-  
-  const sortByOptions: ('newest' | 'oldest' | 'largestfile' | 'largestfee')[] = ['newest', 'oldest', 'largestfile', 'largestfee'];
-  let sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee' = 'newest';
-  if (typeof req.query.sortBy === 'string' && sortByOptions.includes(req.query.sortBy as any)) {
-    sortBy = req.query.sortBy as 'newest' | 'oldest' | 'largestfile' | 'largestfee';
-  }
 
-  const limit = parseInt(req.query.limit as string, 10) || 200;
-  const lastInscriptionNumber = req.query.lastInscriptionNumber ? parseInt(req.query.lastInscriptionNumber as string, 10) : undefined;
-  const cursed = req.query.cursed === 'true'; // Check if 'cursed' query parameter is true
-
-  try {
-    const inscriptions = await filterAndSortInscriptions(contentType, sortBy, limit, lastInscriptionNumber, cursed);
-    res.json(inscriptions);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Server error');
-  }
-});
 
 
 
