@@ -1,11 +1,10 @@
-# backend/docker/docker-compose.yml
 version: '3'
 
 services:
   postgres:
     image: postgres:14
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ../../database/postgres_data:/var/lib/postgresql/data
@@ -13,3 +12,13 @@ services:
       - POSTGRES_USER=ord_lite_user
       - POSTGRES_PASSWORD=ord_lite_pass
       - POSTGRES_DB=ord_lite_db
+
+  # litecoind:
+  #   image: litecoinproject/litecoin-core
+  #   command:
+  #     - -printtoconsole
+  #     - -regtest=1
+  #     - -txindex=1
+  #     - -server=1
+  #     - -rpcserialversion=1
+  #     - -rpcallowip=127.0.0.1

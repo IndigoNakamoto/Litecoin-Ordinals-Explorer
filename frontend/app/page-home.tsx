@@ -167,7 +167,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
 
     return (
         <>
-            <div className="mx-auto p-4 max-w-screen-2xl">
+            <div className="mx-auto p-4 max-w-screen-2xl mb-16">
                 <h1 className="text-2xl font-bold">Inscriptions</h1>
 
                 {/* Filter Buttons */}

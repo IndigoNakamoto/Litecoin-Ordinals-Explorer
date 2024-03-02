@@ -1,3 +1,5 @@
+// working on cache. Not working for content_length total or content distribution. 
+
 // backend/src/index.ts
 import express from 'express';
 import { getBlockInscriptionsPage, getInscriptionData, getBlockHeight, getInscriptionContent } from '../util/ord-litecoin';
@@ -15,6 +17,9 @@ import cors from 'cors';
 import multer from 'multer';
 import * as mimeTypes from 'mime-types'; // Import mime-types package
 import fs from 'fs'
+import NodeCache from 'node-cache';
+
+const cache = new NodeCache({ stdTTL: 300 });
 
 const app = express();
 const port = 3005;
@@ -220,7 +225,14 @@ app.get('/inscription_number/:inscription_number', async (req, res) => {
 // New endpoint for total content length
 app.get('/stats/totalContentLength', async (req, res) => {
   try {
+    const cachedData = cache.get('totalContentLength');
+    if (cachedData) {
+      // console.log("Returning cached total content length: ", cachedData)
+      return res.json(cachedData);
+    }
+
     const totalContentLength = await getTotalContentLength();
+    cache.set('totalContentLength', totalContentLength); // Cache without explicit TTL (default 150 seconds)
     res.json({ totalContentLength });
   } catch (error) {
     console.error(error);
@@ -231,13 +243,39 @@ app.get('/stats/totalContentLength', async (req, res) => {
 // New endpoint for content types distribution
 app.get('/stats/contentTypesDistribution', async (req, res) => {
   try {
-    const distribution = await getContentTypesDistribution();
-    res.json({ distribution });
+    let cachedData = cache.get('contentTypesDistribution');
+    if (cachedData) {
+      // If cached data exists, send it immediately
+      return res.json(cachedData);
+    }
+
+    // Fetch the data asynchronously
+    getContentTypesDistribution().then(distribution => {
+      // Update the cache with the new data
+      cache.set('contentTypesDistribution', distribution);
+      // Send the response to the client
+      res.json({ distribution });
+    }).catch(error => {
+      console.error(error);
+      res.status(500).send(error);
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send(error);
   }
 });
+
+// Schedule periodic cache updates every 2.5 minutes
+setInterval(async () => {
+  try {
+    const distribution = await getContentTypesDistribution();
+    // Update the cache with the new data
+    cache.set('contentTypesDistribution', distribution);
+    console.log('Cache updated for contentTypesDistribution');
+  } catch (error) {
+    console.error('Error updating cache:', error);
+  }
+}, 2.5 * 60 * 1000); // Run every 2.5 minutes
 
 
 // New endpoint for content length per genesis height
@@ -254,7 +292,12 @@ app.get('/stats/contentLengthPerGenesisHeight', async (req, res) => {
 // New endpoint for total genesis fee
 app.get('/stats/totalGenesisFee', async (req, res) => {
   try {
+    const cachedData = cache.get('totalGenesisFee');
+    if (cachedData) {
+      return res.json(cachedData);
+    }
     const totalGenesisFee = await getTotalGenesisFee();
+    cache.set('totalGenesisFee', totalGenesisFee); // Cache without explicit TTL (default 150 seconds)
     res.json({ totalGenesisFee });
   } catch (error) {
     console.error(error);
@@ -276,7 +319,14 @@ app.get('/stats/genesisFeePerGenesisHeight', async (req, res) => {
 // New endpoint for total number of inscriptions
 app.get('/stats/totalInscriptions', async (req, res) => {
   try {
+    const cachedData = cache.get('totalInscriptions');
+    if (cachedData) {
+      return res.json(cachedData);
+    }
+
     const totalInscriptions = await getTotalInscriptions();
+    cache.set('totalInscriptions', totalInscriptions); // Cache without explicit TTL (default 150 seconds)
+  
     res.json({ totalInscriptions });
   } catch (error) {
     console.error(error);

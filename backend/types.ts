@@ -21,6 +21,14 @@ export interface Inscription {
     timestamp: string;
 }
 
+export interface Inscribe {
+    commit: string;
+    inscriptions: [{id: string, locatoin: string}];
+    parent: string;
+    reveal: string;
+    total_fees: number;
+}
 
-
-
+export interface InscriptionSent { 
+    transaction: string;
+}

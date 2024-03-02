@@ -1,6 +1,7 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-'use client';
+'use client'
+import { Typography, Card } from "@material-tailwind/react";
 import React, { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
 
 
 interface ContentTypeDistribution {
@@ -29,7 +30,7 @@ const fetchStats = async (endpoint: string): Promise<any> => {
 function formatBytesToGB(bytes: number): string {
   const bytesPerGB = 1073741824; // Number of bytes in 1 GB
   const gb = bytes / bytesPerGB;
-  return new Intl.NumberFormat().format(Number(gb.toFixed(2))) + ' GB';
+  return new Intl.NumberFormat().format(Number(gb.toFixed(2)));
 }
 
 
@@ -44,14 +45,45 @@ function formatLitsToLitecoin(lits: number) {
   // Split the result into whole and fraction parts
   let [whole, fraction] = formattedLitecoins.includes('.') ? formattedLitecoins.split('.') : [formattedLitecoins, '00000000'];
 
-  // Format the fractional part with spaces as specified
-  fraction = `${fraction.slice(0, 2)} ${fraction.slice(2, 5)} ${fraction.slice(5)}`;
+  // Format the fractional part with non-breaking spaces
+  fraction = `${fraction.slice(0, 2)}\u00A0${fraction.slice(2, 5)}\u00A0${fraction.slice(5)}`;
 
   return `${whole}.${fraction}`;
 }
 
 
-export default function Home() {
+
+interface StatsCardPropsType {
+  count: string;
+  title: string;
+}
+
+function StatsCard({ count, title }: StatsCardPropsType) {
+  return (
+    <Card color="transparent" shadow={false}>
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Typography
+          variant="gradient"
+          className="text-6xl font-bold text-white"
+        >
+          {count}
+        </Typography>
+      </motion.div>
+      <Typography variant="h6" color="white" className="mt-1 font-medium text-blue-500">
+        {title}
+      </Typography>
+    </Card>
+  );
+}
+
+
+
+
+export function StatsSection4() {
   const [contentTypeDistribution, setContentTypeDistribution] = useState<ContentTypeDistribution[]>([]);
   const [generalStats, setGeneralStats] = useState<GeneralStat>({});
   const [currentBlockHeight, setCurrentBlockHeight] = useState<number | null>(null);
@@ -63,25 +95,25 @@ export default function Home() {
     const totalContentLengthStat = await fetchStats('stats/totalContentLength');
     setGeneralStats(prevStats => ({
       ...prevStats,
-      totalContentLength: totalContentLengthStat.totalContentLength
+      totalContentLength: totalContentLengthStat
     }));
 
     const totalInscriptionsStat = await fetchStats('stats/totalInscriptions');
     setGeneralStats(prevStats => ({
       ...prevStats,
-      totalInscriptions: parseInt(totalInscriptionsStat.totalInscriptions)
+      totalInscriptions: parseInt(totalInscriptionsStat)
     }));
 
     const totalGenesisFeeStat = await fetchStats('stats/totalGenesisFee');
     setGeneralStats(prevStats => ({
       ...prevStats,
-      totalGenesisFee: parseInt(totalGenesisFeeStat.totalGenesisFee)
+      totalGenesisFee: parseInt(totalGenesisFeeStat)
     }));
 
     const distributionResponse = await fetchStats('stats/contentTypesDistribution');
     // Since the data is wrapped under a "distribution" key, extract it directly
-    if (distributionResponse && Array.isArray(distributionResponse.distribution)) {
-      setContentTypeDistribution(distributionResponse.distribution);
+    if (distributionResponse && Array.isArray(distributionResponse)) {
+      setContentTypeDistribution(distributionResponse);
     } else {
       console.error('Expected an array for content type distribution, received:', distributionResponse);
       setContentTypeDistribution([]); // Fallback to an empty array
@@ -104,7 +136,7 @@ export default function Home() {
       return null;
     }
   };
-  
+
 
   const checkForNewBlock = useCallback(async () => {
     const newBlockHeight = await fetchBlockHeight();
@@ -123,56 +155,59 @@ export default function Home() {
     }, 30000); // Adjust interval as needed
     return () => clearInterval(interval);
   }, [checkForNewBlock, fetchData]);
-  
-
   return (
-    <main className="mx-auto p-4 max-w-screen-2xl">
-      <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">General Stats</h2>
-        <div className="space-y-2">
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-            <span className="text-4xl font-semibold dark:text-gray-200">{generalStats.totalContentLength !== undefined ? formatBytesToGB(generalStats.totalContentLength) : '0'}</span>
-            <span className="ml-2 text-gray-600 dark:text-gray-400">
-              Stored data
-            </span>
+    <div>
+      <section className="container mx-auto grid gap-10 px-4 py-16 lg:grid-cols-1 lg:gap-20 lg:py-36 xl:grid-cols-2 xl:place-items-center">
+        <div>
+          <Typography variant="h6" className="mb-6 font-medium">
+            Ordinal Lite Stats
+          </Typography>
+          <Typography
+            variant="h1"
+            className="text-3xl !leading-snug lg:text-5xl"
+          >
+            Inscriptions on Ordinals Lite
+          </Typography>
+          <Typography
+            variant="lead"
+            className="mt-3 w-full !text-gray-500 lg:w-10/12"
+          >
+            Immutable, decentralized data stored across 1000+ Litecoin nodes, secured by a dedicated network of Scrypt ASIC miners globally distributed.
+          </Typography>
+        </div>
+        <div>
+          <div className="grid grid-cols-1 gap-8 gap-x-28 text-white text-white">
+            <StatsCard key="inscriptions" count={(generalStats.totalInscriptions ?? 0).toLocaleString()} title="Inscriptions" />
+            <StatsCard key="gbStoredData" count={String(formatBytesToGB(Number(generalStats.totalContentLength ?? 0)))} title="GB stored on-chain" />
+            <StatsCard key="ltcFeesPaid" count={String(formatLitsToLitecoin(Number(generalStats.totalGenesisFee ?? 0)))} title="LTC fees paid to Scrypt miners" />
           </div>
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-            <span className="text-4xl font-semibold dark:text-gray-200">{generalStats.totalGenesisFee !== undefined ? formatLitsToLitecoin(generalStats.totalGenesisFee) : '0'}</span>
-            <span className="ml-2 text-gray-600 dark:text-gray-400">
-              LTC Inscription fees
-            </span>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-            <span className="text-4xl font-semibold dark:text-gray-200">{generalStats.totalInscriptions !== undefined ? new Intl.NumberFormat().format(generalStats.totalInscriptions) : '0'}</span>
-            <span className="ml-2 text-gray-600 dark:text-gray-400">
-              Inscriptions
-            </span>
-          </div>
+        </div>
+      </section>
+      <section className="container mx-auto px-4 py-16 lg:py-20">
+        <Typography variant="h6" className="mb-6 font-medium">
+          File Count
+        </Typography>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
+          {contentTypeDistribution.map((item) => (
+            <motion.div
+              key={item.content_type}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="py-4 bg-slate-700 dark:bg-gray-800 rounded-lg shadow"
+            >
+              <Typography variant="gradient" className="text-3xl font-bold text-white">
+                {item.count.toLocaleString()}
+              </Typography>
+              <span className="mt-1 font-medium text-blue-500">{item.content_type}</span>
+            </motion.div>
+          ))}
+
         </div>
       </section>
 
-      {/* <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Latest Inscriptions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        </div>
-      </section>
-      <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Featured</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        </div>
-      </section> */}
-      <section className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-4">Content Count</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {contentTypeDistribution.map((item) => (
-            <div key={item.content_type} className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-              <span className="text-lg font-semibold dark:text-gray-200">{item.content_type}:</span>
-              <span className="ml-2 text-gray-600 dark:text-gray-400">{item.count !== undefined ? new Intl.NumberFormat().format(item.count) : '0'}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-    </main>
+    </div>
   );
-  
 }
+
+export default StatsSection4;

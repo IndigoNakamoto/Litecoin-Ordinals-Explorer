@@ -10,6 +10,7 @@ interface InscriptionCardProps {
     inscription_number: number;
     content_type: string;
     content_type_type: string;
+    content_length: number;
 }
 
 const getContentTypeDescription = (contentType: string): string => {

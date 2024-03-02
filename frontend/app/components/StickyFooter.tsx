@@ -6,7 +6,7 @@ import Image from "next/legacy/image";
 const useAuth = () => {
   // This should return an object or state indicating if the user is signed in
   // For demonstration purposes, it returns false (not signed in)
-  return { isAuthenticated: true };
+  return { isAuthenticated: false };
 };
 
 // TODO: Modify to optionally take in a prop boolean value
@@ -24,12 +24,12 @@ const StickyFooter = () => {
         </Link>
         <div className='flex flex-nowrap'> {/* This div contains the buttons and prevents wrapping */}
           <Link href="/login" passHref>
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-1 px-2.5 rounded-3xl">
+            <button className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-1 px-2.5 rounded-3xl transition-colors duration-300 ease-in-out">
               Login
             </button>
           </Link>
           <Link href="/signup" passHref>
-            <button className="ml-2 bg-white hover:bg-slate-200 text-black font-medium py-1 px-2.5 rounded-3xl min-w-[90px]">
+            <button className="ml-2 bg-white hover:bg-gray-300 text-black font-medium py-1 px-2.5 rounded-3xl min-w-[90px] transition-colors duration-300 ease-in-out">
               Sign Up
             </button>
 
