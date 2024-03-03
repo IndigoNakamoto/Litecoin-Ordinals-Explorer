@@ -159,9 +159,7 @@ export function StatsSection4() {
     <div>
       <section className="container mx-auto grid gap-10 px-4 py-16 lg:grid-cols-1 lg:gap-20 lg:py-36 xl:grid-cols-2 xl:place-items-center">
         <div>
-          <Typography variant="h6" className="mb-6 font-medium">
-            Ordinal Lite Stats
-          </Typography>
+
           <Typography
             variant="h1"
             className="text-3xl !leading-snug lg:text-5xl"
@@ -174,8 +172,17 @@ export function StatsSection4() {
           >
             Immutable, decentralized data stored across 1000+ Litecoin nodes, secured by a dedicated network of Scrypt ASIC miners globally distributed.
           </Typography>
+          <Typography
+            variant="lead"
+            className="mt-3 w-full !text-gray-500 lg:w-10/12"
+          >
+          Litecoin is the only blockchain with a 100% uptime longer than Bitcoin. 
+          </Typography>
         </div>
         <div>
+        <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium">
+            Ordinal Lite Stats
+          </Typography>
           <div className="grid grid-cols-1 gap-8 gap-x-28 text-white text-white">
             <StatsCard key="inscriptions" count={(generalStats.totalInscriptions ?? 0).toLocaleString()} title="Inscriptions" />
             <StatsCard key="gbStoredData" count={String(formatBytesToGB(Number(generalStats.totalContentLength ?? 0)))} title="GB stored on-chain" />
@@ -184,7 +191,7 @@ export function StatsSection4() {
         </div>
       </section>
       <section className="container mx-auto px-4 py-16 lg:py-20">
-        <Typography variant="h6" className="mb-6 font-medium">
+        <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium">
           File Count
         </Typography>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
