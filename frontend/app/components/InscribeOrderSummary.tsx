@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Typography, Button, Input, Card } from "@material-tailwind/react";
 import Image from 'next/image';
 import { InscribeOrderContext } from "../inscribe/page";
@@ -16,10 +16,34 @@ interface OrderSummaryProps {
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({ handleSubmit }) => {
     const context = useContext(InscribeOrderContext);
+    const [litecoinAddress, setLitecoinAddress] = useState("");
+    const [addressError, setAddressError] = useState("P2TR address is required.");
+
     const FEE_PER_BYTE = 1;
     const POSTAGE = 10000;
     const SERVICE_FEE = 0.5; // USD
     const LTCUSD = 80;
+
+    const validateLitecoinAddress = (address: string): boolean => {
+        // const legacyPattern = /^L[1-9A-HJ-NP-Za-km-z]{33}$/;
+        // const scriptPattern = /^[M3][1-9A-HJ-NP-Za-km-z]{33}$/;
+        const bech32Pattern = /^ltc1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{39,59}$/;
+
+        // return legacyPattern.test(address) || scriptPattern.test(address) || bech32Pattern.test(address);
+        return bech32Pattern.test(address);
+    };
+
+    const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const address = e.target.value;
+        setLitecoinAddress(address);
+
+        if (!validateLitecoinAddress(address)) {
+            setAddressError("Please enter a valid Litecoin address.");
+        } else {
+            setAddressError(""); // Clear error message if the address is valid
+        }
+    };
+
 
 
     const files: { index: number, file_name: string, content_length: number, content_fee: number, service_fee: number, total: number, postage: number }[] | undefined = context?.files.map((file: FileDetails, index: number) => {
@@ -209,10 +233,14 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ handleSubmit }) => {
                         label="Receiving Address"
                         name="receiving_address"
                         placeholder="ltc1..."
+                        value={litecoinAddress}
+                        onChange={handleAddressChange}
+                        error={addressError !== ""}
+                        helperText={addressError}
                         labelProps={{
                             className: "",
                         }} crossOrigin={undefined} 
-                        // TODO: Add error logic
+                        // TODO: Add error logic for address validation.
                         />
                     <Typography
                         variant="small"
@@ -253,8 +281,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ handleSubmit }) => {
                         onClick={handleSubmit}
                         color="blue"
                         size="lg"
-                        className="mb-2 flex h-12 items-center justify-center gap-2 text-white w-full" placeholder={undefined}                    >
-
+                        className="mb-2 flex h-12 items-center justify-center gap-2 text-white w-full"
+                        disabled={total_postage === 0 || addressError !== ""} // Conditionally disable the button if total postage is 0 or receiving address is invalid
+                    >
                         Inscribe with {" "}
                         <Image
                             src={`/logos/litecoin-ltc-logo.png`}
