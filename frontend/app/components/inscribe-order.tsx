@@ -1,5 +1,7 @@
 // app/components/inscribe-order
 import React from "react";
+import { InscribeOrderContext } from "../inscribe/page";
+import { createContext, useContext, useState } from 'react';
 
 // @material-tailwind/react
 import {
@@ -28,6 +30,11 @@ import {
   MagnifyingGlassIcon,
 } from "@heroicons/react/24/solid";
 
+interface FileDetails {
+  name: string;
+  size: number;
+}
+
 interface Inscribe {
   commit: string;
   inscriptions: [{ id: string, locatoin: string }];
@@ -36,79 +43,7 @@ interface Inscribe {
   total_fees: number;
 }
 
-const TABLE_ROW_TRANSACTION = [
-  {
-    "commit": "88dc33f3b752d6829944c5b0f93edd57413eafe06645636cc91c51274ea620e6",
-    "inscriptions": [
-      {
-        "id": "b84df77d70cab9c51685e7e2b91681c414a9ee675fe86375e51b1803c130147fi0",
-        "location": "b84df77d70cab9c51685e7e2b91681c414a9ee675fe86375e51b1803c130147f:0:0",
-        "content_length": 399,
-        "file_name": "image.jpeg"
-      }
-    ],
-    "parent": null,
-    "reveal": "b84df77d70cab9c51685e7e2b91681c414a9ee675fe86375e51b1803c130147f",
-    "total_fees": 67403
-  },
-  {
-    "commit": "20930da8aacf7807ed169e3639a1a5caeacfc2473d9974688828a9546d8f97b8",
-    "inscriptions": [
-      {
-        "id": "94c3cfcac9db3a097231c2ef64c884b75aad9dc88ec9e2152c9796105f34de5fi0",
-        "location": "94c3cfcac9db3a097231c2ef64c884b75aad9dc88ec9e2152c9796105f34de5f:0:0"
-      }
-    ],
-    "parent": null,
-    "reveal": "94c3cfcac9db3a097231c2ef64c884b75aad9dc88ec9e2152c9796105f34de5f",
-    "total_fees": 67403
-  }
-]
-
-// const TABLE_ROW = [];
-const TABLE_ROW = [
-  {
-    id: "#MS-415646",
-    file_name: "profile_picture.jpeg",
-    content_length: "369 KB",
-    status: "pending",
-  },
-  {
-    id: "#MS-415697",
-    file_name: "profile_picture.jpeg",
-    content_length: "369 KB",
-    status: "completed",
-  },
-  {
-    id: "#MS-415698",
-    file_name: "profile_picture.jpeg",
-    content_length: "369 KB",
-    status: "completed",
-  },
-  {
-    id: "#MS-415698",
-    file_name: "profile_picture.jpeg",
-    content_length: "369 KB",
-    status: "completed",
-  },
-  {
-    id: "#MS-415698",
-    file_name: "profile_picture.jpeg",
-    content_length: "369 KB",
-    status: "completed",
-  },
-  {
-    id: "#MS-415698",
-    file_name: "profile_picture.jpeg",
-    content_length: "369 KB",
-    status: "completed",
-  },
-];
-
 const TABLE_HEAD = [
-  {
-    icon: <Checkbox crossOrigin={undefined} />,
-  },
   {
     head: "File Name",
   },
@@ -116,13 +51,56 @@ const TABLE_HEAD = [
     head: "Content Size",
   },
   {
+    head: "Content Fee",
+  },
+  {
+    head: "Postage",
+  },
+  {
+    head: "Service Fee",
+  },
+  {
+    head: "Total",
+  },
+  {
     head: "",
   },
 ];
 
-function TablesExample7() {
+function InscribeOrder() {
+  const context = useContext(InscribeOrderContext);
+  
+  const FEE_PER_BYTE = 1;
+  const POSTAGE = 10000;
+  const SERVICE_USD_FEE = 0.5; // USD
+  const LTCUSD = 80;
+  const SERVICE_FEE = (SERVICE_USD_FEE/LTCUSD).toFixed(5) * 100000000;
+
+  const files: { index: number, file_name: string, content_length: number, content_fee: number, service_fee: number, total: number, postage: number }[] | undefined = context?.files.map((file: FileDetails, index: number) => {
+    return {
+      index: index,
+      file_name: file.name,
+      content_length: file.size,
+      content_fee: Math.ceil(file.size / 4 * FEE_PER_BYTE),
+      postage: POSTAGE,
+      service_fee: SERVICE_FEE,
+      total: Math.ceil(file.size / 4 * FEE_PER_BYTE) + POSTAGE + SERVICE_FEE
+    }
+  })
+
+  const setFiles = context?.setFiles;
+
+  // Function to handle delete action
+  const handleDelete = (index: number) => {
+    const updatedFiles = context?.files.filter((file: FileDetails, i: number) => i !== index);
+    if (setFiles) {
+      setFiles(updatedFiles ?? []);
+    }
+  };
+
   return (
     <section className="">
+
       <Card className="h-full w-full" placeholder={undefined}>
         <CardHeader
           floated={false}
@@ -145,13 +123,12 @@ function TablesExample7() {
           <table className="w-full min-w-max table-auto">
             <thead>
               <tr className='pl-16'>
-                {TABLE_HEAD.map(({ head, icon }) => (
+                {TABLE_HEAD.map(({ head }) => (
                   <th
                     key={head}
                     className="border-b border-gray-300 !p-4"
                   >
                     <div className="flex gap-2 items-center">
-                      {icon}
                       <Typography
                         color="blue-gray"
                         variant="small"
@@ -164,26 +141,27 @@ function TablesExample7() {
               </tr>
             </thead>
             <tbody>
-              {TABLE_ROW.map(
+              {files?.map(
                 ({
-                  id,
+                  index,
                   file_name,
-                  // status,
                   content_length,
+                  content_fee,
+                  service_fee,
+                  total,
+                  postage
                 }) => {
                   const classes = "!p-4 border-b border-gray-300";
+                  const truncatedFileName = file_name.length > 20 ? `...${file_name.slice(-15)}` : file_name;
                   return (
-                    <tr key={id}>
-                      <td className={classes}>
-                        <Checkbox crossOrigin={undefined}/>
-                      </td>
+                    <tr key={index}>
                       <td className={classes}>
                         <div className="flex items-center gap-3">
                           <Typography
                             variant="small"
                             className="font-bold"
                             color="blue-gray" placeholder={undefined}                          >
-                            {file_name}
+                            {truncatedFileName}
                           </Typography>
                         </div>
                       </td>
@@ -191,24 +169,37 @@ function TablesExample7() {
                         <Typography
                           variant="small"
                           className="!font-normal text-gray-600" placeholder={undefined}                        >
-                          {content_length}
+                          {Math.ceil(content_length/1000)} KB
                         </Typography>
                       </td>
-                      {/* <td className={classes}>
-                        <div className="w-max">
-                          <Chip
-                            variant="ghost"
-                            value={status}
-                            color={
-                              status === "completed"
-                                ? "green"
-                                : status === "pending"
-                                  ? "amber"
-                                  : "red"
-                            }
-                          />
-                        </div>
-                      </td> */}
+                      <td className={classes}>
+                        <Typography
+                          variant="small"
+                          className="!font-normal text-gray-600" placeholder={undefined}                        >
+                          {content_fee} lits
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <Typography
+                          variant="small"
+                          className="!font-normal text-gray-600" placeholder={undefined}                        >
+                          {postage} lits
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <Typography
+                          variant="small"
+                          className="!font-normal text-gray-600" placeholder={undefined}                        >
+                          {service_fee} lits
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <Typography
+                          variant="small"
+                          className="!font-normal text-gray-600" placeholder={undefined}                        >
+                          {total} lits
+                        </Typography>
+                      </td>
                       <td className="border-b border-gray-300 text-right pr-6">
                         <Menu placement="left-start">
                           <MenuHandler>
@@ -217,8 +208,8 @@ function TablesExample7() {
                             </IconButton>
                           </MenuHandler>
                           <MenuList placeholder={undefined}>
-                            <MenuItem placeholder={undefined}>Edit</MenuItem>
-                            <MenuItem placeholder={undefined}>Delete</MenuItem>
+                            {/* TODO: METADATA <MenuItem placeholder={undefined}>Edit</MenuItem> */}
+                            <MenuItem placeholder={undefined} onClick={() => handleDelete(index)}>Delete</MenuItem>
                           </MenuList>
                         </Menu>
                       </td>
@@ -234,4 +225,4 @@ function TablesExample7() {
   );
 }
 
-export default TablesExample7;
+export default InscribeOrder;

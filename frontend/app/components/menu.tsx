@@ -18,7 +18,7 @@ const Menu = () => {
           </span>
         </Link>
         <div className="flex-initial">
-          <Link href="/stats" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl transition-colors duration-300 ease-in-out">
+          <Link href="/stats" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
             Stats
           </Link>
         </div>
@@ -31,7 +31,7 @@ const Menu = () => {
       {/* Added ml-auto to move this item to the far right */}
       <Link href="/profile" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
         <Avatar alt="avatar" variant="rounded" src='/indigo.jpeg' placeholder={'undefined'} size="sm"/>
-        {/* Sign in */}
+        {/* Log in */}
       </Link>
     </div>
       </div>

@@ -11,6 +11,7 @@ interface InscriptionCardProps {
     content_type: string;
     content_type_type: string;
     content_length: number;
+    maxHeight?: string;
 }
 
 const getContentTypeDescription = (contentType: string): string => {
@@ -44,7 +45,8 @@ const getContentTypeDescription = (contentType: string): string => {
 export const InscriptionCard: React.FC<InscriptionCardProps> = ({
     inscription_id,
     inscription_number,
-    content_type
+    content_type,
+    maxHeight = "200px",
 }) => {
 
     const formattedInscriptionNumber = inscription_number.toLocaleString(); // This will format the number with commas
@@ -52,8 +54,10 @@ export const InscriptionCard: React.FC<InscriptionCardProps> = ({
     return (
         <div className="overflow-hidden shadow-lg cursor-pointer transition-transform duration-200 ease-in-out hover:scale-105">
             <Link href={`/${inscription_number}`} target="_blank" rel="noopener">
-
-                <div className="aspect-w-1 aspect-h-1 min-w-full min-h-[200px] max-h-[200px] overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-transparent flex items-center justify-center relative">
+                <div 
+                    className={`aspect-w-1 aspect-h-1 min-w-full min-h-[200px] overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-transparent flex items-center justify-center relative`}
+                    style={{ maxHeight }} // Apply the maxHeight value here
+                >
                     <ContentRenderer
                         inscription_id={inscription_id}
                         contentType={content_type}
