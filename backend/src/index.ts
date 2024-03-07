@@ -19,8 +19,34 @@ import * as mimeTypes from 'mime-types'; // Import mime-types package
 import fs from 'fs'
 import NodeCache from 'node-cache';
 
-const cache = new NodeCache({ stdTTL: 300 });
+// Supported MIME types
+const supportedMimeTypes = new Set([
+  'image/apng', 'text/plain', 'application/octet-stream', // Add other MIME types as needed
+  'application/binpb', 'application/cbor', 'text/css', 'audio/flac', 'image/gif', 
+  'model/gltf-binary', 'model/gltf+json', 'text/html', 'image/jpeg', 'text/javascript',
+  'application/json', 'text/markdown', 'audio/mpeg', 'video/mp4', 'font/otf',
+  'application/pdf', 'image/png', 'application/x-python-code', 'model/stl', 
+  'image/svg+xml', 'font/ttf', 'text/plain', 'audio/wav', 'video/webm', 
+  'image/webp', 'font/woff', 'font/woff2', 'text/yaml'
+]);
 
+// Middleware to validate content type
+const validateContentType = (req: { file: { originalname: string; }; }, res: { status: (arg0: number) => { (): any; new(): any; send: { (arg0: string): any; new(): any; }; }; }, next: () => void) => {
+  if (!req.file) {
+    // If there's no file, skip this middleware
+    return next();
+  }
+
+  const mimeType = mimeTypes.lookup(req.file.originalname) as string;
+  if (!supportedMimeTypes.has(mimeType)) {
+    return res.status(400).send('Unsupported file type');
+  }
+
+  next();
+};
+
+
+const cache = new NodeCache({ stdTTL: 300 });
 const app = express();
 const port = 3005;
 
@@ -143,7 +169,7 @@ const upload = multer({
 });
 
 // File upload endpoint with metadata and size validation
-app.post('/upload', upload.single('file'), (req, res) => {
+app.post('/upload', upload.single('file'), validateContentType, (req, res) => {
   // Check if req.file exists
   if (!req.file) {
     return res.status(400).send('No file uploaded');

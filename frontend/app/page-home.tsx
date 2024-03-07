@@ -190,7 +190,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
                     </button>
                     {dropdownOpen && (
                         <div className="absolute z-10 mt-1 bg-gradient-to-br from-white to-gray-200 border border-gray-200 rounded-lg shadow-lg right-0 w-32">
-                            {['Newest', 'Oldest', 'Largest File', 'Largest Fee'].map((option) => (
+                            {['Newest', 'Oldest', ].map((option) => ( //'Largest File', 'Largest Fee'
                                 <button key={option} onClick={() => handleSortOptionSelect(option)} className="block px-4 py-2 text-sm text-gray-800 hover:text-blue-700 w-full text-left">
                                     {option}
                                 </button>

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { InscriptionCard } from '../components/inscriptionCard';
 import { Avatar } from "@material-tailwind/react";
+import Footer from "../components/footer";
 
 declare global {
     interface Window {
@@ -102,6 +103,7 @@ export default function Page() {
                     </div>
                 ))}
             </div>
+            <Footer/>
         </div>
     );
 

@@ -35,6 +35,7 @@ export default function Page({ params }: { params: { inscription_number: string 
             <InscriptionLayout inscriptionNumber={params.inscription_number}>
             <header>
                 <h1 className="text-3xl font-medium">Inscription #{params.inscription_number.toLocaleString()}</h1>
+                {/* TODO: Menu for report like */}
             </header>
             <div className="relative w-full overflow-hidden rounded-xl" style={{ paddingBottom: '100%' }}> {/* This creates a box with a 1:1 aspect ratio and rounded corners */}
                 <div className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-br from-gray-800 to-transparent flex items-center justify-center">

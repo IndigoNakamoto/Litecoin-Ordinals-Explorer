@@ -8,59 +8,9 @@ export function SignUp() {
         <section className="grid h-screen items-center bg-white">
             <div className="text-center">
                 <Typography variant="h3" color="black" className="mb-2">
-                    Join us today
-                </Typography>
-                <Typography color="black" className="mb-12">
-                    Enter your email and password to register.
+                    Inscribe on Litecoin Today
                 </Typography>
                 <form action="#" className="mx-auto max-w-[24rem] text-left">
-                    <div>
-                        <label htmlFor="email">
-                            <Typography
-                                variant="small"
-                                className="mb-2 block font-medium text-gray-800"
-                            >
-                                Your Email
-                            </Typography>
-                        </label>
-                        <Input
-                            id="email"
-                            color="gray"
-                            size="lg"
-                            type="email"
-                            name="email"
-                            placeholder="name@email.com"
-                            className="focus:!border-t-gray-900 rounded-lg"
-                            labelProps={{
-                                className: "hidden",
-                            }} crossOrigin={undefined} />
-                        <Typography
-                            variant="small"
-                            className="mt-2 block font-medium text-gray-400"
-                        >
-                            I agree to the{" "}
-                            <a
-                                href="#"
-                                className="underline transition-colors hover:text-gray-900"
-                            >
-                                Terms and Conditions
-                            </a>
-                        </Typography>
-                    </div>
-                    <Button color="white" size="lg" className="mt-4 text-black" fullWidth>
-                        Register now
-                    </Button>
-                    <div className="my-6 flex w-full items-center gap-2">
-                        <hr className="w-full bg-slate-50" />
-                        <Typography
-                            variant="small"
-                            color="black"
-                            className="font-medium opacity-50"
-                        >
-                            OR
-                        </Typography>
-                        <hr className="w-full bg-slate-50" />
-                    </div>
                     <Button
                         color="white"
                         size="lg"

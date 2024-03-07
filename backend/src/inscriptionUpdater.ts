@@ -171,4 +171,3 @@ process.on('SIGTERM', () => {
 setInterval(checkForNewBlockAndUpdateViews, REFRESH_INTERVAL);
 
 checkForNewBlockAndUpdateViews();
-
