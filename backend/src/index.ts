@@ -18,35 +18,10 @@ import multer from 'multer';
 import * as mimeTypes from 'mime-types'; // Import mime-types package
 import fs from 'fs'
 import NodeCache from 'node-cache';
-
-// Supported MIME types
-const supportedMimeTypes = new Set([
-  'image/apng', 'text/plain', 'application/octet-stream', // Add other MIME types as needed
-  'application/binpb', 'application/cbor', 'text/css', 'audio/flac', 'image/gif', 
-  'model/gltf-binary', 'model/gltf+json', 'text/html', 'image/jpeg', 'text/javascript',
-  'application/json', 'text/markdown', 'audio/mpeg', 'video/mp4', 'font/otf',
-  'application/pdf', 'image/png', 'application/x-python-code', 'model/stl', 
-  'image/svg+xml', 'font/ttf', 'text/plain', 'audio/wav', 'video/webm', 
-  'image/webp', 'font/woff', 'font/woff2', 'text/yaml'
-]);
-
-// Middleware to validate content type
-const validateContentType = (req: { file: { originalname: string; }; }, res: { status: (arg0: number) => { (): any; new(): any; send: { (arg0: string): any; new(): any; }; }; }, next: () => void) => {
-  if (!req.file) {
-    // If there's no file, skip this middleware
-    return next();
-  }
-
-  const mimeType = mimeTypes.lookup(req.file.originalname) as string;
-  if (!supportedMimeTypes.has(mimeType)) {
-    return res.status(400).send('Unsupported file type');
-  }
-
-  next();
-};
-
+import { Request } from 'express';
 
 const cache = new NodeCache({ stdTTL: 300 });
+
 const app = express();
 const port = 3005;
 
@@ -155,8 +130,10 @@ const storage = multer.diskStorage({
   destination: 'uploads/',
   filename: function(req, file, cb) {
     // Generate a unique filename
+    const fileExtension = file.originalname.split('.').pop();
+    const fileName = file.originalname.split('.')[0]
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix);
+    cb(null, `${file.fieldname}-${fileName}-${Date.now()}.${fileExtension}`);
   }
 });
 
@@ -164,40 +141,32 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 399 * 1024, // 400 KB in bytes
+    fileSize: 399 * 1000, // 400 KB in bytes
   }
 });
 
-// File upload endpoint with metadata and size validation
-app.post('/upload', upload.single('file'), validateContentType, (req, res) => {
-  // Check if req.file exists
-  if (!req.file) {
-    return res.status(400).send('No file uploaded');
-  }
+app.post('/upload', upload.array('files', 20), (req: Request, res) => {
+  const files = req.files as Express.Multer.File[];
 
-  // Access uploaded file via req.file
-  const uploadedFile = req.file;
-  console.log('Uploaded file:', uploadedFile);
+  files.forEach((file: any) => {
+      console.log('Uploaded file:', file);
+      // Here, process each file as needed
+  });
 
-  // Check file size
-  if (uploadedFile.size > 399 * 1024) {
-    return res.status(400).send('File size exceeds the limit of 399KB');
-  }
+  // Extract and log other form fields data
+  const { username, order_id, inscription_fee, service_fee, payment_address, receiving_address } = req.body;
 
-  //IP address
-  const ipAddress = req.ip;
+  console.log("Receiving address: ", receiving_address);
+  console.log("Payment address: ", payment_address);
+  console.log("Service fee: ", service_fee);  
+  console.log("Inscription fee: ", inscription_fee);
+  console.log("Order ID: ", order_id);
+  console.log("Username: ", username);
+  console.log("IP Address: ", req.ip);
 
-  // request body
-  const { username, order_id, inscription_fee, service_fee, payment_address, receiving_address } = req.body
-
-  // MIME type
-  const mimeType = mimeTypes.lookup(uploadedFile.originalname);
-  
-
-  // Respond with success message
-  res.send('File uploaded successfully');
+  // Assuming all validations pass, send a success response
+  res.send(`Files uploaded successfully: ${files.map(file => file.originalname).join(', ')}`);
 });
-
 
 
 app.get('/inscriptions/block/:blockNumber/:pageNumber', async (req, res) => {

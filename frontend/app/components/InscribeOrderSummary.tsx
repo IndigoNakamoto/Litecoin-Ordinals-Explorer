@@ -11,10 +11,10 @@ import { InscribeOrderContext } from "../inscribe/page";
 
 // 
 interface OrderSummaryProps {
-    handleSubmit: () => void; // Add handleSubmit prop
+    onSubmit: () => void; // Add handleSubmit prop
 }
 
-const OrderSummary: React.FC<OrderSummaryProps> = ({ handleSubmit }) => {
+const OrderSummary: React.FC<OrderSummaryProps> = ({ onSubmit }) => {
     const context = useContext(InscribeOrderContext);
     const [litecoinAddress, setLitecoinAddress] = useState("");
     const [addressError, setAddressError] = useState("P2TR address is required.");
@@ -33,6 +33,8 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ handleSubmit }) => {
         return bech32Pattern.test(address);
     };
 
+    const setReceivingAddress = context?.setReceivingAddress;
+
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const address = e.target.value;
         setLitecoinAddress(address);
@@ -41,6 +43,9 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ handleSubmit }) => {
             setAddressError("Please enter a valid Litecoin address.");
         } else {
             setAddressError(""); // Clear error message if the address is valid
+            if(setReceivingAddress){
+                setReceivingAddress(address ?? ""); // Update the context state with the receiving address
+            }
         }
     };
 
@@ -229,14 +234,14 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ handleSubmit }) => {
                         color="gray"
                         size="lg"
                         type=""
-                        variant="Outlined" 
+                        variant="outlined" 
                         label="Receiving Address"
                         name="receiving_address"
                         placeholder="ltc1..."
                         value={litecoinAddress}
                         onChange={handleAddressChange}
                         error={addressError !== ""}
-                        helperText={addressError}
+                        helpertext={addressError}
                         labelProps={{
                             className: "",
                         }} crossOrigin={undefined} 
@@ -278,7 +283,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ handleSubmit }) => {
                 {/* Go to payment screen with the Litecoin address, order summary, and time remaining to complete the invoice order */}
                 <div className='w-full p-4'>
                     <Button
-                        onClick={handleSubmit}
+                        onClick={onSubmit}
                         color="blue"
                         size="lg"
                         className="mb-2 flex h-12 items-center justify-center gap-2 text-white w-full"

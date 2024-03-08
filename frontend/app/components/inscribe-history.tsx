@@ -243,7 +243,7 @@ function InvoiceHistory() {
                                       ? "red"
                                       : status === "waiting payment"
                                         ? "yellow"
-                                        : "default"
+                                        : "light-blue"
                             }
                           />
                         </div>

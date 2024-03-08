@@ -28,7 +28,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
 
         if (file) {
             const fileExtension = file?.name.split('.').pop()?.toLowerCase(); // Add null check for fileExtension
-            console.log('filetype: ', file.type); // Add this line to log the MIME type
+            // console.log('filetype: ', file.type); // Add this line to log the MIME type
             if ((!supportedMimeTypes.has(file.type) && !['gltf', 'glb'].includes(fileExtension || ''))) { // Add null check for fileExtension
                 setError("Invalid file type. Please upload a file with a supported MIME type.");
             } else if (file.size > 400 * 1000) { // Adjusted to 400 KB to match requirement
