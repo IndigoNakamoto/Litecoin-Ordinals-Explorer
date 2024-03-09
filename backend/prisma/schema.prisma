@@ -1,0 +1,200 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  email       String        @unique
+  username    String        @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  profile     Profile?
+  settings    Setting?
+  invoices    Invoice?
+  codes       UserCode[]
+  credits     UserCredit[]
+  UserCodeUse UserCodeUse[]
+  Wallets     Wallet[]
+  Social      Social[]
+  Role        Role          @default(BASIC)
+}
+
+model UpdateProgress {
+  progress_key         String @id
+  last_processed_block Int
+  last_processed_page  Int
+}
+
+model Wallet {
+  id       Int             @id @default(autoincrement())
+  userId   Int             @unique
+  user     User            @relation(fields: [userId], references: [id])
+  name     String
+  accounts WalletAccount[]
+}
+
+model WalletAccount {
+  id           Int           @id @default(autoincrement())
+  walletId     Int
+  name         String
+  address      String        @unique
+  confirmed    Int
+  total        Int
+  unconfirmed  Int
+  inscriptions Inscription[]
+  Wallet       Wallet        @relation(fields: [walletId], references: [id])
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  location  String?
+  url       String?
+  bio       String?
+  avatarUrl String?
+  socials   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Social {
+  id         Int    @id @default(autoincrement())
+  userId     Int
+  user       User   @relation(fields: [userId], references: [id])
+  socialLink String
+}
+
+model Setting {
+  id                 Int      @id @default(autoincrement())
+  userId             Int      @unique
+  user               User     @relation(fields: [userId], references: [id])
+  isPublic           Boolean
+  emailNotifications Boolean
+  updatedAt          DateTime @updatedAt
+}
+
+model Invoice {
+  id             Int            @id @default(autoincrement())
+  userId         Int            @unique
+  user           User           @relation(fields: [userId], references: [id])
+  invoiceId      String         @unique
+  InscribeStatus InscribeStatus @default(PENDING)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model UserCredit {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserCode {
+  id                 Int    @id @default(autoincrement())
+  code               String @unique
+  discountPercentage Float?
+
+  validFrom    DateTime
+  validTo      DateTime
+  usageCount   Int           @default(0)
+  maxUses      Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  UserCodeUses UserCodeUse[]
+  User         User?         @relation(fields: [userId], references: [id])
+  userId       Int?
+}
+
+model UserCodeUse {
+  id         Int      @id @default(autoincrement())
+  userCodeId Int
+  userCode   UserCode @relation(fields: [userCodeId], references: [id])
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model Inscription {
+  id                 Int            @id @default(autoincrement())
+  address            String
+  content_length     Int
+  content_type       String
+  script_pubkey      String
+  metadata           String?
+  content_type_type  String?
+  charms             String[]
+  genesis_address    String?
+  genesis_fee        Int
+  genesis_height     Int
+  inscription_number Int            @unique
+  inscription_id     String         @unique
+  next               String?
+  output_value       BigInt
+  parent             String?
+  children           String[]
+  previous           String?
+  processed          Boolean        @default(false)
+  rune               String?
+  sat                String?
+  satpoint           String
+  timestamp          Int
+  WalletAccount      WalletAccount? @relation(fields: [walletAccountId], references: [id])
+  walletAccountId    Int?
+  nsfw               Boolean        @default(false)
+
+  @@index([content_length, content_type, genesis_fee, genesis_height, inscription_number, content_type_type])
+}
+
+model InscriptionStats {
+  id                   Int                    @id @default(autoincrement())
+  totalGenesisFee      BigInt                 @default(0)
+  totalContentLength   BigInt                 @default(0)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  ContentTypeCount     ContentTypeCount[]
+  ContentTypeTypeCount ContentTypeTypeCount[]
+}
+
+model ContentTypeCount {
+  id                 Int              @id @default(autoincrement())
+  contentType        String
+  count              BigInt           @default(0)
+  InscriptionStatsId Int
+  InscriptionStats   InscriptionStats @relation(fields: [InscriptionStatsId], references: [id])
+}
+
+model ContentTypeTypeCount {
+  id                 Int              @id @default(autoincrement())
+  contentTypeType    String
+  count              BigInt           @default(0)
+  InscriptionStatsId Int
+  InscriptionStats   InscriptionStats @relation(fields: [InscriptionStatsId], references: [id])
+}
+
+enum InscribeStatus {
+  PENDING
+  QUEUED
+  UNCONFIRMED
+  INSCRIBED
+  FAILED
+}
+
+enum Role {
+  BASIC
+  ADMIN
+}

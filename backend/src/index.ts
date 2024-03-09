@@ -12,6 +12,11 @@ import {
   getInscriptionNumberHighLow,
   getContentTypesDistribution
 } from '../util/inscriptionStats';
+
+import { 
+  getInscriptionByNumber2, getInscriptionById2, filterAndSortInscriptions2
+} from '../util/prismaInscriptionQueries';
+
 import { filterAndSortInscriptions, getInscriptionContentType, getInscriptionById, getInscriptionByNumber } from '../util/inscriptionQueries'
 import cors from 'cors';
 import multer from 'multer';
@@ -32,33 +37,81 @@ app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
-app.get('/inscriptions', async (req, res) => {
-  let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : 'All';
-  if (contentType === "SVG") contentType = 'image/svg+xml'
-  else if (contentType === "GIF") contentType = 'image/gif'
-  else if (contentType === "HTML") contentType = 'text/html;charset=utf-8'
-  else if (contentType === "JavaScript") contentType = 'text/javascript'
-  else if (contentType === "PDF") contentType = 'application/pdf'
-  else if (contentType === "JSON") contentType = 'application/json'
+// app.get('/inscriptions', async (req, res) => {
+//   let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : 'All';
+//   if (contentType === "SVG") contentType = 'image/svg+xml'
+//   else if (contentType === "GIF") contentType = 'image/gif'
+//   else if (contentType === "HTML") contentType = 'text/html;charset=utf-8'
+//   else if (contentType === "JavaScript") contentType = 'text/javascript'
+//   else if (contentType === "PDF") contentType = 'application/pdf'
+//   else if (contentType === "JSON") contentType = 'application/json'
   
+//   const sortByOptions: ('newest' | 'oldest' | 'largestfile' | 'largestfee')[] = ['newest', 'oldest', 'largestfile', 'largestfee'];
+//   let sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee' = 'newest';
+//   if (typeof req.query.sortBy === 'string' && sortByOptions.includes(req.query.sortBy as any)) {
+//     sortBy = req.query.sortBy as 'newest' | 'oldest' | 'largestfile' | 'largestfee';
+//   }
+
+//   const limit = parseInt(req.query.limit as string, 10) || 200;
+//   const lastInscriptionNumber = req.query.lastInscriptionNumber ? parseInt(req.query.lastInscriptionNumber as string, 10) : undefined;
+//   const cursed = req.query.cursed === 'true'; // Check if 'cursed' query parameter is true
+
+//   try {
+//     const inscriptions = await filterAndSortInscriptions(contentType, sortBy, limit, lastInscriptionNumber, cursed);
+//     res.json(inscriptions);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Server error');
+//   }
+// });
+
+const PAGE_SIZE = 200; // Define page size constant
+
+app.get('/inscriptions', async (req, res) => {
+  let contentTypeType = typeof req.query.contentTypeType === 'string' ? req.query.contentTypeType : undefined;
+  let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : undefined;
+  if (contentType) {
+    // Map short content types to full content types
+    const contentTypeMap: { [key: string]: string } = {
+      "SVG": 'image/svg+xml',
+      "GIF": 'image/gif',
+      "HTML": 'text/html;charset=utf-8',
+      "JavaScript": 'text/javascript',
+      "PDF": 'application/pdf',
+      "JSON": 'application/json'
+    };
+    contentType = contentTypeMap[contentType] || contentType;
+  }
+
   const sortByOptions: ('newest' | 'oldest' | 'largestfile' | 'largestfee')[] = ['newest', 'oldest', 'largestfile', 'largestfee'];
   let sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee' = 'newest';
   if (typeof req.query.sortBy === 'string' && sortByOptions.includes(req.query.sortBy as any)) {
     sortBy = req.query.sortBy as 'newest' | 'oldest' | 'largestfile' | 'largestfee';
   }
 
-  const limit = parseInt(req.query.limit as string, 10) || 200;
-  const lastInscriptionNumber = req.query.lastInscriptionNumber ? parseInt(req.query.lastInscriptionNumber as string, 10) : undefined;
+  const page = parseInt(req.query.page as string, 10) || 1; // Parse page number
   const cursed = req.query.cursed === 'true'; // Check if 'cursed' query parameter is true
 
   try {
-    const inscriptions = await filterAndSortInscriptions(contentType, sortBy, limit, lastInscriptionNumber, cursed);
-    res.json(inscriptions);
+    // Query inscriptions
+    const inscriptions = await filterAndSortInscriptions2(contentTypeType, contentType, sortBy, page, cursed, undefined);
+
+    // Convert BigInt values to strings or numbers
+    const serializedInscriptions = inscriptions.map(inscription => ({
+      ...inscription,
+      genesis_fee: Number(inscription.genesis_fee),
+      output_value: Number(inscription.output_value),
+      inscription_number: Number(inscription.inscription_number)
+    }));
+
+    res.json(serializedInscriptions);
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
   }
 });
+
+
 
 app.get('/media/:inscription_id', async (req, res) => {
   const { inscription_id } = req.params;
@@ -145,23 +198,33 @@ const upload = multer({
   }
 });
 
-app.post('/upload', upload.array('files', 20), (req: Request, res) => {
-  const files = req.files as Express.Multer.File[];
 
+
+
+app.post('/upload', upload.array('files', 20), (req: Request, res) => {
+
+  const files = req.files as Express.Multer.File[];
   files.forEach((file: any) => {
       console.log('Uploaded file:', file);
-      // Here, process each file as needed
+      // validate file size
+      // validate file type
+      // validate fees 
+
+      // If validation fails for a file
+        // update invoice metadata for file to status 'error' message 'validation failed' file size or file type
+        // remove file from upload folder and return error message to client
   });
 
-  // Extract and log other form fields data
-  const { username, order_id, inscription_fee, service_fee, payment_address, receiving_address } = req.body;
+  // Create invoice
+  // https://www.payment.ordlite.io/api/v1/stores/{storeId}/invoices
+  // send invoice to client
 
-  console.log("Receiving address: ", receiving_address);
-  console.log("Payment address: ", payment_address);
-  console.log("Service fee: ", service_fee);  
-  console.log("Inscription fee: ", inscription_fee);
-  console.log("Order ID: ", order_id);
-  console.log("Username: ", username);
+  // Inscribe manager will poll for new invoices every 5 seconds
+
+  // Extract and log other form fields data
+  const { user_id } = req.body;
+
+  console.log("user_id: ", user_id);
   console.log("IP Address: ", req.ip);
 
   // Assuming all validations pass, send a success response
@@ -195,7 +258,7 @@ app.get('/inscription/:inscriptionId', async (req, res) => {
   const { inscriptionId } = req.params;
   try {
     // const data = await getInscriptionData(inscriptionId);
-    const data = await getInscriptionById(inscriptionId);
+    const data = await getInscriptionById2(inscriptionId);
     
     res.json(data);
   } catch (error) {
@@ -208,7 +271,7 @@ app.get('/inscription_number/:inscription_number', async (req, res) => {
   const { inscription_number } = req.params;
   try {
     // const data = await getInscriptionData(inscription_number);
-    const data = await getInscriptionByNumber(inscription_number);
+    const data = await getInscriptionByNumber2(Number(inscription_number));
     
     res.json(data);
   } catch (error) {

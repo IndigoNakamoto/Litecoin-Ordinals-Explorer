@@ -66,3 +66,9 @@ Other Command: \q
 ### Start Ord Server (username and password needed for rpc bitcoin api)
 ./ord --bitcoin-rpc-user your_rpc_username --bitcoin-rpc-pass your_rpc_password server -j
 
+
+
+# PRISMA
+1. docker
+2. prismadatabasesetup
+3. prisma migrate dev --name init

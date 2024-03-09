@@ -45,36 +45,6 @@ interface Inscribe {
 
 const TABLE_ROW = [
   {
-    invoice_id: "5",
-    inscription_id: "",
-    timestamp_created: 'Feb 2, 2024 1:00 PM',
-    status: "uploading",
-  },
-  {
-    invoice_id: "4",
-    inscription_id: "",
-    timestamp_created: 'Feb 2, 2024 1:00 PM',
-    status: "waiting payment",
-  },
-  {
-    invoice_id: "3",
-    inscription_id: "",
-    timestamp_created: 'Feb 2, 2024 12:30 PM',
-    status: "error",
-  },
-  {
-    invoice_id: "1",
-    inscription_id: "",
-    timestamp_created: 'Feb 2, 2024 12:15 PM',
-    status: "queued",
-  },
-  {
-    invoice_id: "1",
-    inscription_id: "",
-    timestamp_created: 'Feb 2, 2024 12:00 PM',
-    status: "processing",
-  },
-  {
     invoice_id: "0",
     inscription_id: "b84df77d70cab9c51685e7e2b91681c414a9ee675fe86375e51b1803c130147fi2",
     timestamp_created: 'Feb 1, 2024 12:00 PM',
@@ -92,12 +62,12 @@ const TABLE_HEAD = [
   {
     head: "Invoice",
   },
-  {
-    head: "Status",
-  },
-  {
-    head: "",
-  },
+  // {
+  //   head: "Status",
+  // },
+  // {
+  //   head: "",
+  // },
 ];
 
 function truncateText(text: string): string {
@@ -227,7 +197,7 @@ function InvoiceHistory() {
                         </div>
                       </td>
 
-                      <td className={classes}>
+                      {/* <td className={classes}>
                         <div className="w-max">
                           <Chip
                             variant="ghost"
@@ -247,8 +217,8 @@ function InvoiceHistory() {
                             }
                           />
                         </div>
-                      </td>
-                      <td className="border-b border-gray-300 text-right pr-6">
+                      </td> */}
+                      {/* <td className="border-b border-gray-300 text-right pr-6">
                         <Menu placement="left-start">
                           <MenuHandler>
                             <IconButton variant="text" placeholder={undefined}>
@@ -261,7 +231,7 @@ function InvoiceHistory() {
                             <MenuItem placeholder={undefined}>Delete</MenuItem>
                           </MenuList>
                         </Menu>
-                      </td>
+                      </td> */}
                     </tr>
                   );
                 }

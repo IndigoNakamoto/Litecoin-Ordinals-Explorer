@@ -118,20 +118,13 @@ export default function Page() {
     const handleSubmit = async () => {
         console.log('HANDLE SUBMIT');
         // Placeholder values for demonstration. Replace these with actual data as necessary.
-        const username = "user123"; // Example username
-        const inscription_fee = "10"; // Example fee
-        const service_fee = "2"; // Example service fee
-        const payment_address = "ltc_address"; // Example Litecoin payment address
+        const user_id = "user123"; // Example username
 
         const formData = new FormData();
         files.forEach(file => {
             formData.append("files", file); // Use "files" for multiple files
         });
-        formData.append("username", username);
-        formData.append("inscription_fee", inscription_fee);
-        formData.append("service_fee", service_fee);
-        formData.append("payment_address", payment_address);
-        formData.append("receiving_address", receivingAddress);
+        formData.append("user_id", user_id);
 
         try {
             const response = await fetch('http://localhost:3005/upload', {

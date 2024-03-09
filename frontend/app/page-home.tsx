@@ -33,7 +33,7 @@ interface HomeProps {
 export default function Home({ initialInscriptions }: HomeProps) {
     const [inscriptions, setInscriptions] = useState<Inscription[]>(initialInscriptions);
     const [loading, setLoading] = useState(false);
-    const [filter, setFilter] = useState({ sortBy: 'oldest', contentType: 'All', cursed: false });
+    const [filter, setFilter] = useState({ sortBy: 'oldest', contentType: '', contentTypeType: '', page: 1, cursed: false });
     const [lastInscriptionNumber, setLastInscriptionNumber] = useState<number | undefined>();
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [hasMore, setHasMore] = useState(true);
@@ -47,9 +47,10 @@ export default function Home({ initialInscriptions }: HomeProps) {
 
         try {
             const query = new URLSearchParams({
-                lastInscriptionNumber: lastInscriptionNumber?.toString() || '',
-                sortBy: filter.sortBy,
+                contentTypeType: filter.contentTypeType,
                 contentType: filter.contentType,
+                sortBy: filter.sortBy,
+                page: filter.page?.toString() || '1', // Add 'page' property with initial value of 1
                 cursed: filter.cursed.toString(),
             }).toString();
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${query}`);
@@ -58,7 +59,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
             setInscriptions(prev => [...prev, ...data]);
 
             setLastInscriptionNumber(data[data.length - 1]?.inscription_number);
-            setHasMore(data.length > 0 && data.length >= 200); // Check if there are more than 200 items
+            setHasMore(data.length > 0 && data.length >= 100); // Check if there are more than 200 items
         } catch (error) {
             console.error("Failed to fetch inscriptions:", error);
             // Handle error (e.g., show error message to user)
