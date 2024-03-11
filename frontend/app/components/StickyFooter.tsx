@@ -6,7 +6,7 @@ import Image from "next/legacy/image";
 const useAuth = () => {
   // This should return an object or state indicating if the user is signed in
   // For demonstration purposes, it returns false (not signed in)
-  return { isAuthenticated: true };
+  return { isAuthenticated: false };
 };
 
 // TODO: Modify to optionally take in a prop boolean value

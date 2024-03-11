@@ -3,18 +3,11 @@
 // backend/src/index.ts
 import express from 'express';
 import { getBlockInscriptionsPage, getInscriptionData, getBlockHeight, getInscriptionContent } from '../util/ord-litecoin';
-import {
-  getTotalContentLength,
-  getContentLengthPerGenesisHeight,
-  getTotalGenesisFee,
-  getGenesisFeePerGenesisHeight,
-  getTotalInscriptions,
-  getInscriptionNumberHighLow,
-  getContentTypesDistribution
-} from '../util/inscriptionStats';
 
-import { 
-  getInscriptionByNumber2, getInscriptionById2, filterAndSortInscriptions2
+import { ContentTypeType, ContentType } from '../util/types';
+
+import {
+  getInscriptionByNumber2, getInscriptionById2, filterAndSortInscriptions2, getMainTotals
 } from '../util/prismaInscriptionQueries';
 
 import { filterAndSortInscriptions, getInscriptionContentType, getInscriptionById, getInscriptionByNumber } from '../util/inscriptionQueries'
@@ -25,93 +18,117 @@ import fs from 'fs'
 import NodeCache from 'node-cache';
 import { Request } from 'express';
 
-const cache = new NodeCache({ stdTTL: 300 });
-
 const app = express();
 const port = 3005;
+const cache = new NodeCache({ stdTTL: 300, checkperiod: 120 });
 
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Default route
 app.get('/', (req, res) => {
   res.send('Hello, World!');
 });
 
-// app.get('/inscriptions', async (req, res) => {
-//   let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : 'All';
-//   if (contentType === "SVG") contentType = 'image/svg+xml'
-//   else if (contentType === "GIF") contentType = 'image/gif'
-//   else if (contentType === "HTML") contentType = 'text/html;charset=utf-8'
-//   else if (contentType === "JavaScript") contentType = 'text/javascript'
-//   else if (contentType === "PDF") contentType = 'application/pdf'
-//   else if (contentType === "JSON") contentType = 'application/json'
-  
-//   const sortByOptions: ('newest' | 'oldest' | 'largestfile' | 'largestfee')[] = ['newest', 'oldest', 'largestfile', 'largestfee'];
-//   let sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee' = 'newest';
-//   if (typeof req.query.sortBy === 'string' && sortByOptions.includes(req.query.sortBy as any)) {
-//     sortBy = req.query.sortBy as 'newest' | 'oldest' | 'largestfile' | 'largestfee';
-//   }
+let isRefreshing = false;
+const refreshCooldownInSeconds = 45; // Cooldown period before allowing another refresh
 
-//   const limit = parseInt(req.query.limit as string, 10) || 200;
-//   const lastInscriptionNumber = req.query.lastInscriptionNumber ? parseInt(req.query.lastInscriptionNumber as string, 10) : undefined;
-//   const cursed = req.query.cursed === 'true'; // Check if 'cursed' query parameter is true
-
-//   try {
-//     const inscriptions = await filterAndSortInscriptions(contentType, sortBy, limit, lastInscriptionNumber, cursed);
-//     res.json(inscriptions);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Server error');
-//   }
-// });
-
-const PAGE_SIZE = 200; // Define page size constant
-
-app.get('/inscriptions', async (req, res) => {
-  let contentTypeType = typeof req.query.contentTypeType === 'string' ? req.query.contentTypeType : undefined;
-  let contentType = typeof req.query.contentType === 'string' ? req.query.contentType : undefined;
-  if (contentType) {
-    // Map short content types to full content types
-    const contentTypeMap: { [key: string]: string } = {
-      "SVG": 'image/svg+xml',
-      "GIF": 'image/gif',
-      "HTML": 'text/html;charset=utf-8',
-      "JavaScript": 'text/javascript',
-      "PDF": 'application/pdf',
-      "JSON": 'application/json'
-    };
-    contentType = contentTypeMap[contentType] || contentType;
+const refreshCache = async (key: string, fetchData: () => Promise<any>, ttl: number = 150) => {
+  if (isRefreshing) {
+    console.log('A refresh operation is already in progress. Skipping...');
+    return;
   }
-
-  const sortByOptions: ('newest' | 'oldest' | 'largestfile' | 'largestfee')[] = ['newest', 'oldest', 'largestfile', 'largestfee'];
-  let sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee' = 'newest';
-  if (typeof req.query.sortBy === 'string' && sortByOptions.includes(req.query.sortBy as any)) {
-    sortBy = req.query.sortBy as 'newest' | 'oldest' | 'largestfile' | 'largestfee';
-  }
-
-  const page = parseInt(req.query.page as string, 10) || 1; // Parse page number
-  const cursed = req.query.cursed === 'true'; // Check if 'cursed' query parameter is true
-
+  isRefreshing = true;
   try {
-    // Query inscriptions
-    const inscriptions = await filterAndSortInscriptions2(contentTypeType, contentType, sortBy, page, cursed, undefined);
+    const data = await fetchData();
+    cache.set(key, data, ttl);
+    setTimeout(() => {
+      isRefreshing = false;
+    }, refreshCooldownInSeconds * 1000); // Reset the flag after the cooldown period
+  } catch (error) {
+    console.error(`Failed to refresh cache for key ${key}: `, error);
+    isRefreshing = false; // Ensure the flag is reset even if an error occurs
+  }
+};
 
-    // Convert BigInt values to strings or numbers
-    const serializedInscriptions = inscriptions.map(inscription => ({
-      ...inscription,
-      genesis_fee: Number(inscription.genesis_fee),
-      output_value: Number(inscription.output_value),
-      inscription_number: Number(inscription.inscription_number)
-    }));
-
-    res.json(serializedInscriptions);
+app.get('/stats/totals', async (req, res) => {
+  try {
+    let cachedData = cache.get('totals');
+    if (!cachedData) {
+      // Cache miss, fetch data synchronously this time
+      console.log('Cache miss, fetching data...');
+      cachedData = await getMainTotals();
+      cache.set('totals', cachedData); // Populate cache for the first time
+    } else {
+      // Cache hit, but let's refresh the cache asynchronously
+      console.log('Cache hit, refreshing data in the background...');
+      refreshCache('totals', getMainTotals);
+    }
+    res.json(cachedData);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).send('An error occurred while fetching totals');
   }
 });
 
+app.get('/inscriptions', async (req, res) => {
+  try {
+    const {
+      contentTypeType,
+      contentType,
+      sortBy = 'newest',
+      page = '1', // Default to '1' as a string, to match types
+      cursed = 'false',
+      inscriptionNumberStart,
+      inscriptionNumberEnd,
+    } = req.query;
 
+    const pageNumerical = parseInt(page.toString(), 10);
+    const cursedBoolean = cursed === 'true';
+    console.log('cursed boolean: ', cursedBoolean)
+    let inscriptionNumberRange: [number, number] | undefined;
+
+    // if (inscriptionNumberStart && inscriptionNumberEnd) {
+    //   inscriptionNumberRange = [
+    //     parseInt(inscriptionNumberStart, 10),
+    //     parseInt(inscriptionNumberEnd, 10),
+    //   ];
+    // }
+
+    // Validate and translate contentType
+    let actualContentType: ContentType | undefined;
+    if (typeof contentType === 'string' && contentType in ContentType) {
+      actualContentType = ContentType[contentType as keyof typeof ContentType];
+    }
+
+    // Validate and translate contentTypeType
+    let actualContentTypeType: ContentTypeType | undefined;
+    if (typeof contentTypeType === 'string' && contentTypeType in ContentTypeType) {
+      actualContentTypeType = ContentTypeType[contentTypeType as keyof typeof ContentTypeType];
+    }
+
+    const inscriptions = await filterAndSortInscriptions2(
+      actualContentTypeType, // Use translated and validated contentTypeType
+      actualContentType, // Use translated and validated contentType
+      sortBy as 'newest' | 'oldest' | 'largestfile' | 'largestfee',
+      pageNumerical,
+      cursedBoolean,
+      // inscriptionNumberRange
+    );
+
+    // Convert BigInt fields to strings
+    const convertedInscriptions = inscriptions.map(inscription => ({
+      ...inscription,
+      output_value: inscription.output_value ? inscription.output_value.toString() : '0', // Convert BigInt to string or return empty string if null
+      // Add any other BigInt fields here if necessary
+    }));
+
+    res.json(convertedInscriptions);
+  } catch (error: any) {
+    res.status(500).send(error.message);
+  }
+});
 
 app.get('/media/:inscription_id', async (req, res) => {
   const { inscription_id } = req.params;
@@ -119,7 +136,7 @@ app.get('/media/:inscription_id', async (req, res) => {
 
   try {
     const contentType = await getInscriptionContentType(inscription_id);
-    
+
     // Check if 'contentType' is not null
     if (!contentType) {
       return res.status(404).send('Content type not found or media not found');
@@ -138,7 +155,6 @@ app.get('/media/:inscription_id', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
-
 
 app.get('/content', async (req, res) => {
   // Ensure that content_type and inscription_id are treated as strings even if they are arrays or ParsedQs
@@ -172,16 +188,10 @@ app.get('/content', async (req, res) => {
   }
 });
 
-
-
-
-
-
-
 // Set up multer for file uploads
 const storage = multer.diskStorage({
   destination: 'uploads/',
-  filename: function(req, file, cb) {
+  filename: function (req, file, cb) {
     // Generate a unique filename
     const fileExtension = file.originalname.split('.').pop();
     const fileName = file.originalname.split('.')[0]
@@ -199,20 +209,18 @@ const upload = multer({
 });
 
 
-
-
 app.post('/upload', upload.array('files', 20), (req: Request, res) => {
 
   const files = req.files as Express.Multer.File[];
   files.forEach((file: any) => {
-      console.log('Uploaded file:', file);
-      // validate file size
-      // validate file type
-      // validate fees 
+    console.log('Uploaded file:', file);
+    // validate file size
+    // validate file type
+    // validate fees 
 
-      // If validation fails for a file
-        // update invoice metadata for file to status 'error' message 'validation failed' file size or file type
-        // remove file from upload folder and return error message to client
+    // If validation fails for a file
+    // update invoice metadata for file to status 'error' message 'validation failed' file size or file type
+    // remove file from upload folder and return error message to client
   });
 
   // Create invoice
@@ -244,10 +252,10 @@ app.get('/inscriptions/block/:blockNumber/:pageNumber', async (req, res) => {
 });
 
 app.get('/blockHeight', async (req, res) => {
-  try { 
+  try {
     const data = await getBlockHeight()
     res.json(data)
-  } catch (error) { 
+  } catch (error) {
     console.error(error);
     res.status(500).send(error);
   }
@@ -259,7 +267,7 @@ app.get('/inscription/:inscriptionId', async (req, res) => {
   try {
     // const data = await getInscriptionData(inscriptionId);
     const data = await getInscriptionById2(inscriptionId);
-    
+
     res.json(data);
   } catch (error) {
     console.error(error);
@@ -272,7 +280,10 @@ app.get('/inscription_number/:inscription_number', async (req, res) => {
   try {
     // const data = await getInscriptionData(inscription_number);
     const data = await getInscriptionByNumber2(Number(inscription_number));
-    
+    // Convert BigInt fields to strings
+    let modifyData = data;
+    modifyData!.output_value = Number(data!.output_value.toString()); // Convert BigInt to string
+
     res.json(data);
   } catch (error) {
     console.error(error);
@@ -280,128 +291,7 @@ app.get('/inscription_number/:inscription_number', async (req, res) => {
   }
 });
 
-// New endpoint for total content length
-app.get('/stats/totalContentLength', async (req, res) => {
-  try {
-    const cachedData = cache.get('totalContentLength');
-    if (cachedData) {
-      // console.log("Returning cached total content length: ", cachedData)
-      return res.json(cachedData);
-    }
 
-    const totalContentLength = await getTotalContentLength();
-    cache.set('totalContentLength', totalContentLength); // Cache without explicit TTL (default 150 seconds)
-    res.json({ totalContentLength });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
-  }
-});
-
-// New endpoint for content types distribution
-app.get('/stats/contentTypesDistribution', async (req, res) => {
-  try {
-    let cachedData = cache.get('contentTypesDistribution');
-    if (cachedData) {
-      // If cached data exists, send it immediately
-      return res.json(cachedData);
-    }
-
-    // Fetch the data asynchronously
-    getContentTypesDistribution().then(distribution => {
-      // Update the cache with the new data
-      cache.set('contentTypesDistribution', distribution);
-      // Send the response to the client
-      res.json({ distribution });
-    }).catch(error => {
-      console.error(error);
-      res.status(500).send(error);
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
-  }
-});
-
-// Schedule periodic cache updates every 2.5 minutes
-setInterval(async () => {
-  try {
-    const distribution = await getContentTypesDistribution();
-    // Update the cache with the new data
-    cache.set('contentTypesDistribution', distribution);
-    console.log('Cache updated for contentTypesDistribution');
-  } catch (error) {
-    console.error('Error updating cache:', error);
-  }
-}, 2.5 * 60 * 1000); // Run every 2.5 minutes
-
-
-// New endpoint for content length per genesis height
-app.get('/stats/contentLengthPerGenesisHeight', async (req, res) => {
-  try {
-    const contentLengthPerGenesisHeight = await getContentLengthPerGenesisHeight();
-    res.json({ contentLengthPerGenesisHeight });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
-  }
-});
-
-// New endpoint for total genesis fee
-app.get('/stats/totalGenesisFee', async (req, res) => {
-  try {
-    const cachedData = cache.get('totalGenesisFee');
-    if (cachedData) {
-      return res.json(cachedData);
-    }
-    const totalGenesisFee = await getTotalGenesisFee();
-    cache.set('totalGenesisFee', totalGenesisFee); // Cache without explicit TTL (default 150 seconds)
-    res.json({ totalGenesisFee });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
-  }
-});
-
-// New endpoint for genesis fee per genesis height
-app.get('/stats/genesisFeePerGenesisHeight', async (req, res) => {
-  try {
-    const genesisFeePerGenesisHeight = await getGenesisFeePerGenesisHeight();
-    res.json({ genesisFeePerGenesisHeight });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
-  }
-});
-
-// New endpoint for total number of inscriptions
-app.get('/stats/totalInscriptions', async (req, res) => {
-  try {
-    const cachedData = cache.get('totalInscriptions');
-    if (cachedData) {
-      return res.json(cachedData);
-    }
-
-    const totalInscriptions = await getTotalInscriptions();
-    cache.set('totalInscriptions', totalInscriptions); // Cache without explicit TTL (default 150 seconds)
-  
-    res.json({ totalInscriptions });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
-  }
-});
-
-// New endpoint for high/low inscription number
-app.get('/stats/inscriptionNumberHighLow', async (req, res) => {
-  try {
-    const inscriptionNumberHighLow = await getInscriptionNumberHighLow();
-    res.json({ inscriptionNumberHighLow });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
-  }
-});
 
 app.listen(port, () => {
   console.log(`Server is listening at http://localhost:${port}`);

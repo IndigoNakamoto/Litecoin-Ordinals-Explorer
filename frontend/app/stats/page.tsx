@@ -91,27 +91,27 @@ export function StatsSection4() {
 
   const fetchData = useCallback(async () => {
 
+    const totalStats = await fetchStats('stats/totals');
+
 
     // Fetch each stat and update state accordingly
-    const totalContentLengthStat = await fetchStats('stats/totalContentLength');
+
     setGeneralStats(prevStats => ({
       ...prevStats,
-      totalContentLength: totalContentLengthStat
+      totalContentLength: totalStats.totalContentLength
     }));
 
-    const totalInscriptionsStat = await fetchStats('stats/totalInscriptions');
     setGeneralStats(prevStats => ({
       ...prevStats,
-      totalInscriptions: parseInt(totalInscriptionsStat)
+      totalInscriptions: parseInt(totalStats.totalInscriptions)
     }));
 
-    const totalGenesisFeeStat = await fetchStats('stats/totalGenesisFee');
     setGeneralStats(prevStats => ({
       ...prevStats,
-      totalGenesisFee: parseInt(totalGenesisFeeStat)
+      totalGenesisFee: parseInt(totalStats.totalGenesisFee)
     }));
 
-    const distributionResponse = await fetchStats('stats/contentTypesDistribution');
+    const distributionResponse = totalStats.contentTypesMapped
     // Since the data is wrapped under a "distribution" key, extract it directly
     if (distributionResponse && Array.isArray(distributionResponse)) {
       setContentTypeDistribution(distributionResponse);
@@ -120,11 +120,6 @@ export function StatsSection4() {
       setContentTypeDistribution([]); // Fallback to an empty array
     }
 
-    // const inscriptionNumberHighLowStat = await fetchStats('stats/inscriptionNumberHighLow');
-    // setGeneralStats(prevStats => ({
-    //   ...prevStats,
-    //   inscriptionNumberHighLow: inscriptionNumberHighLowStat
-    // }));
   }, []);
 
   const fetchBlockHeight = async (): Promise<number | null> => {
@@ -202,14 +197,14 @@ export function StatsSection4() {
           <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium">
             File Count
           </Typography>
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-4 max-w-3xl">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-4 min-w-2xl max-w-3xl">
             {contentTypeDistribution.map((item) => (
               <motion.div
                 key={item.content_type}
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5 }}
-                className="py-4 bg-slate-700 dark:bg-gray-800 rounded-lg shadow"
+                className="px-12 py-4 bg-slate-700 dark:bg-gray-800 rounded-lg shadow"
               >
                 <Typography variant="gradient" className="text-3xl font-bold text-white">
                   {item.count.toLocaleString()}

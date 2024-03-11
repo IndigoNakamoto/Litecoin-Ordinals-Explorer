@@ -1,5 +1,6 @@
 import { PreInscription, Inscription } from './types';
 import { PrismaClient, Prisma } from '@prisma/client';
+import { ContentTypeType, ContentType } from './types';
 
 const prisma = new PrismaClient();
 
@@ -14,14 +15,13 @@ export const getInscriptionById2 = async (inscriptionId: string): Promise<Inscri
 // export const getInscriptionContentType = async (inscriptionId: string): Promise<string | null> => { }
 
 
-const PAGE_SIZE = 100; // Number of records per page
-
 export const filterAndSortInscriptions2 = async (
-    contentTypeType: string | undefined,
-    contentType: string | undefined,
+    contentTypeType: ContentTypeType | undefined,
+    contentType: ContentType | undefined,
     sortBy: 'newest' | 'oldest' | 'largestfile' | 'largestfee',
     page: number,
     cursed: boolean = false,
+    page_size: number = 200, // New optional parameter for page size
     inscriptionNumberRange?: [number, number] // New optional parameter for inscription number range
 ) => {
     let orderBy: any;
@@ -45,7 +45,7 @@ export const filterAndSortInscriptions2 = async (
     }
 
     // Calculate skip value based on page number
-    const skip = (page - 1) * PAGE_SIZE;
+    const skip = (page - 1) * page_size;
 
     // Construct the where clause
     const where: any = {
@@ -69,18 +69,24 @@ export const filterAndSortInscriptions2 = async (
     const inscriptions = await prisma.inscription.findMany({
         where,
         orderBy,
-        take: PAGE_SIZE, // Limit records per page
+        take: page_size, // Limit records per page
         skip // Skip records based on pagination
     });
 
     return inscriptions;
 };
 
+function mapData(inputArray: any[]) {
+    return inputArray.map(item => {
+        // Extract the key (content_type_type as String) and its count
+        const key = item.content_type_type;
+        const value = item._count.content_type_type;
 
-export const content_type_type_count = async (contentTypeType: string) => {
-    const count = await prisma.inscription.count({ where: { content_type_type: contentTypeType } });
-    return count;
+        // Return a new object with the structure {String: Number}
+        return { content_type: key, count: value };
+    });
 }
+
 
 export const getContentTypeTypeCounts = async () => {
     const contentTypes = await prisma.inscription.groupBy({
@@ -89,26 +95,74 @@ export const getContentTypeTypeCounts = async () => {
             content_type_type: true
         }
     });
-    return contentTypes;
+    const contentTypesMapped = mapData(contentTypes);
+    return contentTypesMapped;
+}
+
+export const getMainTotals = async () => {
+    const contentTypes = await prisma.inscription.groupBy({
+        by: ['content_type_type'],
+        _count: {
+            content_type_type: true
+        }
+    });
+    const contentTypesMapped = mapData(contentTypes);
+
+    const totalInscriptions = await prisma.inscription.count();
+
+    const totals = await prisma.inscriptionStats.findFirst({
+        where: { id: 1 },
+        select: {
+            totalGenesisFee: true,
+            totalContentLength: true,
+        }
+    });
+
+    if (totals) {
+        // Convert BigInt to Number, ensure they are within safe range
+        const safeTotals = {
+            totalGenesisFee: Number(totals.totalGenesisFee),
+            totalContentLength: Number(totals.totalContentLength),
+            totalInscriptions: Number(totalInscriptions),
+            contentTypesMapped
+        };
+        return safeTotals;
+    }
+
+    // Handle case where totals might be undefined
+    return null;
+};
+
+export const testAudioView = async () => {
+    const audio = await prisma.inscription.findMany({where: { content_type_type: 'audio' }});
+    return audio;
 }
 
 const main = async () => {
 
     const inscriptionNumberRange = [0, 100]; // Example range from 0 to 100
 
-    const inscriptions = await filterAndSortInscriptions2(
-        'image',          // contentTypeType
-        undefined,          // contentType
-        'oldest',           // sortBy
-        1,                  // page
-        false,              // cursed
-        // inscriptionNumberRange // inscriptionNumberRange
-    );
+    // const inscriptions = await filterAndSortInscriptions2(
+    //     'image',          // contentTypeType
+    //     undefined,          // contentType
+    //     'oldest',           // sortBy
+    //     1,                  // page
+    //     false,              // cursed
+    //     // inscriptionNumberRange // inscriptionNumberRange
+    // );
 
-    return inscriptions;
+    // return inscriptions;
 
-    // const count = await getContentTypeTypeCounts()
-    // return count
+    // const result = await getMainTotals()
+
+    const result = await testAudioView()
+
+    // let result = 
+    // console.log(result)
+    return result
+
+    // const unqiue = await getUniqueContentTypeTypes()
+    // console.log(unqiue)
 }
 
 main().then((data) => console.log(data)).catch((error) => console.error(error)) 

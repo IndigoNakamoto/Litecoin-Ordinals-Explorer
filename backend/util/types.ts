@@ -62,3 +62,23 @@ export interface Block {
     page_index: number;
 }
 
+
+// Define the enum for content type types
+export enum ContentTypeType {
+    Application = 'application',
+    Audio = 'audio',
+    Image = 'image',
+    '3D' = 'model',
+    Text = 'text',
+    Video = 'video'
+  }
+
+
+export enum ContentType {
+    PDF = 'application/pdf',
+    JSON = 'application/json',
+    SVG = 'image/svg+xml',
+    GIF = 'image/gif',
+    HTML = 'text/html;charset=utf-8',
+    Javascript = 'text/javascript',
+}

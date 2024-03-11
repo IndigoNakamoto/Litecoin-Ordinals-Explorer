@@ -4,8 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { InscriptionCard } from './components/inscriptionCard';
 import { debounce, sortBy } from 'lodash';
 
-
-interface Inscription {
+export interface Inscription {
     address: string;
     charms: string[];
     children: string[];
@@ -16,10 +15,12 @@ interface Inscription {
     genesis_height: number;
     inscription_id: string;
     inscription_number: number;
+    nsfw: boolean;
     next: string;
     output_value: number;
     parent: string;
     previous: string;
+    processed: boolean;
     rune: string;
     sat: string;
     satpoint: string;
@@ -33,8 +34,7 @@ interface HomeProps {
 export default function Home({ initialInscriptions }: HomeProps) {
     const [inscriptions, setInscriptions] = useState<Inscription[]>(initialInscriptions);
     const [loading, setLoading] = useState(false);
-    const [filter, setFilter] = useState({ sortBy: 'oldest', contentType: '', contentTypeType: '', page: 1, cursed: false });
-    const [lastInscriptionNumber, setLastInscriptionNumber] = useState<number | undefined>();
+    const [filter, setFilter] = useState({ sortBy: 'oldest', contentType: undefined, contentTypeType: undefined, page: 1, cursed: false });
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [activeFilterButton, setActiveFilterButton] = useState('All');
@@ -42,24 +42,55 @@ export default function Home({ initialInscriptions }: HomeProps) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [rightPosition, setRightPosition] = useState('0px');
 
+
+    const cardRefs = useRef([]); // Add this line to create refs for all cards
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Assuming each card has an ID that corresponds to the inscription_id
+                        const cardId = entry.target.getAttribute('data-inscription-id');
+                        // Logic to load card content goes here
+                        console.log(`Load content for card ${cardId}`);
+                    }
+                });
+            },
+            { rootMargin: '0px', threshold: 0.1 }
+        );
+
+        cardRefs.current.forEach(ref => { // Observe each card
+            if (ref) observer.observe(ref);
+        });
+
+        return () => { // Cleanup observer on component unmount
+            cardRefs.current.forEach(ref => {
+                if (ref) observer.unobserve(ref);
+            });
+        };
+    }, [inscriptions]); // Depend on the inscriptions array
+
     const fetchInscriptions = async () => {
+
         setLoading(true);
 
         try {
             const query = new URLSearchParams({
-                contentTypeType: filter.contentTypeType,
-                contentType: filter.contentType,
+                contentTypeType: filter.contentTypeType || '',
+                contentType: filter.contentType || '',
                 sortBy: filter.sortBy,
-                page: filter.page?.toString() || '1', // Add 'page' property with initial value of 1
+                page: filter.page?.toString() || '1',
                 cursed: filter.cursed.toString(),
+                limit: '200' // Request 200 inscriptions each time
             }).toString();
             const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${query}`);
             const data = await response.json();
 
             setInscriptions(prev => [...prev, ...data]);
 
-            setLastInscriptionNumber(data[data.length - 1]?.inscription_number);
-            setHasMore(data.length > 0 && data.length >= 100); // Check if there are more than 200 items
+            // Check if the number of fetched items is less than 200, which means there are no more inscriptions to load
+            setHasMore(data.length === 200);
         } catch (error) {
             console.error("Failed to fetch inscriptions:", error);
             // Handle error (e.g., show error message to user)
@@ -68,9 +99,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
         }
     };
 
-    // Clear filter inscriptions list
-    // BUG: CAUSES THE PAGE TO LOAD AGAIN
-    // need a way to prevent this on first load
+
     const isInitialMount = useRef(true);
     useEffect(() => {
         // Skip the effect on initial mount
@@ -78,32 +107,21 @@ export default function Home({ initialInscriptions }: HomeProps) {
             isInitialMount.current = false;
         } else {
             // This code now runs only on updates, not on the initial mount
-            setInscriptions([]);
-            setLastInscriptionNumber(undefined);
+            // setInscriptions([]);
             fetchInscriptions();
         }
     }, [filter]);
 
     const handleLoadMore = () => {
-        // Skip the effect on initial mount
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-        } else {
-            // This code now runs only on updates, not on the initial mount
-            fetchInscriptions();
-        }
+        // Increment the page by one
+        setFilter(prevFilter => ({
+            ...prevFilter,
+            page: prevFilter.page + 1
+        }));
     };
 
-    // Lazy load
+    // Show scroll button
     const loader = useRef(null);
-
-    // useEffect(() => {
-    //     const observer = new IntersectionObserver(entries => {
-    //         if (entries[0].isIntersecting && !loading) fetchInscriptions();
-    //     }, { threshold: 1.0 });
-    //     if (loader.current) observer.observe(loader.current);
-    //     return () => observer.disconnect();
-    // }, [filter, lastInscriptionNumber, loading]);
 
 
     // update top button position
@@ -146,16 +164,16 @@ export default function Home({ initialInscriptions }: HomeProps) {
 
     const handleFilterClick = (filterType: string) => {
         setActiveFilterButton(filterType);
-        updateFilter('contentType', filterType);
+        updateFilter('contentTypeType', filterType);
     };
 
-    const updateFilter = (type: 'sortBy' | 'contentType' | 'cursed', value: string | boolean) => {
-        setLastInscriptionNumber(undefined);
+    const updateFilter = (type: 'sortBy' | 'contentType' | 'contentTypeType' | 'cursed', value: string | boolean) => {
         setHasMore(true);
         setFilter(prev => ({ ...prev, [type]: value }));
     };
 
     const handleSortOptionSelect = (option: string) => {
+        // even when we do not click on this, setInscriptions([]) clears when we click on handleLoadMore.
         setInscriptions([])
         setSelectedSortOption(option);
         setDropdownOpen(false);
@@ -191,7 +209,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
                     </button>
                     {dropdownOpen && (
                         <div className="absolute z-10 mt-1 bg-gradient-to-br from-white to-gray-200 border border-gray-200 rounded-lg shadow-lg right-0 w-32">
-                            {['Newest', 'Oldest', ].map((option) => ( //'Largest File', 'Largest Fee'
+                            {['Newest', 'Oldest',].map((option) => ( //'Largest File', 'Largest Fee'
                                 <button key={option} onClick={() => handleSortOptionSelect(option)} className="block px-4 py-2 text-sm text-gray-800 hover:text-blue-700 w-full text-left">
                                     {option}
                                 </button>
@@ -201,9 +219,9 @@ export default function Home({ initialInscriptions }: HomeProps) {
                 </div>
 
 
-                <div className="grid grid-cols-2 pt-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
-                    {Array.isArray(inscriptions) && inscriptions.map(inscription => (
-                        <div key={inscription.inscription_id}>
+                <div className="grid grid-cols-2 pt-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+                    {Array.isArray(inscriptions) && inscriptions.map((inscription, index) => (
+                        <div key={inscription.inscription_id} ref={el => el && (cardRefs.current[index] = el)} data-inscription-id={inscription.inscription_id}>
                             <InscriptionCard {...inscription} />
                         </div>
                     ))}

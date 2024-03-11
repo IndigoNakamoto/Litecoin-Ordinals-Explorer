@@ -1,4 +1,4 @@
-// backend/src/materializedViewUpdater.ts
+// backend/src/prismaViewUpdater.ts
 import { Pool } from 'pg';
 import { getBlockHeight } from '../util/ord-litecoin';
 
@@ -41,15 +41,8 @@ async function refreshMaterializedView(viewName: string, concurrently: boolean =
 
 async function updateMaterializedViews() {
     const views = [
-        // 'inscriptions_image',
-        // 'inscriptions_model',
-        'inscriptions_video',
-        'inscriptions_audio',
-        // 'inscriptions_application',
-        // 'total_content_length',
-        // 'total_genesis_fee',
-        // 'total_inscriptions',
-        // 'inscriptions_text',
+        'mv_inscriptions_video',
+        'mv_inscriptions_audio',
     ];
 
     let toUpdateViews = [...views]; // Assuming views is an array of strings

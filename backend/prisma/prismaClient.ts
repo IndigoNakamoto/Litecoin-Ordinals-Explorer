@@ -3,6 +3,6 @@ import { getInscriptionData, getBlockHeight, getBlockInscriptionsPage } from '..
 
 const prisma = new PrismaClient();
 
-prisma.inscription.findFirst({ where: { inscription_number: 0 } }).then((progress) => {
-    console.log(progress)
-})
+// prisma.inscription.findFirst({ where: { inscription_number: 0 } }).then((progress) => {
+//     console.log(progress)
+// })

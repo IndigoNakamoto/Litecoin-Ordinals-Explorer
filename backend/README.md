@@ -49,6 +49,7 @@ docker exec -it docker-postgres-1 psql -U ord_lite_user -d ord_lite_db -c "\du"
 
 ### Setup Database:
 Run Command: npx ts-node ./backend/util/databaseSetup.ts
+npx ts-node ./backend/util/prismadatabaseSetup.ts
 
 
 ### Update Inscriptions
@@ -70,5 +71,42 @@ Other Command: \q
 
 # PRISMA
 1. docker
+docker compose up -d
 2. prismadatabasesetup
-3. prisma migrate dev --name init
+npx ts-node ./backend/util/prismadatabasesetup.ts
+
+3. Verify Views
+docker exec -it docker-postgres-1 psql -U ord_lite_user -d ord_lite_db
+\dm
+\dt inscriptions*
+\dv inscriptions_video
+\dm inscriptions_video
+\dm+
+
+
+4. 
+npx prisma db pull
+
+3. Manually setup materalized views
+docker exec -it docker-postgres-1 psql -U ord_lite_user -d ord_lite_db
+
+CREATE MATERIALIZED VIEW inscriptions_video AS
+SELECT * FROM inscriptions WHERE content_type_type = 'video';
+
+CREATE MATERIALIZED VIEW inscriptions_audio AS
+SELECT * FROM inscriptions WHERE content_type_type = 'audio';
+
+CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_video_inscription_number_uindex ON inscriptions_video(inscription_number);
+CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_audio_inscription_number_uindex ON inscriptions_audio(inscription_number);
+
+VERIFY:
+SELECT matviewname FROM pg_matviews WHERE matviewname IN ('inscriptions_video', 'inscriptions_audio');
+
+3. prisma migrate 
+prisma migrate dev --name init
+4. update inscriptions
+npx ts-node ./src/prismaInscriptionUpdater.ts
+
+
+
+

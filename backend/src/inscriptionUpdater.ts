@@ -99,6 +99,7 @@ async function updateInscriptions(): Promise<void> {
             const inscriptionsData = [];
 
             for (const inscriptionId of inscriptions) {
+                console.log('inscriptionId: ', inscriptionId)
                 try {
                     console.log('Get inscription: ', inscriptionId)
                     const inscriptionData = await getInscriptionData(inscriptionId);

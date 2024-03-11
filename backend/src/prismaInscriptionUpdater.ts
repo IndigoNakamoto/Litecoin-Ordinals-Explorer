@@ -24,7 +24,7 @@ process.on('SIGTERM', () => {
 });
 
 async function getLastProcessedBlock(): Promise<number> {
-    const progress = await prisma.inscription.findFirst({
+    const progress = await prisma.inscriptions.findFirst({
         orderBy: {
             inscription_number: 'desc'
         }
@@ -35,7 +35,7 @@ async function getLastProcessedBlock(): Promise<number> {
 async function updateLastProcessedBlock(blockNumber: number, pageIndex: number): Promise<void> {
     try {
         // Upsert query: inserts or updates the last processed block and page
-        await prisma.updateProgress.upsert({
+        await prisma.update_progress.upsert({
             where: { progress_key: 'last_processed_block' },
             update: {
                 last_processed_block: blockNumber,
@@ -54,22 +54,22 @@ async function updateLastProcessedBlock(blockNumber: number, pageIndex: number):
     }
 }
 
-async function storeInscriptionsBatch(inscriptions: Array<Prisma.InscriptionUncheckedCreateInput>) {
+async function storeInscriptionsBatch(inscriptions: Array<Prisma.inscriptionsUncheckedCreateInput>) {
     let totalGenesisFee = 0;
     let totalContentLength = 0;
     const contentTypeCounts: ContentTypeCounts = {};
     const contentTypeTypeCounts: ContentTypeTypeCounts = {};
 
     // Process inscriptions to include content_type_type and aggregate counts
-    const modifiedInscriptions: Array<Prisma.InscriptionUncheckedCreateInput & { content_type_type: string }> = inscriptions.map(inscription => {
-        const [type] = inscription.content_type.split('/'); // Extract "type" from "type/subtype"
-        totalGenesisFee += inscription.genesis_fee ?? 0;
+    const modifiedInscriptions: Array<Prisma.inscriptionsUncheckedCreateInput & { content_type_type: string }> = inscriptions.map(inscription => {
+        const [type] = (inscription.content_type ?? '').split('/'); // Extract "type" from "type/subtype"
+        totalGenesisFee += Number(inscription.genesis_fee ?? 0);
         totalContentLength += inscription.content_length ?? 0;
 
         // Count occurrences of content_type
-        contentTypeCounts[inscription.content_type] = (contentTypeCounts[inscription.content_type] || 0) + 1;
+        contentTypeCounts[inscription.content_type ?? ''] = (contentTypeCounts[inscription.content_type ?? ''] ?? 0) + 1;
         // Count occurrences of content_type_type
-        contentTypeTypeCounts[type] = (contentTypeTypeCounts[type] || 0) + 1;
+        contentTypeTypeCounts[type] = (contentTypeTypeCounts[type] ?? 0) + 1;
 
         return {
             ...inscription,
@@ -78,7 +78,7 @@ async function storeInscriptionsBatch(inscriptions: Array<Prisma.InscriptionUnch
     });
 
     // Insert modified inscriptions with createMany
-    const result = await prisma.inscription.createMany({
+    const result = await prisma.inscriptions.createMany({
         data: modifiedInscriptions,
     });
 
