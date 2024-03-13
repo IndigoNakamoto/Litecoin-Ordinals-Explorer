@@ -6,9 +6,9 @@ import { getBlockInscriptionsPage, getInscriptionData, getBlockHeight, getInscri
 
 import { ContentTypeType, ContentType } from '../util/types';
 
-import {
-  getInscriptionByNumber2, getInscriptionById2, filterAndSortInscriptions2, getMainTotals
-} from '../util/prismaInscriptionQueries';
+// import {
+//   getInscriptionByNumber2, getInscriptionById2, filterAndSortInscriptions2, getMainTotals
+// } from '../util/prismaInscriptionQueries';
 
 import { filterAndSortInscriptions, getInscriptionContentType, getInscriptionById, getInscriptionByNumber } from '../util/inscriptionQueries'
 import cors from 'cors';
@@ -118,7 +118,7 @@ app.get('/inscriptions', async (req, res) => {
     );
 
     // Convert BigInt fields to strings
-    const convertedInscriptions = inscriptions.map(inscription => ({
+    const convertedInscriptions = inscriptions.map((inscription: { output_value: { toString: () => any; }; }) => ({
       ...inscription,
       output_value: inscription.output_value ? inscription.output_value.toString() : '0', // Convert BigInt to string or return empty string if null
       // Add any other BigInt fields here if necessary

@@ -25,7 +25,6 @@ const createDatabase = async () => {
             last_processed_page INTEGER);
 
         CREATE TABLE IF NOT EXISTS inscriptions (
-            inscription_id VARCHAR(255),
             address VARCHAR(255),
             content_length INTEGER,
             content_type VARCHAR(255),
@@ -37,14 +36,18 @@ const createDatabase = async () => {
             output_value BIGINT,
             parent VARCHAR(255),
             previous VARCHAR(255),
+            script_pubkey VARCHAR(255),
+            metadata varchar(255),
+            charms TEXT[],
+            genesis_address VARCHAR(255),
+            inscription_id VARCHAR(255),
+            children TEXT[],
             processed BOOLEAN DEFAULT FALSE,
-            nsfw BOOLEAN DEFAULT FALSE,
             rune VARCHAR(255),
             sat VARCHAR(255),
             satpoint VARCHAR(255),
             timestamp TIMESTAMP,
-            charms TEXT[],
-            children TEXT[],
+            nsfw BOOLEAN DEFAULT FALSE,
             CONSTRAINT inscriptions_pkey PRIMARY KEY (inscription_id, content_type_type)
         ) PARTITION BY LIST (content_type_type);
 

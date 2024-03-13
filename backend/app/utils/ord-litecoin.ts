@@ -39,24 +39,6 @@ async function getInscriptionContent(inscriptionId: string, contentType: string)
     }
 }
 
-async function getInscriptionById(inscriptionId: string) {
-    const url = `http://0.0.0.0:80/inscription/${inscriptionId}`;
-
-    try {
-        const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Fetch error:', error);
-        throw error;
-    }
-}
-
 
 async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number) {
     const url = `http://0.0.0.0:80/inscriptions/block/${blockNumber}/${pageNumber}`;
