@@ -132,18 +132,6 @@ async function updateInscriptions(): Promise<void> {
 
 
 
-let iterationCounter = 0; // Initialize the counter
-
-function checkForNewBlockAndUpdateViews() {
-    iterationCounter++; // Increment the counter each time the function is called
-    let currentTime = new Date(); // Get the current time
-    console.log(`Iteration ${iterationCounter} at ${currentTime.toISOString()}: Checking for new block and updating views.`);
-    updateInscriptions().catch(error => console.error('Error in update process:', error));
-    currentTime = new Date(); // Get the current time
-    console.log(`Iteation ${iterationCounter} at ${currentTime.toISOString()}`)
-}
-
-const REFRESH_INTERVAL = 30000; // 30 seconds in milliseconds
 
 // Setup graceful shutdown
 process.on('SIGINT', () => {
@@ -168,6 +156,20 @@ process.on('SIGTERM', () => {
         process.exit(1);
     });
 });
+
+let iterationCounter = 0; // Initialize the counter
+
+function checkForNewBlockAndUpdateViews() {
+    iterationCounter++; // Increment the counter each time the function is called
+    let currentTime = new Date(); // Get the current time
+    console.log(`Iteration ${iterationCounter} at ${currentTime.toISOString()}: Checking for new block and updating views.`);
+    updateInscriptions().catch(error => console.error('Error in update process:', error));
+    currentTime = new Date(); // Get the current time
+    console.log(`Iteation ${iterationCounter} at ${currentTime.toISOString()}`)
+}
+
+const REFRESH_INTERVAL = 30000; // 30 seconds in milliseconds
+
 
 setInterval(checkForNewBlockAndUpdateViews, REFRESH_INTERVAL);
 

@@ -43,7 +43,7 @@ app.listen(port, () => {
 
 
 
-import updateInscriptionTable from './app/services/InscriptionUpdateService';
+// import updateInscriptions from './app/services/InscriptionUpdateService';
 
 // Import your models
 // import Inscription from './models/Inscription';
@@ -52,5 +52,5 @@ import updateInscriptionTable from './app/services/InscriptionUpdateService';
 // Define associations between models if any
 
 // Synchronize tables and start services
-updateInscriptionTable();
-setInterval(updateInscriptionTable, 30 * 1000);
+
+// setInterval(updateInscriptions, 30 * 1000);
