@@ -1,11 +1,12 @@
-// models/Invoice.ts
+// models/File.ts
 
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../config/database'; // Import the Sequelize instance
+import Invoice from './Invoice'; // Import the Invoice model
 
-class Invoice extends Model { }
+class File extends Model { }
 
-Invoice.init(
+File.init(
   {
     id: {
       type: DataTypes.INTEGER,
@@ -13,17 +14,24 @@ Invoice.init(
       primaryKey: true,
     },
     invoiceId: {
-      type: DataTypes.STRING,
-      unique: true,
+      type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: Invoice,
+        key: 'id',
+      },
     },
     inscribeStatus: {
-      type: DataTypes.ENUM('Pending','Processing', 'Completed', 'Error'),
+      type: DataTypes.ENUM('Pending','Processing', 'Inscribed', 'Error'),
       defaultValue: 'Pending',
     },
-    paymentStatus: {
-      type: DataTypes.ENUM('New', 'Processing', 'Expired', 'Invalid', 'Settled'),
-      defaultValue: 'New',
+    storage_status: {
+      type: DataTypes.ENUM('Uploaded', 'Deleted'),
+      defaultValue: 'Uploaded',
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -39,9 +47,9 @@ Invoice.init(
   },
   {
     sequelize,
-    modelName: 'Invoice',
-    tableName: 'invoices',
+    modelName: 'File',
+    tableName: 'files',
   }
 );
 
-export default Invoice;
+export default File;

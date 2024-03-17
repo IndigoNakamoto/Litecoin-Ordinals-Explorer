@@ -44,7 +44,7 @@ export default async function updateInscriptions(): Promise<void> {
     
     const lastProcessedBlock = await getLastProcessedBlock();
     const currentHeight = await getBlockHeight();
-    const CONFIRMATIONS_REQUIRED = 2;
+    const CONFIRMATIONS_REQUIRED = 0;
     const safeHeight = currentHeight - CONFIRMATIONS_REQUIRED;
 
     for (let blockNumber = lastProcessedBlock + 1; blockNumber <= safeHeight && !shutdownRequested; blockNumber++) {
