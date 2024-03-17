@@ -3,7 +3,7 @@ const currentYear = new Date().getFullYear();
 
 export function Footer() {
   return (
-    <footer className="px-8 py-28">
+    <footer className="px-4 py-4">
       <div className="container mx-auto">
         <div className="grid lg:grid-cols-2 grid-cols-1 gap-4">
           <Typography className="!text-sm font-medium text-gray-500 lg:text-left text-center" placeholder={undefined}>

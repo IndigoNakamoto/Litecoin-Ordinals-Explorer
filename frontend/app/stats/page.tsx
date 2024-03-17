@@ -166,13 +166,19 @@ export function StatsSection4() {
             variant="lead"
             className="mt-3 w-full !text-gray-500 lg:w-10/12"
           >
-            Immutable, decentralized data is securely inscribed across 1000+ Litecoin nodes, with a dedicated network of globally distributed Scrypt ASIC miners. Litecoin's innovative Mimblewimble Extension Block (MWEB) feature ensures fungible transactions have their dedicated block space. This separation means they do not compete for space in the base block or the SegWit block, which supports ordinals. As a result, Litecoin maintains system efficiency while offering a 100% uptime record that surpasses even Bitcoin's.
+            Immutable, decentralized data is securely inscribed across 1000+ Litecoin nodes, with a dedicated network of globally distributed Scrypt ASIC miners protecting the network.
           </Typography>
           <Typography
             variant="lead"
             className="mt-3 w-full !text-gray-500 lg:w-10/12"
           >
-            The first inscription on Litecoin is the Mimblewimble White Paper, implemented on Litecoin as MWEB with Taproot on block 2,265,984. A testement to it's focus as sound money.
+            Litecoin's innovative Mimblewimble Extension Block (MWEB) feature ensures fungible transactions have their dedicated block space. This separation means they do not compete for space in the base block or the SegWit block, which supports ordinals.
+          </Typography>
+          <Typography
+            variant="lead"
+            className="mt-3 w-full !text-gray-500 lg:w-10/12"
+          >
+            The first inscription on Litecoin is the Mimblewimble White Paper, implemented on Litecoin as MWEB with Taproot on block 2,265,984.
           </Typography>
         </div>
         <div>
@@ -197,14 +203,14 @@ export function StatsSection4() {
           <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium">
             File Count
           </Typography>
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-4 min-w-2xl max-w-3xl">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-x-24 min-w-2xl max-w-3xl">
             {contentTypeDistribution.map((item) => (
               <motion.div
                 key={item.content_type_type}
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5 }}
-                className="px-12 py-4 bg-slate-700 dark:bg-gray-800 rounded-lg shadow"
+                className="py-4 bg-slate-700 dark:bg-gray-800 rounded-lg shadow"
               >
                 <Typography variant="gradient" className="text-3xl font-bold text-white">
                   {item.count.toLocaleString()}
@@ -215,7 +221,7 @@ export function StatsSection4() {
           </div>
         </div>
       </section>
-    <Footer/>
+      <Footer />
     </div>
   );
 }
