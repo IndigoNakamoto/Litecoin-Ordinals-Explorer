@@ -31,26 +31,57 @@ interface Inscription {
 
 const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
-    useEffect(() => {
-        const connectWallet = async () => {
-            if (typeof window.litescribe !== 'undefined') {
-                console.log('LiteScribe is installed!');
-                const fetchedInscriptions = await window.litescribe.getInscriptions();
-                console.log('inscriptions: ', fetchedInscriptions)
-                // const InscriptionTranslated: Inscription[] = fetchedInscriptions.list.map((inscription: { inscriptionId: string; inscriptionNumber: number; contentType: string, content_type_type: string, contentLength: number }) => ({
-                //     inscription_id: inscription.inscriptionId,
-                //     inscription_number: inscription.inscriptionNumber,
-                //     content_type: inscription.contentType,
-                //     content_type_type: inscription.contentType.split('/')[0],
-                //     content_length: inscription.contentLength
-                // }));
+    const [balance, setBalance] = useState<number>(0);
+    const [inscriptions, setInscriptions] = useState<Inscription[]>([]);
 
-            } else {
-                console.log('LiteScribe is not installed. Please consider installing it.');
+    const connectWithLitescribe = async () => {
+        setInscriptions([]);
+        setBalance(0)
+        localStorage.setItem('inscriptions', JSON.stringify([]));
+        if (typeof window.litescribe !== 'undefined') {
+            
+            const initialized = await window.litescribe.requestAccounts();
+            console.log('initialized: ', initialized)
+            const fetchedInscriptions = await window.litescribe.getInscriptions();
+            console.log('inscriptions: ', fetchedInscriptions)
+
+            if (fetchedInscriptions.total > 0) {
+                const InscriptionTranslated: Inscription[] = fetchedInscriptions.list.map((inscription: { inscriptionId: string; inscriptionNumber: number; contentType: string, content_type_type: string, contentLength: number }) => ({
+                    inscription_id: inscription.inscriptionId,
+                    inscription_number: inscription.inscriptionNumber,
+                    content_type: inscription.contentType,
+                    content_type_type: inscription.contentType.split('/')[0],
+                    content_length: inscription.contentLength
+                }));
+
+                console.log('InscriptionTranslated: ', InscriptionTranslated)
+                localStorage.setItem('inscriptions', JSON.stringify(InscriptionTranslated));
+                setInscriptions(InscriptionTranslated);
             }
+
+
+            // const balance = await window.litescribe.getBalance();
+            // console.log('balance: ', balance)
+
+            const requestedAccounts = await window.litescribe.requestAccounts();
+            console.log('requestedAccounts: ', requestedAccounts)
+
+            const getAccounts = await window.litescribe.getAccounts();
+            console.log('getAccounts: ', getAccounts)
+
+            const balance = await window.litescribe.getBalance();
+            setBalance(balance);
+            // localStorage.setItem('inscriptions', JSON.stringify(InscriptionTranslated));
+            // setInscriptions(InscriptionTranslated);
+            // setAccount
+
+            // redirect to profile page
+            localStorage.setItem('connected', 'true');
+            window.location.href = '/profile';
+        } else {
+            console.log('LiteScribe is not installed. Please consider installing it.');
         }
-        connectWallet();
-    }, []);
+    }
 
     return (
         <Dialog open={isOpen} handler={onClose} placeholder={undefined} size='xs' animate={{
@@ -71,7 +102,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             <DialogBody className="overflow-y-scroll !px-5">
                 <div className="mb-6">
                     <ul className="mt-3 -ml-2 flex flex-col gap-1">
-                        <MenuItem className="mb-4 flex items-center justify-center gap-3 !py-4 shadow-md">
+                        <MenuItem className="mb-4 flex items-center justify-center gap-3 !py-4 shadow-md " onClick={connectWithLitescribe}>
                             <img
                                 src="/logos/litescribe-icon.png"
                                 alt="litescribe"

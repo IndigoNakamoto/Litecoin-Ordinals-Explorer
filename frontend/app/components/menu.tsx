@@ -7,10 +7,12 @@ import { Typography, Button, Input, Card } from "@material-tailwind/react";
 import ConnectModal from './ConnectModal';
 
 const Menu = () => {
+  const connected = localStorage.getItem('connected');
+  console.log('Menu connected: ', connected)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => {
     setIsModalOpen(true);
-};
+  };
   const handleButtonClick = () => {
     setIsModalOpen(true);
   };
@@ -39,17 +41,24 @@ const Menu = () => {
         </div>
         <div className="flex-initial ml-auto">
           {/* Added ml-auto to move this item to the far right */}
-          
-          {/* <Link href="/profile" passHref className="hover:text-blue-600 text-black font-semibold py-0 px-0 rounded-xl  transition-colors duration-300 ease-in-out"> */}
-            {/* <Avatar alt="avatar" variant="rounded" src='/indigo.jpeg' placeholder={'undefined'} size="sm"/> */}
-            <Button
-              onClick={handleButtonClick}
-              color="blue"
-              size="md"
-              variant="outlined"
-              className="p-2 flex h-10 items-center justify-center gap-2 text-blue-600 w-full" placeholder={undefined}            >
-              Connect Wallet
-            </Button>
+
+          {/*  */}
+          <div className='pr-4'>
+            {connected === 'true' ?
+              <Link href="/profile" passHref className="hover:text-blue-600 text-black font-semibold py-0 px-0 rounded-xl  transition-colors duration-300 ease-in-out">
+                <Avatar alt="avatar" variant="rounded" src='/indigo.jpeg' placeholder={'undefined'} size="sm" /> </Link> :
+              <Button
+                onClick={handleButtonClick}
+                color="blue"
+                size="md"
+                variant="outlined"
+                className="p-2 flex h-10 items-center justify-center gap-2 text-blue-600 w-full " placeholder={undefined}            >
+                Connect Wallet
+              </Button>
+            }
+          </div>
+          {/*  */}
+
           {/* </Link> */}
         </div>
       </div >
