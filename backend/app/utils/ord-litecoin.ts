@@ -1,8 +1,25 @@
-// backend/util/ord-litecoin.ts
+// backend/app/utils/ord-litecoin.ts
 
 import fetch from 'isomorphic-fetch';
 import BitcoinJsonRpc from 'bitcoin-json-rpc';
 import mempoolJS from '@mempool/mempool.js';
+
+async function getInscriptionData(inscriptionId: string) {
+    const url = `http://0.0.0.0:80/inscription/${inscriptionId}`;
+    try {
+        const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+    }
+}
 
 async function getInscriptionContent(inscriptionId: string, contentType: string) {
     const url = `http://0.0.0.0:80/content/${inscriptionId}`;
@@ -92,22 +109,7 @@ async function getBlockHeight(): Promise<number>  {
   }
 
 
-async function getInscriptionData(inscriptionId: string) {
-    const url = `http://0.0.0.0:80/inscription/${inscriptionId}`;
-    try {
-        const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Fetch error:', error);
-        throw error;
-    }
-}
 
 
 

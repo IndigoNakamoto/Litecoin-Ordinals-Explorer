@@ -1,3 +1,23 @@
+# version: '3'
+
+# services:
+#   postgres:
+#     image: postgres:14
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+#       - ../../database/postgres_data:/var/lib/postgresql/data
+#     environment:
+#       - POSTGRES_USER=ord_lite_user
+#       - POSTGRES_PASSWORD=ord_lite_pass
+#       - POSTGRES_DB=ord_lite_db
+#       - POSTGRES_SHARED_BUFFERS=1GB  # Adjust the value as needed
+#     command:
+#       - "postgres"
+#       - "-c"
+#       - "shared_buffers=${POSTGRES_SHARED_BUFFERS}"  # Pass shared_buffers value as a command line argument
+
 version: '3'
 
 services:
@@ -12,7 +32,15 @@ services:
       - POSTGRES_USER=ord_lite_user
       - POSTGRES_PASSWORD=ord_lite_pass
       - POSTGRES_DB=ord_lite_db
-
+      # Set custom environment variable for shared_buffers
+      - POSTGRES_SHARED_BUFFERS=65536  # Adjust the value as needed
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=128000"
+      - "-c"
+      - "work_mem=256000"
+      
   # litecoind:
   #   image: litecoinproject/litecoin-core
   #   command:

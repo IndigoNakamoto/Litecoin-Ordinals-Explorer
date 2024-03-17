@@ -2,7 +2,7 @@
 // app/page-home.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { InscriptionCard } from './components/inscriptionCard';
-import { debounce, sortBy } from 'lodash';
+import { debounce, sortOrder } from 'lodash';
 
 export interface Inscription {
     address: string;
@@ -34,7 +34,7 @@ interface HomeProps {
 export default function Home({ initialInscriptions }: HomeProps) {
     const [inscriptions, setInscriptions] = useState<Inscription[]>(initialInscriptions);
     const [loading, setLoading] = useState(false);
-    const [filter, setFilter] = useState({ sortBy: 'oldest', contentType: undefined, contentTypeType: undefined, page: 1, cursed: false });
+    const [filter, setFilter] = useState({ sortOrder: 'oldest', contentType: '', contentTypeType: '', page: 1, cursed: false });
     const [showScrollButton, setShowScrollButton] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [activeFilterButton, setActiveFilterButton] = useState('All');
@@ -71,26 +71,43 @@ export default function Home({ initialInscriptions }: HomeProps) {
         };
     }, [inscriptions]); // Depend on the inscriptions array
 
+
     const fetchInscriptions = async () => {
-
         setLoading(true);
-
+    
         try {
-            const query = new URLSearchParams({
-                contentTypeType: filter.contentTypeType || '',
-                contentType: filter.contentType || '',
-                sortBy: filter.sortBy,
+            // Base URL for the inscriptions endpoints
+            let baseUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions`;
+    
+            // Determine the correct endpoint based on the filters
+            if (filter.contentTypeType) {
+                baseUrl += `/content_type_type/${filter.contentTypeType}`;
+            } else if (filter.contentType) {
+                baseUrl += `/content_type/${filter.contentType}`;
+            } else {
+                baseUrl += '/'; // Default to getting all inscriptions
+            }
+    
+            // Build the query parameters
+            const queryParams = new URLSearchParams({
+                sortOrder: filter.sortOrder,
                 page: filter.page?.toString() || '1',
                 cursed: filter.cursed.toString(),
-                limit: '200' // Request 200 inscriptions each time
+                limit: '100', // Assuming you want to keep the limit or it can be adjusted based on your requirements
             }).toString();
-            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${query}`);
+    
+            // Complete URL with query parameters
+            const url = `${baseUrl}?${queryParams}`;
+    
+            // Fetch the data from the backend
+            const response = await fetch(url);
             const data = await response.json();
-
-            setInscriptions(prev => [...prev, ...data]);
-
-            // Check if the number of fetched items is less than 200, which means there are no more inscriptions to load
-            setHasMore(data.length === 200);
+    
+            // Concatenate the new data with the existing inscriptions
+            setInscriptions(prevInscriptions => [...prevInscriptions, ...data]);
+    
+            // Check if the number of fetched items is less than 100, indicating no more inscriptions to load
+            setHasMore(data.length === 100);
         } catch (error) {
             console.error("Failed to fetch inscriptions:", error);
             // Handle error (e.g., show error message to user)
@@ -98,6 +115,9 @@ export default function Home({ initialInscriptions }: HomeProps) {
             setLoading(false);
         }
     };
+    
+    
+    
 
 
     const isInitialMount = useRef(true);
@@ -160,14 +180,44 @@ export default function Home({ initialInscriptions }: HomeProps) {
 
 
 
-
-
     const handleFilterClick = (filterType: string) => {
         setActiveFilterButton(filterType);
-        updateFilter('contentTypeType', filterType);
+        setInscriptions([])
+        // Reset page to 1 for a new filter to start from the beginning
+        let newFilter = { ...filter, page: 1 };
+        newFilter.contentType = '';
+        newFilter.contentTypeType = '';
+
+        if (filterType === 'All') {
+            // If "All" is selected, clear both contentType and contentTypeType filters
+            newFilter.contentType = '';
+            newFilter.contentTypeType = '';
+        } else if(filterType === 'SVG' ){
+            newFilter.contentType = 'image%2Fsvg+xml'
+        } else if(filterType === 'GIF' ) {
+            newFilter.contentType = 'image%2Fgif'
+        } else if(filterType === 'HTML' ) {
+            newFilter.contentType = 'text%2Fhtml%3Bcharset%3Dutf-8'
+        } else if (filterType === 'PDF') {
+            newFilter.contentType = 'application%2Fpdf'
+        } else if (filterType === 'JSON'  ){
+            newFilter.contentType = 'application%2Fjson'
+        } else if (filterType === '3D' ) {
+            newFilter.contentTypeType = 'model'             
+        } else if (filterType === 'Text' ) {
+            newFilter.contentTypeType = 'text'
+        } else if (filterType === 'Audio' ) {
+            newFilter.contentTypeType = 'audio'
+        } else if (filterType === 'Video' ) {
+            newFilter.contentTypeType = 'video'
+        } else if (filterType === 'Image' ) {
+            newFilter.contentTypeType = 'image'
+        }
+    
+        setFilter(newFilter);
     };
 
-    const updateFilter = (type: 'sortBy' | 'contentType' | 'contentTypeType' | 'cursed', value: string | boolean) => {
+    const updateFilter = (type: 'sortOrder' | 'contentType' | 'contentTypeType' | 'cursed', value: string | boolean) => {
         setHasMore(true);
         setFilter(prev => ({ ...prev, [type]: value }));
     };
@@ -175,9 +225,13 @@ export default function Home({ initialInscriptions }: HomeProps) {
     const handleSortOptionSelect = (option: string) => {
         // even when we do not click on this, setInscriptions([]) clears when we click on handleLoadMore.
         setInscriptions([])
-        setSelectedSortOption(option);
+        setSelectedSortOption(option); //highestfee, largestfile, newest, oldest
         setDropdownOpen(false);
-        updateFilter('sortBy', option.toLowerCase().replace(' ', ''));
+        if (option === 'Newest') updateFilter('sortOrder', 'number_desc');
+        if (option === 'Oldest') updateFilter('sortOrder', 'number_asc');
+        if (option === 'Highest Fee') updateFilter('sortOrder', 'genesis_fee');
+        if (option === 'Largest File') updateFilter('sortOrder', 'content_length');
+        // updateFilter('sortOrder', option.toLowerCase().replace(' ', ''));
     };
 
     const toggleDropdown = () => {
@@ -191,7 +245,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
 
                 {/* Filter Buttons */}
                 <div className="flex gap-2 overflow-x-auto no-scrollbar pt-2">
-                    {['All', 'Image', 'SVG', 'GIF', 'Model', 'Text', 'HTML', 'Audio', 'Video', 'Application', 'PDF', 'JSON'].map((type) => (
+                    {['All', 'Video', 'Image', 'SVG', 'GIF', 'JSON', 'Text', 'PDF', 'Audio', '3D'].map((type) => ( //'HTML', 
                         <button
                             key={type}
                             onClick={() => handleFilterClick(type)}
@@ -209,7 +263,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
                     </button>
                     {dropdownOpen && (
                         <div className="absolute z-10 mt-1 bg-gradient-to-br from-white to-gray-200 border border-gray-200 rounded-lg shadow-lg right-0 w-32">
-                            {['Newest', 'Oldest',].map((option) => ( //'Largest File', 'Largest Fee'
+                            {['Newest', 'Oldest', 'Highest Fee', 'Largest File'].map((option) => ( //'Largest File', 'Largest Fee'
                                 <button key={option} onClick={() => handleSortOptionSelect(option)} className="block px-4 py-2 text-sm text-gray-800 hover:text-blue-700 w-full text-left">
                                     {option}
                                 </button>
@@ -219,7 +273,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
                 </div>
 
 
-                <div className="grid grid-cols-2 pt-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 pt-8 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
                     {Array.isArray(inscriptions) && inscriptions.map((inscription, index) => (
                         <div key={inscription.inscription_id} ref={el => el && (cardRefs.current[index] = el)} data-inscription-id={inscription.inscription_id}>
                             <InscriptionCard {...inscription} />
@@ -256,3 +310,104 @@ export default function Home({ initialInscriptions }: HomeProps) {
         </>
     );
 }
+
+
+
+
+
+
+
+
+    // const fetchInscriptions = async () => {
+
+    //     setLoading(true);
+
+    //     try {
+    //         const query = new URLSearchParams({
+    //             contentTypeType: filter.contentTypeType || '',
+    //             contentType: filter.contentType || '',
+    //             sortOrder: filter.sortOrder,
+    //             page: filter.page?.toString() || '1',
+    //             cursed: filter.cursed.toString(),
+    //             limit: '100' // Request 100 inscriptions each time
+    //         }).toString();
+    //         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${query}`);
+    //         const data = await response.json();
+
+    //         setInscriptions(prev => [...prev, ...data]);
+
+    //         // Check if the number of fetched items is less than 100, which means there are no more inscriptions to load
+    //         setHasMore(data.length === 100);
+    //     } catch (error) {
+    //         console.error("Failed to fetch inscriptions:", error);
+    //         // Handle error (e.g., show error message to user)
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
+    // const fetchInscriptions = async () => {
+    //     setLoading(true);
+    
+    //     try {
+    //         // Base URL for the inscriptions endpoints
+    //         let baseUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions`;
+    
+    //         // Determine the correct endpoint based on the filters
+    //         if (filter.contentTypeType) {
+    //             baseUrl += `/content_type_type/${filter.contentTypeType}`;
+    //         } else if (filter.contentType) {
+    //             baseUrl += `/content_type/${filter.contentType}`;
+    //         } else {
+    //             baseUrl += '/'; // Default to getting all inscriptions
+    //         }
+    
+    //         // Build the query parameters
+    //         const queryParams = new URLSearchParams({
+    //             sortOrder: filter.sortOrder,
+    //             page: filter.page?.toString() || '1',
+    //             cursed: filter.cursed.toString(),
+    //             limit: '100', // Assuming you want to keep the limit or it can be adjusted based on your requirements
+    //         }).toString();
+    
+    //         // Complete URL with query parameters
+    //         const url = `${baseUrl}?${queryParams}`;
+    
+    //         // Fetch the data from the backend
+    //         const response = await fetch(url);
+    //         const data = await response.json();
+    
+    //         // Update state with the new inscriptions
+    //         setInscriptions(prev => [...prev, ...data]);
+    
+    //         // Check if the number of fetched items is less than 100, indicating no more inscriptions to load
+    //         setHasMore(data.length === 100);
+    //     } catch (error) {
+    //         console.error("Failed to fetch inscriptions:", error);
+    //         // Handle error (e.g., show error message to user)
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
+
+
+
+        
+
+    // const handleFilterClick = (filterType: string) => {
+    //     setActiveFilterButton(filterType);
+    //     updateFilter('contentTypeType', filterType);
+    // };
+
+    // all maps to /inscriptions
+    // image maps to /inscriptions/content_type_type/image
+    // svg maps to /inscriptions/content_type/image%2Fsvg
+    // gif maps to /inscriptions/content_type/image%2Fgif
+    // 3D maps to /inscriptions/content_type/model
+    // text maps to /inscriptions/content_type/text
+    // html maps to /inscriptions/content_type/text%2Fhtml
+    // audio maps to /inscriptions/content_type_type/audio
+    // video maps to /inscriptions/content_type_type/video
+    // application maps to /inscriptions/content_type_type/application
+    // pdf maps to /inscriptions/content_type/application%2Fpdf
+    // json maps to /inscriptions/content_type/application%2Fjson

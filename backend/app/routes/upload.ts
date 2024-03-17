@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
   });
   
   
-  router.post('/upload', upload.array('files', 20), (req: Request, res) => {
+  router.post('/', upload.array('files', 20), (req: Request, res) => {
   
     const files = req.files as Express.Multer.File[];
     files.forEach((file: any) => {
@@ -53,3 +53,5 @@ const storage = multer.diskStorage({
     res.send(`Files uploaded successfully: ${files.map(file => file.originalname).join(', ')}`);
   });
   
+
+  export default router;

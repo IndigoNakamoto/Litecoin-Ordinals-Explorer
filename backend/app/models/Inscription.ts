@@ -1,3 +1,5 @@
+// backend/app/models/Inscription.ts
+
 // Import Sequelize and Model
 import { DataTypes, Model } from 'sequelize';
 // Import the Sequelize instance
@@ -9,7 +11,13 @@ class Inscription extends Model {
   public content_length!: number;
   public content_type!: string;
   public content_type_type!: string;
+  public genesis_fee!: number;
+  public genesis_height!: number;
+  public inscription_number!: number;
+  public inscription_id!: string;
   public nsfw!: boolean;
+  totalInscriptions: any;
+  totalGenesisFee: any;
 }
 
 // Initialize the Inscription model with properties and configuration

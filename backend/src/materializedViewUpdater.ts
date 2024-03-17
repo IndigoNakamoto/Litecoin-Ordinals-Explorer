@@ -43,8 +43,8 @@ async function updateMaterializedViews() {
     const views = [
         // 'inscriptions_image',
         // 'inscriptions_model',
-        'inscriptions_video',
-        'inscriptions_audio',
+        // 'inscriptions_video',
+        // 'inscriptions_audio',
         // 'inscriptions_application',
         // 'total_content_length',
         // 'total_genesis_fee',
@@ -106,7 +106,7 @@ process.on('SIGINT', () => {
         process.exit(0);
     });
 });
-const REFRESH_INTERVAL = 120000; // Default to 6000 seconds
+const REFRESH_INTERVAL = 300; // Default to 6000 seconds
 // Run the check every REFRESH_INTERVAL milliseconds
 setInterval(checkForNewBlockAndUpdateViews, REFRESH_INTERVAL);
 

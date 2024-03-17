@@ -9,7 +9,7 @@ const sequelize = new Sequelize('ord_lite_db', 'ord_lite_user', 'ord_lite_pass',
   define: {
     timestamps: false,
   },
-  logging: false
+  logging: false,
 });
 
 export default sequelize;

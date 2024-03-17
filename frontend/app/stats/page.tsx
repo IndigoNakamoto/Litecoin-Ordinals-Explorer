@@ -6,7 +6,7 @@ import { InscriptionCard } from '../components/inscriptionCard'
 import Footer from "../components/footer";
 
 interface ContentTypeDistribution {
-  content_type: string;
+  content_type_type: string;
   count: number;
 }
 
@@ -200,7 +200,7 @@ export function StatsSection4() {
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4 min-w-2xl max-w-3xl">
             {contentTypeDistribution.map((item) => (
               <motion.div
-                key={item.content_type}
+                key={item.content_type_type}
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5 }}
@@ -209,7 +209,7 @@ export function StatsSection4() {
                 <Typography variant="gradient" className="text-3xl font-bold text-white">
                   {item.count.toLocaleString()}
                 </Typography>
-                <span className="mt-1 font-medium text-blue-500">{item.content_type}</span>
+                <span className="mt-1 font-medium text-blue-500">{item.content_type_type}</span>
               </motion.div>
             ))}
           </div>

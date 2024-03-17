@@ -188,15 +188,67 @@ app.get('/content', async (req, res) => {
   }
 });
 
+// // Set up multer for file uploads
+// const storage = multer.diskStorage({
+//   destination: 'uploads/',
+//   filename: function (req, file, cb) {
+//     // Generate a unique filename
+//     const fileExtension = file.originalname.split('.').pop();
+//     const fileName = file.originalname.split('.')[0]
+//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+//     cb(null, `${file.fieldname}-${fileName}-${Date.now()}.${fileExtension}`);
+//   }
+// });
+
+// // Set up multer for file uploads with size limit
+// const upload = multer({
+//   storage: storage,
+//   limits: {
+//     fileSize: 399 * 1000, // 400 KB in bytes
+//   }
+// });
+
+
+// app.post('/upload', upload.array('files', 20), (req: Request, res) => {
+
+//   const files = req.files as Express.Multer.File[];
+//   files.forEach((file: any) => {
+//     console.log('Uploaded file:', file);
+//     // validate file size
+//     // validate file type
+//     // validate fees 
+
+//     // If validation fails for a file
+//     // update invoice metadata for file to status 'error' message 'validation failed' file size or file type
+//     // remove file from upload folder and return error message to client
+//   });
+
+//   // Create invoice
+//   // https://www.payment.ordlite.io/api/v1/stores/{storeId}/invoices
+//   // send invoice to client
+
+//   // Inscribe manager will poll for new invoices every 5 seconds
+
+//   // Extract and log other form fields data
+//   const { user_id } = req.body;
+
+//   console.log("user_id: ", user_id);
+//   console.log("IP Address: ", req.ip);
+
+//   // Assuming all validations pass, send a success response
+//   res.send(`Files uploaded successfully: ${files.map(file => file.originalname).join(', ')}`);
+// });
+
+
+
+
 // Set up multer for file uploads
 const storage = multer.diskStorage({
   destination: 'uploads/',
-  filename: function (req, file, cb) {
+  filename: function(req, file, cb) {
     // Generate a unique filename
-    const fileExtension = file.originalname.split('.').pop();
-    const fileName = file.originalname.split('.')[0]
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `${file.fieldname}-${fileName}-${Date.now()}.${fileExtension}`);
+    cb(null, file.fieldname + '-' + uniqueSuffix);
   }
 });
 
@@ -204,39 +256,38 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 399 * 1000, // 400 KB in bytes
+    fileSize: 399 * 1024, // 400 KB in bytes
   }
 });
 
+// File upload endpoint with metadata and size validation
+app.post('/upload', upload.single('file'), (req, res) => {
+  // Check if req.file exists
+  if (!req.file) {
+    return res.status(400).send('No file uploaded');
+  }
 
-app.post('/upload', upload.array('files', 20), (req: Request, res) => {
+  // Access uploaded file via req.file
+  const uploadedFile = req.file;
+  console.log('Uploaded file:', uploadedFile);
 
-  const files = req.files as Express.Multer.File[];
-  files.forEach((file: any) => {
-    console.log('Uploaded file:', file);
-    // validate file size
-    // validate file type
-    // validate fees 
+  // Check file size
+  if (uploadedFile.size > 399 * 1024) {
+    return res.status(400).send('File size exceeds the limit of 399KB');
+  }
 
-    // If validation fails for a file
-    // update invoice metadata for file to status 'error' message 'validation failed' file size or file type
-    // remove file from upload folder and return error message to client
-  });
+  //IP address
+  const ipAddress = req.ip;
 
-  // Create invoice
-  // https://www.payment.ordlite.io/api/v1/stores/{storeId}/invoices
-  // send invoice to client
+  // request body
+  const { username, order_id, inscription_fee, service_fee, payment_address, receiving_address } = req.body
 
-  // Inscribe manager will poll for new invoices every 5 seconds
+  // MIME type
+  const mimeType = mimeTypes.lookup(uploadedFile.originalname);
+  
 
-  // Extract and log other form fields data
-  const { user_id } = req.body;
-
-  console.log("user_id: ", user_id);
-  console.log("IP Address: ", req.ip);
-
-  // Assuming all validations pass, send a success response
-  res.send(`Files uploaded successfully: ${files.map(file => file.originalname).join(', ')}`);
+  // Respond with success message
+  res.send('File uploaded successfully');
 });
 
 

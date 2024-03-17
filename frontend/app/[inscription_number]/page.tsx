@@ -16,7 +16,7 @@ export default function Page({ params }: { params: { inscription_number: string 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`http://localhost:3005/inscription_number/${params.inscription_number}`);
+                const response = await fetch(`http://localhost:3005/inscriptions/number/${params.inscription_number}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const newData = await response.json();
                 setData(newData);

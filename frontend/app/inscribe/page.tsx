@@ -127,11 +127,14 @@ export default function Page() {
         formData.append("user_id", user_id);
 
         try {
-            const response = await fetch('http://localhost:3005/upload', {
+            const response = await fetch('http://localhost:3005/upload/', {
                 method: 'POST',
                 body: formData,
             });
-
+            const response_invoice = await fetch('http://localhost:3005/invoice/', {
+                method: 'POST',
+                body: formData,
+            })
             if (!response.ok) {
                 throw new Error(`Error: ${response.statusText}`);
             }

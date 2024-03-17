@@ -14,6 +14,9 @@ import usersRouter from './app/routes/users';
 import loginRouter from './app/routes/login';
 import logoutRouter from './app/routes/logout';
 import inscriptionRouter from './app/routes/inscriptions';
+import stats from './app/routes/stats';
+import upload from './app/routes/upload';
+import invoice from './app/routes/invoice';
 
 // Middleware
 app.use(cors());
@@ -29,7 +32,9 @@ app.use('/users', usersRouter);
 app.use('/login', loginRouter);
 app.use('/logout', logoutRouter);
 app.use('/inscriptions', inscriptionRouter);
-
+app.use('/stats', stats);
+app.use('/upload', upload);
+app.use('/invoice', invoice);
 
 // Start the server
 app.listen(port, () => {
@@ -37,7 +42,7 @@ app.listen(port, () => {
 });
 
 
-import sequelize from './config/database';
+
 import updateInscriptionTable from './app/services/InscriptionUpdateService';
 
 // Import your models
@@ -47,12 +52,5 @@ import updateInscriptionTable from './app/services/InscriptionUpdateService';
 // Define associations between models if any
 
 // Synchronize tables and start services
-// sequelize.sync()
-//   .then(() => {
-//     console.log('Tables created successfully');
-//     updateInscriptionTable();
-//     setInterval(updateInscriptionTable, 30 * 1000);
-//   })
-//   .catch(err => {
-//     console.error('Error creating tables:', err);
-//   });
+updateInscriptionTable();
+setInterval(updateInscriptionTable, 30 * 1000);
