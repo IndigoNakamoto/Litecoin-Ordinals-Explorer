@@ -15,7 +15,6 @@ const Menu = () => {
     if(connected === 'true') {
       setConnected('true')
     }
-    console.log('Menu connected: ', connected)
   }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);

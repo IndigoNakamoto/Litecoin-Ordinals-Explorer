@@ -35,6 +35,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
 
     const [isLitescribeInstalled, setIsLitescribeInstalled] = useState(false);
+    const [isConnectButtonDisabled, setIsConnectButtonDisabled] = useState(false);
 
     useEffect(() => {
         if (typeof window.litescribe !== 'undefined') {
@@ -67,11 +68,6 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
     //         // const value = await window.litescribe.signMessage(`${requestedAccounts[0]} - OrdLite.io`)
     //         // console.log('value signed: ', value)
 
-
-
-
-
-
     //         // localStorage.setItem('inscriptions', JSON.stringify(InscriptionTranslated));
     //         // setInscriptions(InscriptionTranslated);
     //         // setAccount
@@ -88,6 +84,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
     const connectWithLitescribe = async () => {
         if (typeof window.litescribe !== 'undefined') {
+            setIsConnectButtonDisabled(true);
             setIsLitescribeInstalled(true);
             try {
                 const requestedAccounts = await window.litescribe.requestAccounts();
@@ -100,7 +97,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 const requestData = {
                     address: requestedAccounts[0],
                     provider: 'litescribe',
-                    inscriptions: getInscriptions.list.map((inscription: Inscription) => inscription.inscriptionId),
+                    inscriptions: getInscriptions.list ? getInscriptions.list.map((inscription: Inscription) => inscription.inscriptionId) : [],
                     balanceTotal: getBalance.total,
                     publicKey: getPublicKey
                 };
@@ -167,7 +164,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             <DialogBody className="overflow-y-scroll !px-5">
                 <div className="mb-6">
                     <ul className="mt-3 -ml-2 flex flex-col gap-1">
-                        <MenuItem className="mb-4 flex items-center justify-center gap-3 !py-4 shadow-md " onClick={handleClick}>
+                        <MenuItem className="mb-4 flex items-center justify-center gap-3 !py-4 shadow-md " onClick={handleClick} disabled={isConnectButtonDisabled}>
                             <img
                                 src="/logos/litescribe-icon.png"
                                 alt="litescribe"
@@ -178,6 +175,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                                     className="uppercase"
                                     color="blue-gray"
                                     variant="h6"
+                                    
                                 >
                                     Connect with Litescribe
                                 </Typography> :

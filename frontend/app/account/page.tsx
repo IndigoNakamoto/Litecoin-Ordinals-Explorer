@@ -48,7 +48,7 @@ export default function Page() {
                     let cursor = 0
                     let size = 100
                     const fetchedInscriptions = await window.litescribe.getInscriptions(cursor, size);
-                    console.log('Fetched inscriptions: ', fetchedInscriptions)
+                    // console.log('Fetched inscriptions: ', fetchedInscriptions)
 
                     if (fetchedInscriptions) {
                         const InscriptionTranslated: Inscription[] = fetchedInscriptions.list.map((inscription: { inscriptionId: string; inscriptionNumber: number; contentType: string, content_type_type: string, contentLength: number }) => ({
@@ -63,10 +63,10 @@ export default function Page() {
 
 
 
-                        console.log('profile inscriptions:', fetchedInscriptions)
-                        console.log('Set local storage total: ', fetchedInscriptions.total.toString())
-                        localStorage.setItem('total', fetchedInscriptions.total.toString());
-                        console.log('Set Total state:', fetchedInscriptions.total.toString())
+                        // console.log('profile inscriptions:', fetchedInscriptions)
+                        // console.log('Set local storage total: ', fetchedInscriptions.total.toString())
+                        // localStorage.setItem('total', fetchedInscriptions.total.toString());
+                        // console.log('Set Total state:', fetchedInscriptions.total.toString())
                         setTotal(fetchedInscriptions.total.toString())
                     }
                     const balance = await window.litescribe.getBalance();
