@@ -4,15 +4,6 @@ import Inscription from '../models/Inscription'; // Import the Inscription model
 
 let shutdownRequested = false;
 
-process.on('SIGINT', () => {
-    console.log('Shutdown signal received. Stopping gracefully...');
-    shutdownRequested = true;
-});
-
-process.on('SIGTERM', () => {
-    console.log('Shutdown signal received. Stopping gracefully...');
-    shutdownRequested = true;
-});
 
 async function getLastProcessedBlock(): Promise<number> {
     try {
@@ -96,15 +87,10 @@ export default async function updateInscriptions(): Promise<void> {
     }
 }
 
-async function startUpdateProcess(): Promise<void> {
-    try {
-        await updateInscriptions();
-    } catch (error) {
-        console.error('Error in update process:', error);
-    }
-}
 
-// startUpdateProcess();
+
+
+
 
 let iterationCounter = 0; // Initialize the counte
 
@@ -117,8 +103,23 @@ function checkForNewBlockAndUpdateViews() {
 
 const REFRESH_INTERVAL = 30000; // 30 seconds in milliseconds
 
+let intervalId = setInterval(checkForNewBlockAndUpdateViews, REFRESH_INTERVAL); // Store interval ID
 
-setInterval(checkForNewBlockAndUpdateViews, REFRESH_INTERVAL);
+process.on('SIGINT', () => {
+    console.log('Shutdown signal received. Stopping gracefully...');
+    shutdownRequested = true;
+    clearInterval(intervalId); // Clear the interval to prevent new iterations
+    // Optionally, add logic here to wait for ongoing updateInscriptions to finish
+});
+
+process.on('SIGTERM', () => {
+    console.log('Shutdown signal received. Stopping gracefully...');
+    shutdownRequested = true;
+    clearInterval(intervalId); // Clear the interval
+    // Optionally, add logic here to wait for ongoing updateInscriptions to finish
+});
+
+// setInterval(checkForNewBlockAndUpdateViews, REFRESH_INTERVAL);
 
 checkForNewBlockAndUpdateViews();
 
