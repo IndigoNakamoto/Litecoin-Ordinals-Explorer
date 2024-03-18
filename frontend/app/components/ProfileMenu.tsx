@@ -32,7 +32,7 @@ export function ProfileMenu() {
             </MenuHandler>
             <MenuList placeholder={undefined}>
                 <MenuItem  placeholder={undefined}>
-                    <Link href="/profile" passHref className="flex items-center gap-2">
+                    <Link href="/account" passHref className="flex items-center gap-2">
                         <svg
                             width="16"
                             height="16"
@@ -49,7 +49,7 @@ export function ProfileMenu() {
                         </svg>
 
                         <Typography variant="small" className="font-medium">
-                            My Profile
+                            My Items
                         </Typography>
                     </Link>
                 </MenuItem>

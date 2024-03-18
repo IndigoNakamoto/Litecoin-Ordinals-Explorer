@@ -27,7 +27,7 @@ User.init(
             unique: true,
             allowNull: false,
         },
-        creditBalance: {
+        balanceTotal: {
             type: DataTypes.DECIMAL,
             allowNull: false,
             defaultValue: 0,

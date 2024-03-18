@@ -15,6 +15,7 @@ UserSetting.init(
         isPublic: {
             type: DataTypes.BOOLEAN,
             allowNull: false,
+            defaultValue: true,
         },
         emailNotifications: {
             type: DataTypes.BOOLEAN,

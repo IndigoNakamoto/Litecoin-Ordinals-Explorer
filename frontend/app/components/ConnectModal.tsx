@@ -11,6 +11,8 @@ import {
     MenuItem,
 } from "@material-tailwind/react";
 
+import { Alert } from "@material-tailwind/react";
+
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -23,7 +25,7 @@ declare global {
 
 interface Inscription {
     content_type: string;
-    inscription_id: string;
+    inscriptionId: string;
     inscription_number: number;
     content_type_type: string;
     content_length: number;
@@ -32,49 +34,119 @@ interface Inscription {
 const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
 
+    const [isLitescribeInstalled, setIsLitescribeInstalled] = useState(false);
+
+    useEffect(() => {
+        if (typeof window.litescribe !== 'undefined') {
+            setIsLitescribeInstalled(true);
+        }
+    }, []);
+
+    // const connectWithLitescribe = async () => {
+
+    //     if (typeof window.litescribe !== 'undefined') {
+    //         setIsLitescribeInstalled(true);
+    //         const requestedAccounts = await window.litescribe.requestAccounts();
+    //         console.log('requestedAccounts: ', requestedAccounts)
+
+    //         const getNetwork = await window.litescribe.getNetwork();
+    //         console.log('getNetwork: ', getNetwork)
+
+    //         const getAccounts = await window.litescribe.getAccounts();
+    //         console.log('getAccounts: ', getAccounts)
+
+    //         const getPublicKey = await window.litescribe.getPublicKey();
+    //         console.log('getPublicKey: ', getPublicKey)
+
+    //         const getBalance = await window.litescribe.getBalance();
+    //         console.log('getBalance: ', getBalance)
+
+    //         const getInscriptions = await window.litescribe.getInscriptions(0, 10000);
+    //         console.log('getInscriptions: ', getInscriptions)
+
+    //         // const value = await window.litescribe.signMessage(`${requestedAccounts[0]} - OrdLite.io`)
+    //         // console.log('value signed: ', value)
+
+
+
+
+
+
+    //         // localStorage.setItem('inscriptions', JSON.stringify(InscriptionTranslated));
+    //         // setInscriptions(InscriptionTranslated);
+    //         // setAccount
+
+    //         // redirect to profile page
+    //         localStorage.setItem('connected', 'true');
+    //         localStorage.setItem('provider', 'litescribe')
+    //         // window.location.href = '/account';
+    //     } else {
+    //         console.log('LiteScribe is not installed. Please consider installing it.');
+    //     }
+    // }
 
 
     const connectWithLitescribe = async () => {
-
         if (typeof window.litescribe !== 'undefined') {
-            // const requestedAccounts = await window.litescribe.requestAccounts();
-            // console.log('requestedAccounts: ', requestedAccounts)
-
-            // const getNetwork = await window.litescribe.getNetwork();
-            // console.log('getNetwork: ', getNetwork)
-            
-            // const getAccounts = await window.litescribe.getAccounts();
-            // console.log('getAccounts: ', getAccounts)
-
-            // const getPublicKey = await window.litescribe.getPublicKey();
-            // console.log('getPublicKey: ', getPublicKey)
-
-            // const getBalance = await window.litescribe.getBalance();
-            // console.log('getBalance: ', getBalance)
-
-            // const getInscriptions = await window.litescribe.getInscriptions(0, 100);
-            // console.log('getInscriptions: ', getInscriptions)
-
-            // const value = await window.litescribe.signMessage(`${requestedAccounts[0]} - OrdLite.io`)
-            // console.log('value signed: ', value)
-
-            
+            setIsLitescribeInstalled(true);
+            try {
+                const requestedAccounts = await window.litescribe.requestAccounts();
+                const getPublicKey = await window.litescribe.getPublicKey();
+                const getInscriptions = await window.litescribe.getInscriptions(0, 10000);
+                const getBalance = await window.litescribe.getBalance();
 
 
+                // Construct the data object to send to the server
+                const requestData = {
+                    address: requestedAccounts[0],
+                    provider: 'litescribe',
+                    inscriptions: getInscriptions.list.map((inscription: Inscription) => inscription.inscriptionId),
+                    balanceTotal: getBalance.total,
+                    publicKey: getPublicKey
+                };
 
+                // Make a POST request to your backend
+                const response = await fetch('http://localhost:3005/account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
 
-            // localStorage.setItem('inscriptions', JSON.stringify(InscriptionTranslated));
-            // setInscriptions(InscriptionTranslated);
-            // setAccount
-
-            // redirect to profile page
-            localStorage.setItem('connected', 'true');
-            localStorage.setItem('provider', 'litescribe')
-            window.location.href = '/profile';
+                // Check if the request was successful
+                if (response.ok) {
+                    // Account created successfully
+                    const newAccount = await response.json();
+                    localStorage.setItem('connected', 'true');
+                    localStorage.setItem('provider', 'litescribe')
+                    window.location.href = '/account';
+                    // console.log('New account created:', newAccount);
+                    // Do something with the newly created account if needed
+                } else {
+                    // Handle error response from the server
+                    console.error('Failed to create account:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error creating account:', error);
+            }
         } else {
             console.log('LiteScribe is not installed. Please consider installing it.');
         }
-    }
+    };
+
+
+    const downloadChromeExtension = () => {
+        window.location.href = "https://chromewebstore.google.com/detail/litescribe-wallet/ajofhbfomojicfifgoeeimefklkfdkfn";
+    };
+
+    const handleClick = () => {
+        if (isLitescribeInstalled) {
+            connectWithLitescribe();
+        } else {
+            downloadChromeExtension();
+        }
+    };
 
     return (
         <Dialog open={isOpen} handler={onClose} placeholder={undefined} size='xs' animate={{
@@ -95,19 +167,28 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             <DialogBody className="overflow-y-scroll !px-5">
                 <div className="mb-6">
                     <ul className="mt-3 -ml-2 flex flex-col gap-1">
-                        <MenuItem className="mb-4 flex items-center justify-center gap-3 !py-4 shadow-md " onClick={connectWithLitescribe}>
+                        <MenuItem className="mb-4 flex items-center justify-center gap-3 !py-4 shadow-md " onClick={handleClick}>
                             <img
                                 src="/logos/litescribe-icon.png"
                                 alt="litescribe"
                                 className="h-6 w-6"
                             />
-                            <Typography
-                                className="uppercase"
-                                color="blue-gray"
-                                variant="h6"
-                            >
-                                Connect with Litescribe
-                            </Typography>
+                            {isLitescribeInstalled ?
+                                <Typography
+                                    className="uppercase"
+                                    color="blue-gray"
+                                    variant="h6"
+                                >
+                                    Connect with Litescribe
+                                </Typography> :
+                                <Typography
+                                    className="uppercase"
+                                    color="blue-gray"
+                                    variant="h6"
+                                >
+                                    Get Litescribe Chrome Extension
+                                </Typography>}
+
                         </MenuItem>
 
                     </ul>

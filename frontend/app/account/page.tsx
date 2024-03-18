@@ -4,6 +4,7 @@ import { InscriptionCard } from '../components/inscriptionCard';
 import { Avatar } from "@material-tailwind/react";
 // import Footer from "../components/footer";
 
+
 declare global {
     interface Window {
         litescribe: any; // Use `any` or a more specific type if you know the structure
@@ -23,6 +24,8 @@ export default function Page() {
     const [inscriptions, setInscriptions] = useState<Inscription[]>([]);
     const [total, setTotal] = useState<string>('0');
     const [username, setUsername] = useState<string>('');
+    const [copySuccess, setCopySuccess] = useState<boolean>(false);
+
 
     useEffect(() => {
         const fetchAndCacheInscriptions = async () => {
@@ -37,7 +40,7 @@ export default function Page() {
                     setBalance(balance)
                     setTotal(total)
                     setUsername(username)
-                } 
+                }
                 if (typeof window.litescribe !== 'undefined' && provider === 'litescribe') {
                     const initialized = await window.litescribe.requestAccounts();
                     setUsername(initialized[0])
@@ -69,7 +72,7 @@ export default function Page() {
                     const balance = await window.litescribe.getBalance();
                     localStorage.setItem('balance', balance.toString());
                     setBalance(balance.toString());
-                } 
+                }
             } catch (error) {
                 console.error('Error fetching inscriptions:', error);
             }
@@ -82,6 +85,13 @@ export default function Page() {
         return objects.reduce((total, obj) => total + obj.content_length, 0);
     };
 
+    const handleUsernameClick = () => {
+        navigator.clipboard.writeText(username);
+        setCopySuccess(true);
+        setTimeout(() => {
+            setCopySuccess(false);
+        }, 2000); // 1000ms = 1 second
+    };
 
     return (
         <div className="mx-auto p-4 max-w-screen-2xl pb-16">
@@ -92,9 +102,13 @@ export default function Page() {
                     </div>
 
                     <div className="flex-grow"> {/* col 2 - Main content container */}
-                        <div className="flex justify-between items-center mb-2 w-full"> {/* row 1 */}
-                            <div className="flex-grow">
-                                <p>{username}</p>
+                        <div className="flex justify-between items-center mb-2 w-[400px]"> {/* row 1 */}
+                            <div className="flex-grow flex items-center w-full"> {/* col 1 - Username and "Copied!" message container */}
+                                {copySuccess ? (
+                                    <span className="text-blue-500 animate-fadeInOut">Copied!</span>
+                                ) : (
+                                    <p onClick={handleUsernameClick} style={{ cursor: 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{username}</p>
+                                )}
                             </div>
                             <div className="flex-grow">
                                 <p>{balance.unconfirmed > 0 ? 'Transaction pending' : ''}</p>

@@ -5,13 +5,11 @@ import sequelize from '../../config/database';
 
 class WalletAccount extends Model {
     public id!: number;
-    public walletId!: number;
-    public name!: string;
     public address!: string;
+    public provider!: string;
     public inscriptions!: string[];
-    public confirmed!: number;
-    public total!: number;
-    public unconfirmed!: number;
+    public balanceTotal!: number;
+    public publicKey!: string;
 }
 
 WalletAccount.init(
@@ -21,34 +19,33 @@ WalletAccount.init(
             autoIncrement: true,
             primaryKey: true,
         },
-        walletId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
         address: {
             type: DataTypes.STRING,
             unique: true,
             allowNull: false,
         },
+        provider: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
         inscriptions: {
             type: DataTypes.ARRAY(DataTypes.STRING),
+            defaultValue: [],
         },
-        confirmed: {
+        balanceTotal: {
             type: DataTypes.INTEGER,
             allowNull: false,
+            defaultValue: 0,
         },
-        total: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
+        publicKey: {
+            type: DataTypes.STRING,
+            unique: true,
+            allowNull: true,
         },
-        unconfirmed: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-        },
+        createdAt: {
+            type: DataTypes.DATE,
+            defaultValue: DataTypes.NOW,
+        }
     },
     {
         sequelize,

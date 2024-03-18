@@ -41,10 +41,10 @@ Wallet.belongsTo(User, {
     },
 });
 
-Wallet.hasMany(WalletAccount, {
-    foreignKey: {
-        allowNull: false,
-    },
-});
+// Wallet.hasMany(WalletAccount, {
+//     foreignKey: {
+//         allowNull: false,
+//     },
+// });
 
 export default Wallet;

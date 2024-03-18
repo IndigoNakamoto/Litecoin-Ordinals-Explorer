@@ -10,13 +10,14 @@ const app = express();
 const port = 3005;
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 120 });
 
-import usersRouter from './app/routes/users';
+// import usersRouter from './app/routes/users';
 import loginRouter from './app/routes/login';
 import logoutRouter from './app/routes/logout';
 import inscriptionRouter from './app/routes/inscriptions';
 import stats from './app/routes/stats';
 import upload from './app/routes/upload';
 import invoice from './app/routes/invoice';
+import account from './app/routes/account';
 
 // Middleware
 app.use(cors());
@@ -28,9 +29,10 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Use the users router
-app.use('/users', usersRouter);
+// app.use('/users', usersRouter);
 app.use('/login', loginRouter);
 app.use('/logout', logoutRouter);
+app.use('/account', account);
 app.use('/inscriptions', inscriptionRouter);
 app.use('/stats', stats);
 app.use('/upload', upload);
@@ -43,14 +45,5 @@ app.listen(port, () => {
 
 
 
-// import updateInscriptions from './app/services/InscriptionUpdateService';
-
-// Import your models
-// import Inscription from './models/Inscription';
-// import InscriptionsUpdateProgress from './models/InscriptionsUpdateProgress';
-
-// Define associations between models if any
-
-// Synchronize tables and start services
-
-// setInterval(updateInscriptions, 30 * 1000);
+import updateInscriptions from './app/services/InscriptionUpdateService';
+setInterval(updateInscriptions, 30 * 1000);
