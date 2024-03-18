@@ -111,7 +111,7 @@ let iterationCounter = 0; // Initialize the counte
 function checkForNewBlockAndUpdateViews() {
     iterationCounter++; // Increment the counter each time the function is called
     let currentTime = new Date(); // Get the current time
-    console.log(`\n Iteration ${iterationCounter} at ${currentTime.toISOString()}: Checking for new block and updating views.`);
+    console.log(`\n Iteration ${iterationCounter} at ${currentTime.toISOString()}`);
     updateInscriptions().catch(error => console.error('Error in update process:', error));
 }
 

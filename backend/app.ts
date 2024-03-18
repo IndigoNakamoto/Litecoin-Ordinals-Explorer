@@ -6,6 +6,10 @@ import * as mimeTypes from 'mime-types'; // Import mime-types package
 import fs from 'fs';
 import NodeCache from 'node-cache';
 
+// import updateInscriptions from './app/services/InscriptionUpdateService';
+
+
+
 const app = express();
 const port = 3005;
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 120 });
@@ -44,6 +48,6 @@ app.listen(port, () => {
 });
 
 
+// updateInscriptions()
 
-import updateInscriptions from './app/services/InscriptionUpdateService';
-setInterval(updateInscriptions, 30 * 1000);
+// setInterval(updateInscriptions, 30 * 1000);
