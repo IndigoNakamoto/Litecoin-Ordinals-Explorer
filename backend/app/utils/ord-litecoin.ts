@@ -4,8 +4,29 @@ import fetch from 'isomorphic-fetch';
 import BitcoinJsonRpc from 'bitcoin-json-rpc';
 import mempoolJS from '@mempool/mempool.js';
 
+
+const ORD_LITECOIN_URL = process.env.ORD_LITECOIN_URL || 'http://0.0.0.0:80';
+
+async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number) {
+    const url = `${ORD_LITECOIN_URL}/inscriptions/block/${blockNumber}/${pageNumber}`;
+
+    try {
+        const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+    }
+}
+
 async function getInscriptionData(inscriptionId: string) {
-    const url = `http://0.0.0.0:80/inscription/${inscriptionId}`;
+    const url = `${ORD_LITECOIN_URL}/inscription/${inscriptionId}`;
     try {
         const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
 
@@ -22,7 +43,7 @@ async function getInscriptionData(inscriptionId: string) {
 }
 
 async function getInscriptionContent(inscriptionId: string, contentType: string) {
-    const url = `http://0.0.0.0:80/content/${inscriptionId}`;
+    const url = `${ORD_LITECOIN_URL}/content/${inscriptionId}`;
 
     // Set the Accept header dynamically based on the known content type
     const headers = { 'Accept': contentType };
@@ -57,23 +78,7 @@ async function getInscriptionContent(inscriptionId: string, contentType: string)
 }
 
 
-async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number) {
-    const url = `http://0.0.0.0:80/inscriptions/block/${blockNumber}/${pageNumber}`;
 
-    try {
-        const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Fetch error:', error);
-        throw error;
-    }
-}
 
 async function getBlockHeight(): Promise<number>  {
     let blockHeight;
