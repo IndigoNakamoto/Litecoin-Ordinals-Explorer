@@ -31,52 +31,45 @@ interface Inscription {
 
 const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
 
-    const [balance, setBalance] = useState<number>(0);
-    const [inscriptions, setInscriptions] = useState<Inscription[]>([]);
+
+
 
     const connectWithLitescribe = async () => {
-        setInscriptions([]);
-        setBalance(0)
-        localStorage.setItem('inscriptions', JSON.stringify([]));
+
         if (typeof window.litescribe !== 'undefined') {
+            // const requestedAccounts = await window.litescribe.requestAccounts();
+            // console.log('requestedAccounts: ', requestedAccounts)
+
+            // const getNetwork = await window.litescribe.getNetwork();
+            // console.log('getNetwork: ', getNetwork)
             
-            const initialized = await window.litescribe.requestAccounts();
-            console.log('initialized: ', initialized)
-            const fetchedInscriptions = await window.litescribe.getInscriptions();
-            console.log('inscriptions: ', fetchedInscriptions)
+            // const getAccounts = await window.litescribe.getAccounts();
+            // console.log('getAccounts: ', getAccounts)
 
-            if (fetchedInscriptions.total > 0) {
-                const InscriptionTranslated: Inscription[] = fetchedInscriptions.list.map((inscription: { inscriptionId: string; inscriptionNumber: number; contentType: string, content_type_type: string, contentLength: number }) => ({
-                    inscription_id: inscription.inscriptionId,
-                    inscription_number: inscription.inscriptionNumber,
-                    content_type: inscription.contentType,
-                    content_type_type: inscription.contentType.split('/')[0],
-                    content_length: inscription.contentLength
-                }));
+            // const getPublicKey = await window.litescribe.getPublicKey();
+            // console.log('getPublicKey: ', getPublicKey)
 
-                console.log('InscriptionTranslated: ', InscriptionTranslated)
-                localStorage.setItem('inscriptions', JSON.stringify(InscriptionTranslated));
-                setInscriptions(InscriptionTranslated);
-            }
+            // const getBalance = await window.litescribe.getBalance();
+            // console.log('getBalance: ', getBalance)
+
+            // const getInscriptions = await window.litescribe.getInscriptions(0, 100);
+            // console.log('getInscriptions: ', getInscriptions)
+
+            // const value = await window.litescribe.signMessage(`${requestedAccounts[0]} - OrdLite.io`)
+            // console.log('value signed: ', value)
+
+            
 
 
-            // const balance = await window.litescribe.getBalance();
-            // console.log('balance: ', balance)
 
-            const requestedAccounts = await window.litescribe.requestAccounts();
-            console.log('requestedAccounts: ', requestedAccounts)
 
-            const getAccounts = await window.litescribe.getAccounts();
-            console.log('getAccounts: ', getAccounts)
-
-            const balance = await window.litescribe.getBalance();
-            setBalance(balance);
             // localStorage.setItem('inscriptions', JSON.stringify(InscriptionTranslated));
             // setInscriptions(InscriptionTranslated);
             // setAccount
 
             // redirect to profile page
             localStorage.setItem('connected', 'true');
+            localStorage.setItem('provider', 'litescribe')
             window.location.href = '/profile';
         } else {
             console.log('LiteScribe is not installed. Please consider installing it.');

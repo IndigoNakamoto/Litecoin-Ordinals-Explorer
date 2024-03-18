@@ -17,7 +17,7 @@ User.init(
             autoIncrement: true,
             primaryKey: true,
         },
-        email: {
+        address: {
             type: DataTypes.STRING,
             unique: true,
             allowNull: false,

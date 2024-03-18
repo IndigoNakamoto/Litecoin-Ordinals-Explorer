@@ -1,14 +1,23 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from "next/legacy/image"; // Import Next.js Image component for optimized images
 import { Avatar } from "@material-tailwind/react";
 import { Typography, Button, Input, Card } from "@material-tailwind/react";
 import ConnectModal from './ConnectModal';
+import { ProfileMenu } from './ProfileMenu';
+
 
 const Menu = () => {
-  const connected = localStorage.getItem('connected');
-  console.log('Menu connected: ', connected)
+  const [connected, setConnected] = useState('false');
+  useEffect(() => {
+    const connected = localStorage.getItem('connected');
+    if(connected === 'true') {
+      setConnected('true')
+    }
+    console.log('Menu connected: ', connected)
+  }, []);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => {
     setIsModalOpen(true);
@@ -45,8 +54,8 @@ const Menu = () => {
           {/*  */}
           <div className='pr-4'>
             {connected === 'true' ?
-              <Link href="/profile" passHref className="hover:text-blue-600 text-black font-semibold py-0 px-0 rounded-xl  transition-colors duration-300 ease-in-out">
-                <Avatar alt="avatar" variant="rounded" src='/indigo.jpeg' placeholder={'undefined'} size="sm" /> </Link> :
+
+              <ProfileMenu /> :
               <Button
                 onClick={handleButtonClick}
                 color="blue"

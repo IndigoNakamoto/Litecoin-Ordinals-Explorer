@@ -22,6 +22,7 @@ class InscriptionService {
         console.log('Invoice Created:', eventData);
         Invoice.create({ invoiceId: eventData.invoiceId, createdAt: eventData.timestamp, updatedAt: eventData.timestamp });
         // TODO: From metadata, get the files and create file records in the database
+        // TODO: Validate the files and update their status in the database
     }
 
     private async handleInvoiceExpired(eventData: any) {
