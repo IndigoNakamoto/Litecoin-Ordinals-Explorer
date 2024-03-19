@@ -31,12 +31,11 @@ interface WidgetsCardPropsType {
 
 function WidgetsCard({ icon, title, subtitle, imgs}: WidgetsCardPropsType) {
   return (
-    <Card className="border !border-blue-gray-100 px-2 justify-center p-6" shadow={false}>
+    <Card className="border !border-blue-gray-100 px-2 justify-center p-6" shadow={false} placeholder={undefined}>
       <CardHeader
         floated={false}
         shadow={false}
-        className="flex !justify-between !items-center rounded-none mt-0"
-      >
+        className="flex !justify-between !items-center rounded-none mt-0" placeholder={undefined}      >
         <div className="flex gap-4">
           <div className="!grid h-12 w-12 rounded-lg place-items-center border !border-blue-gray-100">
             {icon}
@@ -44,14 +43,12 @@ function WidgetsCard({ icon, title, subtitle, imgs}: WidgetsCardPropsType) {
           <div>
             <Typography
               color="blue-gray"
-              className="!font-bold text-lg"
-            >
+              className="!font-bold text-lg" placeholder={undefined}            >
               {title}
             </Typography>
             <Typography
               variant="small"
-              className="!font-normal text-gray-600"
-            >
+              className="!font-normal text-gray-600" placeholder={undefined}            >
               {subtitle}
             </Typography>
           </div>
@@ -62,8 +59,7 @@ function WidgetsCard({ icon, title, subtitle, imgs}: WidgetsCardPropsType) {
               <Avatar
                 src={img}
                 className="rounded-full h-12 w-12 border-2 hover:z-10 focus:z-10 !border-white"
-                alt="avatar"
-              />
+                alt="avatar" placeholder={undefined}              />
             </div>
           ))}
         </div>
@@ -111,13 +107,11 @@ function WidgetsExample5() {
       <div className="">
         <Card
           className="border !border-blue-gray-100 p-2"
-          shadow={false}
-        >
+          shadow={false} placeholder={undefined}        >
           <CardHeader
             floated={false}
             shadow={false}
-            className="flex !justify-between !items-center rounded-none"
-          >
+            className="flex !justify-between !items-center rounded-none" placeholder={undefined}          >
             <div className="flex gap-4">
               <div className="!grid h-12 w-12 rounded-lg place-items-center border !border-blue-gray-100">
                 <BriefcaseIcon className="h-6 w-6 text-gray-900" />
@@ -126,101 +120,93 @@ function WidgetsExample5() {
                 <Typography
                   variant="h6"
                   color="blue-gray"
-                  className="!font-medium"
-                >
+                  className="!font-medium" placeholder={undefined}                >
                   User Information
                 </Typography>
                 <Typography
                   variant="small"
-                  className="!font-normal text-gray-600"
-                >
+                  className="!font-normal text-gray-600" placeholder={undefined}                >
                   Last Campaign Performance
                 </Typography>
               </div>
             </div>
             <Menu placement="bottom-end">
               <MenuHandler>
-                <IconButton variant="text">
+                <IconButton variant="text" placeholder={undefined}>
                   <EllipsisVerticalIcon className="text-gray-500 w-8 h-8" />
                 </IconButton>
               </MenuHandler>
-              <MenuList>
-                <MenuItem>Item 1</MenuItem>
-                <MenuItem>Item 2</MenuItem>
-                <MenuItem>Item 3</MenuItem>
+              <MenuList placeholder={undefined}>
+                <MenuItem placeholder={undefined}>Item 1</MenuItem>
+                <MenuItem placeholder={undefined}>Item 2</MenuItem>
+                <MenuItem placeholder={undefined}>Item 3</MenuItem>
               </MenuList>
             </Menu>
           </CardHeader>
-          <CardBody className="pl-4 grid gap-4">
+          <CardBody className="pl-4 grid gap-4" placeholder={undefined}>
             <div className="grid grid-cols-2">
-              <Typography className="font-normal text-gray-600">
+              <Typography className="font-normal text-gray-600" placeholder={undefined}>
                 Company Name
               </Typography>
               <Typography
                 variant="h6"
                 color="blue-gray"
-                className="font-medium"
-              >
+                className="font-medium" placeholder={undefined}              >
                 GreatVibes Inc.
               </Typography>
             </div>
             <div className="grid grid-cols-2">
-              <Typography className="font-normal text-gray-600">
+              <Typography className="font-normal text-gray-600" placeholder={undefined}>
                 Primary Contact
               </Typography>
               <Typography
                 variant="h6"
                 color="blue-gray"
-                className="font-medium"
-              >
+                className="font-medium" placeholder={undefined}              >
                 Emma Roberts, CEO
               </Typography>
             </div>
             <div className="grid grid-cols-2">
-              <Typography className="font-normal text-gray-600">
+              <Typography className="font-normal text-gray-600" placeholder={undefined}>
                 Industry
               </Typography>
               <Typography
                 variant="h6"
                 color="blue-gray"
-                className="font-medium"
-              >
+                className="font-medium" placeholder={undefined}              >
                 Software and IT Services
               </Typography>
             </div>
             <div className="grid grid-cols-2">
-              <Typography className="font-normal text-gray-600">
+              <Typography className="font-normal text-gray-600" placeholder={undefined}>
                 Customer Since
               </Typography>
               <Typography
                 variant="h6"
                 color="blue-gray"
-                className="font-medium"
-              >
+                className="font-medium" placeholder={undefined}              >
                 January 2018
               </Typography>
             </div>
             <div className="grid grid-cols-2">
-              <Typography className="font-normal text-gray-600">
+              <Typography className="font-normal text-gray-600" placeholder={undefined}>
                 Latest Project
               </Typography>
               <Typography
                 variant="h6"
                 color="blue-gray"
-                className="font-medium"
-              >
+                className="font-medium" placeholder={undefined}              >
                 Resource Planning
               </Typography>
             </div>
             <div className="grid grid-cols-2">
-              <Typography className="font-normal text-gray-600">
+              <Typography className="font-normal text-gray-600" placeholder={undefined}>
                 Industry
               </Typography>
               <Typography
                 variant="h6"
                 color="blue-gray"
-                className="font-medium"
-              >
+                className="font-medium" placeholder={undefined}              >
                 Software and IT Services
               </Typography>
             </div>

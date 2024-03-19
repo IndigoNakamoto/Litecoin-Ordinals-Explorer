@@ -150,21 +150,21 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             mount: { scale: 1, y: 0 },
             unmount: { scale: 0.9, y: -100 },
         }}>
-            <DialogHeader className="justify-between">
+            <DialogHeader className="justify-between" placeholder={undefined}>
                 <div>
-                    <Typography variant="h5" color="blue-gray">
+                    <Typography variant="h5" color="blue-gray" placeholder={undefined}>
                         Connect a Wallet
                     </Typography>
-                    <Typography color="gray" variant="paragraph">
-                        Choose how you want to connect. If you don't have a wallet, you can select a provider and create one.
+                    <Typography color="gray" variant="paragraph" placeholder={undefined}>
+                        Choose how you want to connect. If you don&apos;t have a wallet, you can select a provider and create one.
                     </Typography>
                 </div>
 
             </DialogHeader>
-            <DialogBody className="overflow-y-scroll !px-5">
+            <DialogBody className="overflow-y-scroll !px-5" placeholder={undefined}>
                 <div className="mb-6">
                     <ul className="mt-3 -ml-2 flex flex-col gap-1">
-                        <MenuItem className="mb-4 flex items-center justify-center gap-3 !py-4 shadow-md " onClick={handleClick} disabled={isConnectButtonDisabled}>
+                        <MenuItem className="mb-4 flex items-center justify-center gap-3 !py-4 shadow-md " onClick={handleClick} disabled={isConnectButtonDisabled} placeholder={undefined}>
                             <img
                                 src="/logos/litescribe-icon.png"
                                 alt="litescribe"
@@ -174,16 +174,14 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                                 <Typography
                                     className="uppercase"
                                     color="blue-gray"
-                                    variant="h6"
-                                    
+                                    variant="h6" placeholder={undefined}                                    
                                 >
                                     Connect with Litescribe
                                 </Typography> :
                                 <Typography
                                     className="uppercase"
                                     color="blue-gray"
-                                    variant="h6"
-                                >
+                                    variant="h6" placeholder={undefined}                                >
                                     Get Litescribe Chrome Extension
                                 </Typography>}
 

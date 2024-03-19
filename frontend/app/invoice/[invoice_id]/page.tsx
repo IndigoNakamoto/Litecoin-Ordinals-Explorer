@@ -67,7 +67,7 @@ export default function Page({ params }: { params: { invoice_id: string } }) {
 
     return (
         <section className="mx-auto p-4 max-w-screen-xl">
-            <Typography variant="h1" className="mb-6 font-xl text-gray-200">
+            <Typography variant="h1" className="mb-6 font-xl text-gray-200" placeholder={undefined}>
                 Invoice
             </Typography>
             <p>Invoice ID: {fetchedInvoice?.invoice_id || ""}</p>

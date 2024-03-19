@@ -24,6 +24,23 @@
 //     timestamp: string;
 // }
 
+export interface InscribeOrderContextType {
+    fileName: string;
+    setFileName: React.Dispatch<React.SetStateAction<string>>;
+    files: File[];
+    setFiles: React.Dispatch<React.SetStateAction<File[]>>;
+    fileSize: number;
+    setFileSize: React.Dispatch<React.SetStateAction<number>>;
+    error: string | null; // Add this line
+    setError: React.Dispatch<React.SetStateAction<string | null>>; // Add this line
+    code: string | null;
+    setCode: React.Dispatch<React.SetStateAction<string | null>>;
+    credit: number | null;
+    setCredit: React.Dispatch<React.SetStateAction<number | null>>;
+    receivingAddress: string | null;
+    setReceivingAddress: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
 export interface Inscription {
     id: number;
     address: string;

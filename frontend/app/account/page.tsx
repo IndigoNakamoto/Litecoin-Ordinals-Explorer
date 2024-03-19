@@ -110,9 +110,7 @@ export default function Page() {
                                     <p onClick={handleUsernameClick} style={{ cursor: 'pointer', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{username}</p>
                                 )}
                             </div>
-                            <div className="flex-grow">
-                                <p>{balance.unconfirmed > 0 ? 'Transaction pending' : ''}</p>
-                            </div>
+
                         </div>
                         <div className="grid grid-cols-3 gap-4"> {/* row 2 */}
                             <div>

@@ -3,7 +3,7 @@ import { Typography, Card } from "@material-tailwind/react";
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { InscriptionCard } from '../components/inscriptionCard'
-import Footer from "../components/footer";
+
 
 interface ContentTypeDistribution {
   content_type_type: string;
@@ -61,20 +61,18 @@ interface StatsCardPropsType {
 
 function StatsCard({ count, title }: StatsCardPropsType) {
   return (
-    <Card color="transparent" shadow={false}>
+    <Card color="transparent" shadow={false} placeholder={undefined}>
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
         <Typography
-          variant="gradient"
-          className="text-4xl md:text-6xl font-bold text-white"
-        >
+          className="text-4xl md:text-6xl font-bold text-white" placeholder={undefined}        >
           {count}
         </Typography>
       </motion.div>
-      <Typography variant="h6" color="white" className="mt-1 font-medium text-blue-500">
+      <Typography variant="h6" color="white" className="mt-1 font-medium text-blue-500" placeholder={undefined}>
         {title}
       </Typography>
     </Card>
@@ -84,7 +82,7 @@ function StatsCard({ count, title }: StatsCardPropsType) {
 
 
 
-export function StatsSection4() {
+export default function StatsPage() {
   const [contentTypeDistribution, setContentTypeDistribution] = useState<ContentTypeDistribution[]>([]);
   const [generalStats, setGeneralStats] = useState<GeneralStat>({});
   const [currentBlockHeight, setCurrentBlockHeight] = useState<number | null>(null);
@@ -158,34 +156,30 @@ export function StatsSection4() {
 
           <Typography
             variant="h1"
-            className="text-3xl !leading-snug lg:text-5xl"
-          >
+            className="text-3xl !leading-snug lg:text-5xl" placeholder={undefined}          >
             Inscriptions on Ordinals Lite
           </Typography>
           <Typography
             variant="lead"
-            className="mt-3 w-full !text-gray-500 lg:w-10/12"
-          >
+            className="mt-3 w-full !text-gray-500 lg:w-10/12" placeholder={undefined}          >
             Immutable, decentralized data is securely inscribed across 1000+ Litecoin nodes, with a dedicated network of globally distributed Scrypt ASIC miners protecting the network.
           </Typography>
           <Typography
             variant="lead"
-            className="mt-3 w-full !text-gray-500 lg:w-10/12"
-          >
-            Litecoin's innovative Mimblewimble Extension Block (MWEB) feature ensures fungible transactions have their dedicated block space. This separation means they do not compete for space in the base block or the SegWit block, which supports ordinals.
+            className="mt-3 w-full !text-gray-500 lg:w-10/12" placeholder={undefined}          >
+            Litecoin&apos;s innovative Mimblewimble Extension Block (MWEB) feature ensures fungible transactions have their dedicated block space. This separation means they do not compete for space in the base block or the SegWit block, which supports ordinals.
           </Typography>
           <Typography
             variant="lead"
-            className="mt-3 w-full !text-gray-500 lg:w-10/12"
-          >
+            className="mt-3 w-full !text-gray-500 lg:w-10/12" placeholder={undefined}          >
             The first inscription on Litecoin is the Mimblewimble White Paper, implemented on Litecoin as MWEB with Taproot on block 2,265,984.
           </Typography>
         </div>
         <div>
-          <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium">
+          <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium" placeholder={undefined}>
             Ordinal Lite Stats
           </Typography>
-          <div className="grid grid-cols-1 gap-8 gap-x-28 text-white text-white">
+          <div className="grid grid-cols-1 gap-8 gap-x-28 text-white">
             <StatsCard key="inscriptions" count={(generalStats.totalInscriptions ?? 0).toLocaleString()} title="Inscriptions" />
             <StatsCard key="gbStoredData" count={String(formatBytesToGB(Number(generalStats.totalContentLength ?? 0)))} title="GB stored on-chain" />
             <StatsCard key="ltcFeesPaid" count={String(formatLitsToLitecoin(Number(generalStats.totalGenesisFee ?? 0)))} title="LTC fees paid to Scrypt miners" />
@@ -194,13 +188,13 @@ export function StatsSection4() {
       </section>
       <section className="container mx-auto grid gap-10 px-4 py-16 lg:grid-cols-1 lg:gap-20 lg:py-16 xl:grid-cols-2 xl:place-items-center">
         <div className="w-full md:w-1/2 bg-black">
-          <Typography variant="h4" className="mb-6 text-gray-200 underline underline-offset-1 font-medium">
+          <Typography variant="h4" className="mb-6 text-gray-200 underline underline-offset-1 font-medium" placeholder={undefined}>
             Inscription #0
           </Typography>
           <InscriptionCard inscription_id='71e0f6dc87a473aa69787fff8e09e5eddfdca96e587928a5b1a25c0ae16dc0eei0' content_length={57} maxHeight="500px" inscription_number={0} content_type="application/pdf" content_type_type="application" />
         </div>
         <div>
-          <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium">
+          <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium" placeholder={undefined}>
             File Count
           </Typography>
           <div className="grid grid-cols-2 md:grid-cols-2 gap-x-24 min-w-2xl max-w-3xl">
@@ -212,7 +206,7 @@ export function StatsSection4() {
                 transition={{ duration: 0.5 }}
                 className="py-4 bg-slate-700 dark:bg-gray-800 rounded-lg shadow"
               >
-                <Typography variant="gradient" className="text-3xl font-bold text-white">
+                <Typography className="text-3xl font-bold text-white" placeholder={undefined}>
                   {item.count.toLocaleString()}
                 </Typography>
                 <span className="mt-1 font-medium text-blue-500">{item.content_type_type}</span>
@@ -221,9 +215,6 @@ export function StatsSection4() {
           </div>
         </div>
       </section>
-      <Footer />
     </div>
   );
 }
-
-export default StatsSection4;

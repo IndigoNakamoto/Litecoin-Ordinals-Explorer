@@ -32,7 +32,7 @@ export default function Page({ params }: { params: { inscription_number: string 
 
     return (
         <>
-            <InscriptionLayout inscriptionNumber={params.inscription_number}>
+            <InscriptionLayout>
             <header>
                 <h1 className="text-3xl font-medium">Inscription #{params.inscription_number.toLocaleString()}</h1>
                 {/* TODO: Menu for report like */}

@@ -27,8 +27,7 @@ export function ProfileMenu() {
                     variant="circular"
                     alt="User Avatar"
                     className="cursor-pointer"
-                    src="/avatar.png"
-                />
+                    src="/avatar.png" placeholder={undefined}                />
             </MenuHandler>
             <MenuList placeholder={undefined}>
                 <MenuItem  placeholder={undefined}>
@@ -48,7 +47,7 @@ export function ProfileMenu() {
                             />
                         </svg>
 
-                        <Typography variant="small" className="font-medium">
+                        <Typography variant="small" className="font-medium" placeholder={undefined}>
                             My Items
                         </Typography>
                     </Link>
@@ -74,7 +73,7 @@ export function ProfileMenu() {
                     </Typography>
                 </MenuItem> */}
                 <hr className="my-2 border-blue-gray-50" />
-                <MenuItem className="flex items-center gap-2 " onClick={handleSignOut}>
+                <MenuItem className="flex items-center gap-2 " onClick={handleSignOut} placeholder={undefined}>
                     <svg
                         width="16"
                         height="14"
@@ -89,7 +88,7 @@ export function ProfileMenu() {
                             fill="#90A4AE"
                         />
                     </svg>
-                    <Typography variant="small" className="font-medium">
+                    <Typography variant="small" className="font-medium" placeholder={undefined}>
                         Disconnect
                     </Typography>
                 </MenuItem>

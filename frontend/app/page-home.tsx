@@ -2,7 +2,7 @@
 // app/page-home.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { InscriptionCard } from './components/inscriptionCard';
-import { debounce, sortOrder } from 'lodash';
+import { debounce } from 'lodash';
 
 export interface Inscription {
     address: string;
@@ -43,7 +43,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
     const [rightPosition, setRightPosition] = useState('0px');
 
 
-    const cardRefs = useRef([]); // Add this line to create refs for all cards
+    const cardRefs =  useRef<(HTMLDivElement | null)[]>([]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -238,6 +238,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
         setDropdownOpen(prevState => !prevState);
     };
 
+
     return (
         <>
             <div className="mx-auto p-4 max-w-screen-2xl mb-16">
@@ -273,6 +274,8 @@ export default function Home({ initialInscriptions }: HomeProps) {
                 </div>
 
 
+                
+                
                 <div className="grid grid-cols-2 pt-8 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
                     {Array.isArray(inscriptions) && inscriptions.map((inscription, index) => (
                         <div key={inscription.inscription_id} ref={el => el && (cardRefs.current[index] = el)} data-inscription-id={inscription.inscription_id}>
