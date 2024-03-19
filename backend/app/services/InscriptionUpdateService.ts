@@ -121,8 +121,8 @@ process.on('SIGTERM', () => {
 
 // setInterval(checkForNewBlockAndUpdateViews, REFRESH_INTERVAL);
 
-checkForNewBlockAndUpdateViews();
-
+// checkForNewBlockAndUpdateViews();
+updateInscriptions().catch(error => console.error('Error in update process:', error));
 
 
 
