@@ -5,7 +5,7 @@ import BitcoinJsonRpc from 'bitcoin-json-rpc';
 import mempoolJS from '@mempool/mempool.js';
 
 
-const ORD_LITECOIN_URL = process.env.ORD_LITECOIN_URL || 'http://0.0.0.0:8080';
+const ORD_LITECOIN_URL = process.env.ORD_LITECOIN_URL || 'http://0.0.0.0:80';
 
 async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number) {
     const url = `${ORD_LITECOIN_URL}/inscriptions/block/${blockNumber}/${pageNumber}`;

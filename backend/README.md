@@ -23,6 +23,9 @@ Run Command: docker-compose down
 
 ### WARNING: Will remove the postgres data in volume
 Run Command: docker-compose down -v
+OR
+docker ps
+docker kill <container>
 
 ### WARNING: Clear the Persistent Volume
 From: /Users/indigo/Dev/ordlite.io/backend/docker
@@ -69,7 +72,91 @@ Other Command: \q
 
 
 
-# PRISMA
+
+
+
+
+# VPS System Setup
+1. SSH into VPS
+cd ~/.ssh
+ssh -i id_rsa_mini root@146.190.169.166
+
+## 2. Install Docker
+### Resources
+https://docs.docker.com/engine/install/ubuntu/
+### Commands
+
+
+## 3. Install Litecoin
+### Resources
+https://chat.openai.com/c/6cedf22d-764f-4eed-b70b-0dec19e00aef 
+### Commands
+sudo apt update
+sudo apt upgrade -y
+wget https://download.litecoin.org/litecoin-0.21.2.2/linux/litecoin-0.21.2.2-x86_64-linux-gnu.tar.gz
+tar -xvzf litecoin-0.21.2.2-x86_64-linux-gnu.tar.gz
+sudo cp bin/* /usr/local/bin/
+mkdir ~/.litecoin
+nano ~/.litecoin/litecoin.conf
+litecoind -daemon
+litecoin-cli getblockchaininfo
+litecoin-cli stop
+
+## 4. Install Ord
+### Resources
+See Readme
+### Commands
+cd bin
+./ord index update
+
+./ord server -j
+./ord --bitcoin-rpc-user your_rpc_username --bitcoin-rpc-pass your_rpc_password server -j
+
+## 5. GIT Clon project
+git clone https://github.com/IndigoNakamoto/ordlite.io.git
+username: indigonakamoto
+password: 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
+
+
+## 6. Setup Project
+
+### a. Setup DB (Screen 1)
+cd ordlite.io/backend
+npm i 
+cd docker
+docker-compose up -d
+
+// TODO: Update working memory and something else 
+// TODO: docker exec -it docker-postgres-1 psql -U ord_lite_user -d ord_lite_db
+
+### b. Sync Inscriptions (Screen 2)
+cd ../app/setup/ 
+npx ts-node inscription.ts
+npx ts-node index.ts 
+cd ../services/
+npx ts-node InscriptionUpdateService.ts
+
+### c. Start Servers (Screen 3)
+
+
+1. screen
+    1. litecoind
+    2. cd ~/.bin 
+        1. ./ord --bitcoin-rpc-user your_rpc_username --bitcoin-rpc-pass your_rpc_password server -j
+2. cd ordlite.io/backend/docker
+    1. docker-compose up -d
+    2. Docker ps
+3. cd ordlite.io/backend/app/setup
+    1. npx ts-node inscriptions.ts
+    2. npx ts-node index.ts
+    3. npx ts-node index.ts
+    4. cd ../services
+    5. npx ts-node InscriptionUpdateService.ts 
+        1. NOTE: NANO and change to setInterval later
+
+
+
+# Postgres 
 1. docker
 docker compose up -d
 2. prismadatabasesetup
@@ -82,31 +169,4 @@ docker exec -it docker-postgres-1 psql -U ord_lite_user -d ord_lite_db
 \dv inscriptions_video
 \dm inscriptions_video
 \dm+
-
-
-4. 
-npx prisma db pull
-
-3. Manually setup materalized views
-docker exec -it docker-postgres-1 psql -U ord_lite_user -d ord_lite_db
-
-CREATE MATERIALIZED VIEW inscriptions_video AS
-SELECT * FROM inscriptions WHERE content_type_type = 'video';
-
-CREATE MATERIALIZED VIEW inscriptions_audio AS
-SELECT * FROM inscriptions WHERE content_type_type = 'audio';
-
-CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_video_inscription_number_uindex ON inscriptions_video(inscription_number);
-CREATE UNIQUE INDEX IF NOT EXISTS inscriptions_audio_inscription_number_uindex ON inscriptions_audio(inscription_number);
-
-VERIFY:
-SELECT matviewname FROM pg_matviews WHERE matviewname IN ('inscriptions_video', 'inscriptions_audio');
-
-3. prisma migrate 
-prisma migrate dev --name init
-4. update inscriptions
-npx ts-node ./src/prismaInscriptionUpdater.ts
-
-
-
 

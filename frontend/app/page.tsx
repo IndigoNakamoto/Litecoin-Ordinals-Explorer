@@ -53,24 +53,41 @@ export const metadata: Metadata = {
 // }
 
 async function fetchInscriptions(filter: FilterType) {
-  const query = new URLSearchParams({
-    contentTypeType: filter.contentTypeType,
-    contentType: filter.contentType,
-    sortBy: filter.sortBy,
-    page: filter.page.toString(),
+  // Base URL for the inscriptions endpoints
+  let baseUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions`;
+
+  // Determine the correct endpoint based on the filters
+  if (filter.contentTypeType) {
+    baseUrl += `/content_type_type/${filter.contentTypeType}`;
+  } else if (filter.contentType) {
+    baseUrl += `/content_type/${filter.contentType}`;
+  } else {
+    baseUrl += '/'; // Default to getting all inscriptions
+  }
+
+  // Build the query parameters
+  const queryParams = new URLSearchParams({
+    sortOrder: 'oldest',
+    page: filter.page?.toString() || '1',
     cursed: filter.cursed.toString(),
+    limit: '100', // Assuming you want to keep the limit or it can be adjusted based on your requirements
   }).toString();
-  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${query}`);
-  const inscriptions = await response.json();
-  return inscriptions;
+
+  // Complete URL with query parameters
+  const url = `${baseUrl}?${queryParams}`;
+
+  // Fetch the data from the backend
+  const response = await fetch(url);
+  const data = await response.json();
+  return data
 }
 
 // This is a Server Component
 export default async function Page() {
   // Example data fetching in Server Component
   const filter = { sortBy: 'oldest', contentType: '', contentTypeType: '', page: 1, cursed: false };
-  // const inscriptions = await fetchInscriptions(filter);
+  const inscriptions = await fetchInscriptions(filter);
   // const inscriptions:Inscription[] = []
   // Forward fetched data to your Client Component
-  return <HomePage initialInscriptions={[]} />;
+  return <HomePage initialInscriptions={inscriptions} />;
 }
