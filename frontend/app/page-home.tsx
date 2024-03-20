@@ -77,7 +77,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
     
         try {
             // Base URL for the inscriptions endpoints
-            let baseUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions`;
+            let baseUrl = `http://localhost:3005/inscriptions`;
     
             // Determine the correct endpoint based on the filters
             if (filter.contentTypeType) {
