@@ -12,7 +12,7 @@ const Menu = () => {
   const [connected, setConnected] = useState('false');
   useEffect(() => {
     const connected = localStorage.getItem('connected');
-    if(connected === 'true') {
+    if (connected === 'true') {
       setConnected('true')
     }
   }, []);
@@ -53,16 +53,18 @@ const Menu = () => {
           {/*  */}
           <div className='pr-4'>
             {connected === 'true' ?
-
               <ProfileMenu /> :
-              <Button
-                onClick={handleButtonClick}
-                color="blue"
-                size="md"
-                variant="outlined"
-                className="p-2 flex h-10 items-center justify-center gap-2 text-blue-600 w-full " placeholder={undefined}            >
-                Connect Wallet
-              </Button>
+              // This div will now be hidden on screens smaller than 'md' (768px by default) and displayed on larger screens
+              <div className="hidden md:flex">
+                <Button
+                  onClick={handleButtonClick}
+                  color="blue"
+                  size="md"
+                  variant="outlined"
+                  className="p-2 flex h-10 items-center justify-center gap-2 text-blue-600 w-full" placeholder={undefined}                >
+                  Connect Wallet
+                </Button>
+              </div>
             }
           </div>
           {/*  */}
