@@ -103,7 +103,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 };
 
                 // Make a POST request to your backend
-                const response = await fetch('http://localhost:3005/account', {
+                const response = await fetch('https://ordlite.io/api/account', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

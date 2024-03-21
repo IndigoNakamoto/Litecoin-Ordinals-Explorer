@@ -19,7 +19,7 @@ interface GeneralStat {
 
 const fetchStats = async (endpoint: string): Promise<any> => {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${endpoint}`);
+    const response = await fetch(`https://ordlite.io/api/${endpoint}`);
     if (!response.ok) throw new Error('Network response was not ok');
     return await response.json();
   } catch (error) {

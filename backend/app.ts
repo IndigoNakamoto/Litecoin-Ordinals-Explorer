@@ -33,14 +33,14 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Use the users router
-// app.use('/users', usersRouter);
-app.use('/login', loginRouter);
-app.use('/logout', logoutRouter);
-app.use('/account', account);
-app.use('/inscriptions', inscriptionRouter);
-app.use('/stats', stats);
-app.use('/upload', upload);
-app.use('/invoice', invoice);
+// app.use('/api/users', usersRouter);
+app.use('/api/login', loginRouter);
+app.use('/api/logout', logoutRouter);
+app.use('/api/account', account);
+app.use('/api/inscriptions', inscriptionRouter);
+app.use('/api/stats', stats);
+app.use('/api/upload', upload);
+app.use('/api/invoice', invoice);
 
 // Start the server
 app.listen(port, () => {

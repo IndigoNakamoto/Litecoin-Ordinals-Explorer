@@ -77,7 +77,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
     
         try {
             // Base URL for the inscriptions endpoints
-            let baseUrl = `http://localhost:3005/inscriptions`;
+            let baseUrl = `https://ordlite.io/api/inscriptions`;
     
             // Determine the correct endpoint based on the filters
             if (filter.contentTypeType) {

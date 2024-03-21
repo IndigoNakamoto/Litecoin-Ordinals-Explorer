@@ -1,3 +1,4 @@
+'use client'
 // app/components/ContentRenderer.tsx
 import { useEffect, useState } from 'react';
 import Image from "next/legacy/image";
@@ -25,7 +26,7 @@ const useFetchContent = (inscription_id: string, content_type: string) => {
     useEffect(() => {
         async function fetchData() {
             try {
-                const url = `http://0.0.0.0:80/content/${inscription_id}`;
+                const url = `https://ordlite.io/content/${inscription_id}`;
                 const response = await fetch(url);
 
                 if (!response.ok) {

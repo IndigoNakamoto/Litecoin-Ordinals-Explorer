@@ -54,7 +54,7 @@ export const metadata: Metadata = {
 
 async function fetchInscriptions(filter: FilterType) {
   // Base URL for the inscriptions endpoints
-  let baseUrl = `http://localhost:3005/inscriptions`;
+  let baseUrl = `https://ordlite.io/api/inscriptions`;
 
   // Determine the correct endpoint based on the filters
   if (filter.contentTypeType) {
