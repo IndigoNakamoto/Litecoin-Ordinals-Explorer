@@ -8,6 +8,7 @@ import { formatTimestamp, formatAgoTimestamp, formatLits, formatContentSize } fr
 
 import InscriptionLayout from './layout';
 
+
 export default function Page({ params }: { params: { inscription_number: string } }) {
     const [data, setData] = useState<Inscription | null>(null);
     const [copySuccess, setCopySuccess] = useState<boolean>(false);
@@ -16,7 +17,7 @@ export default function Page({ params }: { params: { inscription_number: string 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch(`https://ordlite.io/api/inscriptions/number/${params.inscription_number}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions/number/${params.inscription_number}`);
                 if (!response.ok) throw new Error('Network response was not ok');
                 const newData = await response.json();
                 setData(newData);

@@ -1,17 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-    Button,
+    // Button,
     Dialog,
     DialogHeader,
     DialogBody,
-    DialogFooter,
-    IconButton,
+    // DialogFooter,
+    // IconButton,
     Typography,
     MenuItem,
 } from "@material-tailwind/react";
 
-import { Alert } from "@material-tailwind/react";
+import Image from 'next/image';
+
 
 interface ModalProps {
     isOpen: boolean;
@@ -103,7 +104,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 };
 
                 // Make a POST request to your backend
-                const response = await fetch('https://ordlite.io/api/account', {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/account`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -165,10 +166,11 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 <div className="mb-6">
                     <ul className="mt-3 -ml-2 flex flex-col gap-1">
                         <MenuItem className="mb-4 flex items-center justify-center gap-3 !py-4 shadow-md " onClick={handleClick} disabled={isConnectButtonDisabled} placeholder={undefined}>
-                            <img
+                            <Image
                                 src="/logos/litescribe-icon.png"
                                 alt="litescribe"
-                                className="h-6 w-6"
+                                width={24}
+                                height={24}
                             />
                             {isLitescribeInstalled ?
                                 <Typography

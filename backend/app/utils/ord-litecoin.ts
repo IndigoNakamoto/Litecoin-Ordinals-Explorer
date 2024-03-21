@@ -4,8 +4,8 @@ import fetch from 'isomorphic-fetch';
 import BitcoinJsonRpc from 'bitcoin-json-rpc';
 import mempoolJS from '@mempool/mempool.js';
 
-
-const ORD_LITECOIN_URL = process.env.NEXT_PUBLIC_ORD_LITECOIN_URL
+// PRODUCTION: Use the http://0.0.0.0:8080 URL for the ORD-Litecoin API
+const ORD_LITECOIN_URL = 'http://0.0.0.0:80';
 
 async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number) {
     const url = `${ORD_LITECOIN_URL}/inscriptions/block/${blockNumber}/${pageNumber}`;
