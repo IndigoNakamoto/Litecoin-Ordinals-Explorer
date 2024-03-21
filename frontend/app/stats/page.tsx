@@ -2,7 +2,7 @@
 import { Typography, Card } from "@material-tailwind/react";
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { InscriptionCard } from '../components/inscriptionCard'
+import { InscriptionHero } from '../components/InscriptionHero'
 
 
 interface ContentTypeDistribution {
@@ -19,7 +19,7 @@ interface GeneralStat {
 
 const fetchStats = async (endpoint: string): Promise<any> => {
   try {
-    const response = await fetch(`https://ordlite.io/api/${endpoint}`);
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/${endpoint}`);
     if (!response.ok) throw new Error('Network response was not ok');
     return await response.json();
   } catch (error) {
@@ -72,7 +72,7 @@ function StatsCard({ count, title }: StatsCardPropsType) {
           {count}
         </Typography>
       </motion.div>
-      <Typography variant="h6" color="white" className="mt-1 font-medium text-blue-500" placeholder={undefined}>
+      <Typography variant="h6" color="white" className="mt-1 font-medium text-blue-300" placeholder={undefined}>
         {title}
       </Typography>
     </Card>
@@ -122,7 +122,7 @@ export default function StatsPage() {
 
   const fetchBlockHeight = async (): Promise<number | null> => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/blockHeight`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/blockHeight`);
       const { blockHeight } = await response.json();
       return blockHeight;
     } catch (error) {
@@ -151,32 +151,12 @@ export default function StatsPage() {
   }, [checkForNewBlock, fetchData]);
   return (
     <div>
-      <section className="container mx-auto grid gap-10 px-4 py-16 lg:grid-cols-1 lg:gap-20 lg:py-36 xl:grid-cols-2 xl:place-items-center">
-        <div>
+      <section className="container mx-auto grid gap-16 px-4 py-16 lg:grid-cols-1 lg:gap-16 lg:pt-36 xl:grid-cols-2 justify-between">
 
+        <div className=''>
           <Typography
             variant="h1"
-            className="text-3xl !leading-snug lg:text-5xl" placeholder={undefined}          >
-            Inscriptions on Ordinals Lite
-          </Typography>
-          <Typography
-            variant="lead"
-            className="mt-3 w-full !text-gray-500 lg:w-10/12" placeholder={undefined}          >
-            Immutable, decentralized data is securely inscribed across 1000+ Litecoin nodes, with a dedicated network of globally distributed Scrypt ASIC miners protecting the network.
-          </Typography>
-          <Typography
-            variant="lead"
-            className="mt-3 w-full !text-gray-500 lg:w-10/12" placeholder={undefined}          >
-            Litecoin&apos;s innovative Mimblewimble Extension Block (MWEB) feature ensures fungible transactions have their dedicated block space. This separation means they do not compete for space in the base block or the SegWit block, which supports ordinals.
-          </Typography>
-          <Typography
-            variant="lead"
-            className="mt-3 w-full !text-gray-500 lg:w-10/12" placeholder={undefined}          >
-            The first inscription on Litecoin is the Mimblewimble White Paper, implemented on Litecoin as MWEB with Taproot on block 2,265,984.
-          </Typography>
-        </div>
-        <div>
-          <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium" placeholder={undefined}>
+            className="text-3xl !leading-snug lg:text-5xl text-blue-500" placeholder={undefined}          >
             Ordinal Lite Stats
           </Typography>
           <div className="grid grid-cols-1 gap-8 gap-x-28 text-white">
@@ -185,18 +165,11 @@ export default function StatsPage() {
             <StatsCard key="ltcFeesPaid" count={String(formatLitsToLitecoin(Number(generalStats.totalGenesisFee ?? 0)))} title="LTC fees paid to Scrypt miners" />
           </div>
         </div>
-      </section>
-      <section className="container mx-auto grid gap-10 px-4 py-16 lg:grid-cols-1 lg:gap-20 lg:py-16 xl:grid-cols-2 xl:place-items-center">
-        <div className="w-full md:w-1/2 bg-black">
-          <Typography variant="h4" className="mb-6 text-gray-200 underline underline-offset-1 font-medium" placeholder={undefined}>
-            Inscription #0
-          </Typography>
-          <InscriptionCard inscription_id='71e0f6dc87a473aa69787fff8e09e5eddfdca96e587928a5b1a25c0ae16dc0eei0' content_length={57} maxHeight="500px" inscription_number={0} content_type="application/pdf" content_type_type="application" />
-        </div>
-        <div>
-          <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium" placeholder={undefined}>
+
+        <div className='xl:py-14'>
+          {/* <Typography variant="h4" className="mb-6 underline underline-offset-1 text-blue-500 font-medium" placeholder={undefined}>
             File Count
-          </Typography>
+          </Typography> */}
           <div className="grid grid-cols-2 md:grid-cols-2 gap-x-24 min-w-2xl max-w-3xl">
             {contentTypeDistribution.map((item) => (
               <motion.div
@@ -209,11 +182,43 @@ export default function StatsPage() {
                 <Typography className="text-3xl font-bold text-white" placeholder={undefined}>
                   {item.count.toLocaleString()}
                 </Typography>
-                <span className="mt-1 font-medium text-blue-500">{item.content_type_type}</span>
+                <span className="mt-1 font-medium text-blue-300">{item.content_type_type.charAt(0).toUpperCase() + item.content_type_type.slice(1)}</span>
               </motion.div>
             ))}
           </div>
         </div>
+      </section>
+      <section className="container mx-auto grid gap-10 lg:grid-cols-1 lg:gap-20 xl:grid-cols-1 p-4">
+        <div>
+          <Typography
+            variant="h1"
+            className="text-3xl !leading-snug lg:text-5xl text-blue-500" placeholder={undefined}          >
+            Inscriptions on Ordinals Lite
+          </Typography>
+          <Typography
+            variant="lead"
+            className="mt-3 w-full !text-gray-500 lg:w-11/12" placeholder={undefined}          >
+            Ordinals Lite stands as a testament to secure, immutable, and decentralized data, leveraging over 1,000 Litecoin nodes worldwide on the worlds longest running blockchain with 100% uptime. The Litecoin Blockchain benefits from the protection of a dedicated network of Scrypt ASIC miners, deployed globally to ensure the network&apos;s integrity and resilience.
+          </Typography>
+          <Typography
+            variant="lead"
+            className="mt-3 w-full !text-gray-500 lg:w-11/12" placeholder={undefined}          >
+            The inaugural inscription, Inscription #0, on Litecoin was none other than the Mimblewimble White Paper, symbolizing a significant leap in Litecoin&apos;s journey. With the integration of MWEB alongside Taproot on block 2,257,920, this milestone underscored Litecoin&apos;s dedication to enhancing privacy, scalability, and security.
+          </Typography>
+          <Typography
+            variant="lead"
+            className="mt-3 w-full !text-gray-500 lg:w-11/12" placeholder={undefined}          >
+            Introducing the groundbreaking Mimblewimble Extension Block (MWEB) feature, Litecoin has set a new standard for transaction privacy and efficiency. By allocating a highly prunable block space for fungible transactions, MWEB cleverly removes competition for space within the base and the SegWit blocks, which are crucial for the support of ordinals. This innovation not only enhances transaction privacy but also optimizes the network&apos;s overall performance and scalability.
+          </Typography>
+        </div>
+        <div className="w-full bg-black">
+          <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium" placeholder={undefined}>
+            Inscription #0
+          </Typography>
+          <InscriptionHero inscription_id='71e0f6dc87a473aa69787fff8e09e5eddfdca96e587928a5b1a25c0ae16dc0eei0' content_length={57} maxHeight="600px" inscription_number={0} content_type="application/pdf" content_type_type="application" />
+        </div>
+
+
       </section>
     </div>
   );

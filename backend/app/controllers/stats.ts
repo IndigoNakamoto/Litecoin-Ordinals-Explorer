@@ -1,6 +1,7 @@
 import Inscription from '../models/Inscription';
 import sequelize from '../../config/database';
 import { Op } from 'sequelize'; // If needed for more complex operations
+import { getBlockHeight } from '../utils/ord-litecoin';
 
 // Assuming this interface reflects the raw result structure accurately
 interface RawContentTypeCount {
@@ -46,4 +47,9 @@ export async function getInscriptionStats() {
     console.error('Failed to get inscription stats:', error);
     throw error;
   }
+}
+
+
+export async function returnBlockHeight() { 
+  return await getBlockHeight();
 }

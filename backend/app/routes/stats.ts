@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { getInscriptionStats } from '../controllers/stats';
+import { getInscriptionStats, returnBlockHeight } from '../controllers/stats';
 const NodeCache = require("node-cache");
 const statsCache = new NodeCache({ stdTTL: 600, checkperiod: 150 }); // Example: cache for 5 minutes or 300 seconds
 
@@ -19,6 +19,11 @@ router.get('/totals', async (req: Request, res: Response) => {
         statsCache.set("inscriptionTotals", result);
         res.json(result);
     }
+});
+
+router.get('/blockHeight', async (req: Request, res: Response) => {
+    const result = await returnBlockHeight();
+    res.json(result);
 });
 
 export default router;

@@ -26,7 +26,7 @@ const useFetchContent = (inscription_id: string, content_type: string) => {
     useEffect(() => {
         async function fetchData() {
             try {
-                const url = `https://ordlite.io/content/${inscription_id}`;
+                const url = `${process.env.NEXT_PUBLIC_ORD_LITECOIN_URL}/content/${inscription_id}`;
                 const response = await fetch(url);
 
                 if (!response.ok) {
