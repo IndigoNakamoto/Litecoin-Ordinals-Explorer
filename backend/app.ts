@@ -2,9 +2,9 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 
-import * as mimeTypes from 'mime-types'; // Import mime-types package
-import fs from 'fs';
-import NodeCache from 'node-cache';
+// import * as mimeTypes from 'mime-types'; // Import mime-types package
+// import fs from 'fs';
+// import NodeCache from 'node-cache';
 
 // import updateInscriptions from './app/services/InscriptionUpdateService';
 
@@ -12,7 +12,7 @@ import NodeCache from 'node-cache';
 
 const app = express();
 const port = 3005;
-const cache = new NodeCache({ stdTTL: 300, checkperiod: 120 });
+// const cache = new NodeCache({ stdTTL: 300, checkperiod: 120 });
 
 // import usersRouter from './app/routes/users';
 import loginRouter from './app/routes/login';
