@@ -12,6 +12,6 @@
   "lib": ["es2015"],
   "types": ["node"],
   // TODO: adjust the paths in the include and exclude sections based on your project structure
-  "include": ["src/**/*.ts"], 
+  "include": ["app/**/*.ts"], 
   "exclude": ["node_modules", "**/*.spec.ts"]
 }
