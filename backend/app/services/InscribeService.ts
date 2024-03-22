@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import express, { Request, Response } from 'express';
 import Invoice from '../models/Invoice';
 import File from '../models/File';
+import { config } from 'dotenv';
 
 class InscriptionService {
     constructor(private readonly appSecret: string) { }
@@ -121,16 +122,10 @@ class InscriptionService {
             secret: this.appSecret,
         };
 
-        const config: AxiosRequestConfig = {
-            headers: {
-                Authorization: `Basic ${Buffer.from(storeId + ':' + this.appSecret).toString('base64')}`,
-            },
-        };
-
         try {
-            const response = await axios.post(`/api/v1/stores/${storeId}/webhooks`, webhookData, config);
+            const response = await axios.post(`/api/v1/stores/${storeId}/webhooks`, webhookData, config as AxiosRequestConfig);
             console.log('Webhook subscribed successfully:', response.data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error subscribing to webhook:', error.response.data);
         }
     }
