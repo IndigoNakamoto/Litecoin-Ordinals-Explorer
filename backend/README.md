@@ -102,6 +102,10 @@ litecoind -daemon
 litecoin-cli getblockchaininfo
 litecoin-cli stop
 
+#### Macbook pro
+cd ~/.bin
+./litecoind
+
 ## 4. Install Ord
 ### Resources
 See Readme
@@ -110,7 +114,12 @@ cd bin
 ./ord index update
 
 ./ord server -j
-./ord --bitcoin-rpc-user your_rpc_username --bitcoin-rpc-pass your_rpc_password server -j
+./ord --bitcoin-rpc-user your_rpc_username --bitcoin-rpc-pass your_rpc_password server --http-port 8080 -j 
+
+
+#### Macbook pro
+cd /Users/indigo/dev/ord-litecoin-0.15/target/release
+./ord --bitcoin-rpc-user your_rpc_username --bitcoin-rpc-pass your_rpc_password --http-port 8080 server -j 
 
 ## 5. GIT Clon project
 git clone https://github.com/IndigoNakamoto/ordlite.io.git
@@ -137,6 +146,8 @@ cd ../services/
 npx ts-node InscriptionUpdateService.ts
 
 ### c. Start Servers (Screen 3)
+/backend/
+
 
 
 1. screen
@@ -170,3 +181,10 @@ docker exec -it docker-postgres-1 psql -U ord_lite_user -d ord_lite_db
 \dm inscriptions_video
 \dm+
 
+
+
+#DEBUG
+## terminal closes with terminals for servers:
+sudo lsof -i :3000 -i :3005
+
+kill <PID3000> <PID3005>
