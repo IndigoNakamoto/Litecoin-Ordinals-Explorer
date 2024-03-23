@@ -340,7 +340,9 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
                         <Button
                             key={type}
                             onClick={() => handleFilterClick(type)}
-                            className={`px-6 py-1.5 text-sm rounded-3xl ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-400 to-blue-700 text-white' : 'bg-gradient-to-br from-white to-gray-400 text-black'}`} placeholder={undefined}                        >
+                            size="sm"
+                            variant="gradient"
+                            className={`rounded-3xl ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-300 to-blue-800 text-white' : 'bg-gradient-to-br from-white to-gray-500 text-black'}`} placeholder={undefined}                        >
                             {type}
                         </Button>
                     ))}
