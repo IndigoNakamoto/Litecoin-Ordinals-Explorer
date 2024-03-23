@@ -26,11 +26,11 @@ export function ProfileMenu() {
                 <Avatar
                     variant="circular"
                     alt="User Avatar"
-                    className="cursor-pointer"
-                    src="/avatar.png" placeholder={undefined}                />
+                    className="cursor-pointer w-11 h-11"
+                    src="/avatar.png" placeholder={undefined} />
             </MenuHandler>
             <MenuList placeholder={undefined}>
-                <MenuItem  placeholder={undefined}>
+                <MenuItem placeholder={undefined}>
                     <Link href="/account" passHref className="flex items-center gap-2">
                         <svg
                             width="16"

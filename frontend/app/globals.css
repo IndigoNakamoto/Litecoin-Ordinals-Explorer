@@ -39,11 +39,11 @@ body::-webkit-scrollbar {
   width: 12px;
 }
 body::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0); /* Transparent track */
+  background: rgba(96, 96, 96, 0.80); /* Transparent track */
 }
 
 body::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0); /* Transparent thumb */
+  background-color: rgba(96, 96, 96, 0.53); /* Transparent thumb */
 }
 
 body:hover::-webkit-scrollbar-thumb {

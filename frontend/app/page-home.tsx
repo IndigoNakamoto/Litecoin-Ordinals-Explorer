@@ -242,16 +242,16 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
             setFilterType('3D')
         } else if (filterType === 'Text') {
             newFilter.contentTypeType = 'text'
-            setFilterType('Text')
+            setFilterType('text')
         } else if (filterType === 'Audio') {
             newFilter.contentTypeType = 'audio'
-            setFilterType('Audio')
+            setFilterType('audio')
         } else if (filterType === 'Videos') {
             newFilter.contentTypeType = 'video'
-            setFilterType('Video')
+            setFilterType('video')
         } else if (filterType === 'Images') {
             newFilter.contentTypeType = 'image'
-            setFilterType('Image')
+            setFilterType('image')
         }
         setFilter(newFilter);
     };
@@ -333,7 +333,7 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
 
     return (
         <>
-            <div className="mx-auto p-8 mb-16">
+            <div className="mx-auto p-4 md:p-8 mb-16">
                 {/* Filter Buttons */}
                 <div className="flex gap-2 overflow-x-auto no-scrollbar">
                     {['All', 'Images', 'GIF', 'Text', 'SVG', 'Videos', 'JSON', 'PDF', 'Audio', '3D'].map((type) => ( //'HTML', 
@@ -364,11 +364,11 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
 
                 {/* Inscriptions Count */}
                 <div className='pt-4 '>
-                    <Typography placeholder={undefined} variant="lead" className='text-gray-500 text-md'>Found <span className='text-white'>{`${fetchedCount.toLocaleString()} ${filterTypeDesc}`}</span> inscriptions</Typography>
+                    <Typography placeholder={undefined} variant="lead" className='text-gray-500 text-md'>Found <span className='text-white'>{`${fetchedCount.toLocaleString()}`}</span> {`${filterTypeDesc} inscriptions`}</Typography>
                 </div>
 
                 {/* Inscriptions */}
-                <div className="grid pt-8 gap-1" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                <div className="grid pt-8 gap-1" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))' }}>
                     {Array.isArray(inscriptions) && inscriptions.map((inscription, index) => (
                         <div key={inscription.inscription_id} ref={el => el && (cardRefs.current[index] = el)} data-inscription-id={inscription.inscription_id}>
                             <InscriptionCard {...inscription} />

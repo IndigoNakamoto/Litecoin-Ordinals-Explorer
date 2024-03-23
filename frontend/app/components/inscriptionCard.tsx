@@ -46,16 +46,16 @@ export const InscriptionCard: React.FC<InscriptionCardProps> = ({
     inscription_id,
     inscription_number,
     content_type,
-    maxHeight = "200px",
+    maxHeight = "175px",
 }) => {
 
     const formattedInscriptionNumber = inscription_number.toLocaleString(); // This will format the number with commas
 
     return (
-        <div className="overflow-hidden shadow-lg cursor-pointer transition-transform duration-200 ease-in-out hover:scale-105">
+        <div className="rounded-3xl bg-gradient-to-br from-gray-800 to-transparent` p-2 overflow-hidden shadow-lg cursor-pointer transition-transform duration-200 ease-in-out hover:scale-105">
             <Link href={`/${inscription_number}`} target="_blank" rel="noopener">
                 <div 
-                    className={`aspect-w-1 aspect-h-1 w-[200px] h-[200px] overflow-hidden rounded-3xl flex items-center justify-center relative bg-gradient-to-br from-gray-800 to-transparent`}
+                    className={`aspect-w-1 aspect-h-1 w-full h-[175px] overflow-hidden rounded-3xl flex items-center justify-center relative bg-gradient-to-br from-gray-800 to-transparent`}
                     style={{ maxHeight }} // Apply the maxHeight value here
                 >
                     <ContentRenderer

@@ -24,7 +24,7 @@ const Menu = () => {
 
   return (
     <nav className='bg-gradient-to-br from-white to-gray-300 max-w-full shadow-md '>
-      <div className="flex items-center py-4 px-4 mx-auto">
+      <div className="flex items-center py-2 md:p-4 mx-auto">
         {/* Logo and OrdLite.io text */}
         <Link href="/" passHref className="flex items-center text-black font-semibold py-1 px-4 text-2xl cursor-pointer">
           {/* SVG logo next to the text */}
