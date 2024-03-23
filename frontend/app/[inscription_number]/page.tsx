@@ -30,7 +30,7 @@ export async function generateMetadata(
       title: `Inscription ${inscriptionNumber} | OrdLite.io`,
       description: `Inscription ${inscriptionNumber} on Litecoin.`,
       creator: '@ordlite',
-      images: ['https://ordlite.io/background.webp'], // This must be an absolute URL
+      images: ['https://ordlite.io/social_background.webp'], // This must be an absolute URL
     },
     // If needed, you can extend or modify the parent metadata
     // For example, to add to the existing openGraph images:
