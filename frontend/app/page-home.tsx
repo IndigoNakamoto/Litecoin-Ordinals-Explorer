@@ -337,14 +337,14 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
                 {/* Filter Buttons */}
                 <div className="flex gap-2 overflow-x-auto no-scrollbar">
                     {['All', 'Images', 'GIF', 'Text', 'SVG', 'Videos', 'JSON', 'PDF', 'Audio', '3D'].map((type) => ( //'HTML', 
-                        <Button
+                        <button
                             key={type}
                             onClick={() => handleFilterClick(type)}
-                            size="sm"
-                            variant="gradient"
-                            className={`rounded-3xl ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-300 to-blue-800 text-white' : 'bg-gradient-to-br from-white to-gray-500 text-black'}`} placeholder={undefined}                        >
+                            // size="sm"
+                            // variant="gradient"
+                            className={`rounded-3xl w-min px-4 py-1 ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-300 to-blue-800 text-white' : 'bg-gradient-to-br from-white to-gray-600 text-black'}`}                       >
                             {type}
-                        </Button>
+                        </button>
                     ))}
                 </div>
 

@@ -72,7 +72,7 @@ function StatsCard({ count, title }: StatsCardPropsType) {
           {count}
         </Typography>
       </motion.div>
-      <Typography variant="h6" color="white" className="mt-1 font-medium text-blue-300" placeholder={undefined}>
+      <Typography variant="h6" color="white" className="mt-1 font-medium text-white" placeholder={undefined}>
         {title}
       </Typography>
     </Card>
@@ -156,7 +156,7 @@ export default function StatsPage() {
         <div className=''>
           <Typography
             variant="h1"
-            className="text-3xl !leading-snug lg:text-5xl text-blue-500" placeholder={undefined}          >
+            className="text-3xl !leading-snug lg:text-5xl text-white" placeholder={undefined}          >
             Ordinal Lite Stats
           </Typography>
           <div className="grid grid-cols-1 gap-8 gap-x-28 text-white">
@@ -167,7 +167,7 @@ export default function StatsPage() {
         </div>
 
         <div className='xl:py-14'>
-          {/* <Typography variant="h4" className="mb-6 underline underline-offset-1 text-blue-500 font-medium" placeholder={undefined}>
+          {/* <Typography variant="h4" className="mb-6 underline underline-offset-1 text-white font-medium" placeholder={undefined}>
             File Count
           </Typography> */}
           <div className="grid grid-cols-2 md:grid-cols-2 gap-x-24 min-w-2xl max-w-3xl">
@@ -182,7 +182,7 @@ export default function StatsPage() {
                 <Typography className="text-3xl font-bold text-white" placeholder={undefined}>
                   {item.count.toLocaleString()}
                 </Typography>
-                <span className="mt-1 font-medium text-blue-300">{item.content_type_type.charAt(0).toUpperCase() + item.content_type_type.slice(1)}</span>
+                <span className="mt-1 font-large text-white">{item.content_type_type.charAt(0).toUpperCase() + item.content_type_type.slice(1)}</span>
               </motion.div>
             ))}
           </div>
@@ -192,7 +192,7 @@ export default function StatsPage() {
         <div>
           <Typography
             variant="h1"
-            className="text-3xl !leading-snug lg:text-5xl text-blue-500" placeholder={undefined}          >
+            className="text-3xl !leading-snug lg:text-5xl text-white" placeholder={undefined}          >
             Inscriptions on Ordinals Lite
           </Typography>
           <Typography
@@ -212,7 +212,7 @@ export default function StatsPage() {
           </Typography>
         </div>
         <div className="w-full bg-black">
-          <Typography variant="h4" className="mb-6 text-blue-500 underline underline-offset-1 font-medium" placeholder={undefined}>
+          <Typography variant="h4" className="mb-6 text-white underline underline-offset-1 font-medium" placeholder={undefined}>
             Inscription #0
           </Typography>
           <InscriptionHero inscription_id='71e0f6dc87a473aa69787fff8e09e5eddfdca96e587928a5b1a25c0ae16dc0eei0' content_length={57} maxHeight="600px" inscription_number={0} content_type="application/pdf" content_type_type="application" />

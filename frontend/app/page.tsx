@@ -34,23 +34,16 @@ interface Inscription {
 
 
 export const metadata: Metadata = {
-  title: 'OrdLite.io',
-  description: '',
-  // TODO
+  title: 'OrdLite.io | Ordinals Explorer',
+  description: 'Explore the history of the Ordinals on Litecoin and its inscriptions.',
+  twitter: {
+    card: 'summary_large_image',
+    title: 'OrdLite.io | Ordinals Explorer for Litecoin',
+    description: 'Explore the history of Ordinals on Litecoin and its inscriptions.',
+    creator: '@ordlite',
+    images: ['https://ordlite.io/background.webp'], // Must be an absolute URL
+  },
 }
-
-// Assuming this fetchInscriptions function replaces the data fetching logic previously found in HomePage
-// async function fetchInscriptions(lastInscriptionNumber: number | undefined, filter: FilterType) {
-//   const query = new URLSearchParams({
-//     lastInscriptionNumber: lastInscriptionNumber?.toString() || '',
-//     sortBy: filter.sortBy,
-//     contentType: filter.contentType,
-//     cursed: filter.cursed.toString(),
-//   }).toString();
-//   const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${query}`);
-//   const inscriptions = await response.json();
-//   return inscriptions;
-// }
 
 async function fetchInscriptions(filter: FilterType) {
   // Base URL for the inscriptions endpoints
