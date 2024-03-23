@@ -82,12 +82,20 @@ async function fetchInscriptions(filter: FilterType) {
   return data
 }
 
+async function fetchTotalCount() { 
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/total_count`);
+  const { count } = await response.json();
+  return count;
+
+}
+
 // This is a Server Component
 export default async function Page() {
   // Example data fetching in Server Component
   const filter = { sortBy: 'oldest', contentType: '', contentTypeType: '', page: 1, cursed: false };
-  // const inscriptions = await fetchInscriptions(filter);
+  const inscriptions = await fetchInscriptions(filter);
+  const totalCount = await fetchTotalCount();
   // const inscriptions:Inscription[] = []
   // Forward fetched data to your Client Component
-  return <HomePage initialInscriptions={[]} />;
+  return <HomePage initialInscriptions={inscriptions} totalCount={totalCount}/>;
 }

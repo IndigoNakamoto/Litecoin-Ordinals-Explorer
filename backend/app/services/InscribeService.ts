@@ -4,10 +4,16 @@ import Invoice from '../models/Invoice';
 import File from '../models/File';
 import { config } from 'dotenv';
 
+
+
+// store_id: BhDs47oxRpXbLLBMfAYpA4SYTSasvT3Cg8WBP6tpMWhX
+
+
+
 class InscriptionService {
     constructor(private readonly appSecret: string) { }
 
-    private async verifySignature(request: Request): Promise<boolean> {
+    public async verifySignature(request: Request): Promise<boolean> {
         const sigHeader = request.headers['btcpay-sig'] as string;
         if (!sigHeader) return false;
 
@@ -94,6 +100,15 @@ class InscriptionService {
                     break;
                 case 'InvoiceExpired':
                     await this.handleInvoiceExpired(eventData);
+                    break;
+                case 'InvoiceInvalid':
+                    await this.handleInvoiceInvalid(eventData);
+                    break;
+                case 'InvoiceProcessing':
+                    await this.handleInvoiceProcessing(eventData);
+                    break;
+                case 'InvoiceSettled':
+                    await this.handleInvoiceSettled(eventData);
                     break;
                 case 'InvoiceReceivedPayment':
                     await this.handleInvoiceReceivedPayment(eventData);

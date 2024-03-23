@@ -24,6 +24,7 @@ const createDatabase = async () => {
             last_processed_block INTEGER,
             last_processed_page INTEGER);
 
+<<<<<<< Updated upstream
         CREATE TABLE IF NOT EXISTS inscriptions (
             address VARCHAR(255),
             content_length INTEGER,
@@ -60,6 +61,40 @@ const createDatabase = async () => {
         CREATE TABLE IF NOT EXISTS inscriptions_application PARTITION OF inscriptions FOR VALUES IN ('application');
         `);
 
+=======
+            CREATE TABLE IF NOT EXISTS inscriptions (
+                inscription_id VARCHAR(255) PRIMARY KEY,
+                address VARCHAR(255),
+                content_length INTEGER,
+                content_type VARCHAR(255),
+                content_type_type VARCHAR(255),
+                genesis_fee BIGINT,
+                genesis_height INTEGER,
+                inscription_number INTEGER,
+                next VARCHAR(255),
+                output_value BIGINT,
+                parent VARCHAR(255),
+                previous VARCHAR(255),
+                processed BOOLEAN DEFAULT FALSE,
+                nsfw BOOLEAN DEFAULT FALSE,
+                rune VARCHAR(255),
+                sat VARCHAR(255),
+                satpoint VARCHAR(255),
+                timestamp TIMESTAMP,
+                charms TEXT[],
+                children TEXT[]
+            );
+
+            CREATE TABLE IF NOT EXISTS inscriptions_default PARTITION OF inscriptions DEFAULT;
+            CREATE TABLE IF NOT EXISTS inscriptions_text PARTITION OF inscriptions FOR VALUES IN ('text');
+            CREATE TABLE IF NOT EXISTS inscriptions_image PARTITION OF inscriptions FOR VALUES IN ('image');
+            CREATE TABLE IF NOT EXISTS inscriptions_video PARTITION OF inscriptions FOR VALUES IN ('video');
+            CREATE TABLE IF NOT EXISTS inscriptions_audio PARTITION OF inscriptions FOR VALUES IN ('audio');
+            CREATE TABLE IF NOT EXISTS inscriptions_model PARTITION OF inscriptions FOR VALUES IN ('model');
+            CREATE TABLE IF NOT EXISTS inscriptions_application PARTITION OF inscriptions FOR VALUES IN ('application');
+        `);
+
+>>>>>>> Stashed changes
         console.log('Tables created successfully.');
 
         // Create indexes for the inscriptions table
@@ -106,6 +141,22 @@ const createDatabase = async () => {
 
         console.log('Materialized views and indexes on materialized views created successfully.');
 
+<<<<<<< Updated upstream
+=======
+        // Create additional materialized views for aggregated data
+        // await client.query(`
+        //     CREATE MATERIALIZED VIEW IF NOT EXISTS total_content_length AS
+        //     SELECT SUM(content_length) AS total FROM inscriptions;
+
+        //     CREATE MATERIALIZED VIEW IF NOT EXISTS total_genesis_fee AS
+        //     SELECT SUM(genesis_fee) AS total FROM inscriptions;
+
+        //     CREATE MATERIALIZED VIEW IF NOT EXISTS total_inscriptions AS
+        //     SELECT COUNT(*) AS total FROM inscriptions;                       
+        // `);
+
+        console.log('Materialized views for aggregated data created successfully.');
+>>>>>>> Stashed changes
     } catch (e) {
         console.error('Error during database setup:', e);
     } finally {

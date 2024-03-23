@@ -35,8 +35,14 @@ router.get('/blockHeight', async (req: Request, res: Response) => {
 });
 
 router.get('/total_count', async (req: Request, res: Response) => {
-    const count = await getTotalCount();
-    res.json({ count });
+    let result = statsCache.get('totalInscriptionsCount');
+    if (result) {
+        res.json(result);
+    } else {
+        const count = await getTotalCount();
+        statsCache.set('totalInscriptionsCount', { count });
+        res.json({ count });
+    }
 });
 
 router.get('/content_type_count/:contentType', async (req: Request, res: Response) => {

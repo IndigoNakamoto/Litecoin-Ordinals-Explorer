@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { InscriptionCard } from './components/inscriptionCard';
 import { debounce } from 'lodash';
 import { Typography } from "@material-tailwind/react";
-import { Button} from "@material-tailwind/react";
+import { Button } from "@material-tailwind/react";
 
 export interface Inscription {
     address: string;
@@ -31,9 +31,10 @@ export interface Inscription {
 
 interface HomeProps {
     initialInscriptions: Inscription[];
+    totalCount: number;
 }
 
-export default function Home({ initialInscriptions }: HomeProps) {
+export default function Home({ initialInscriptions, totalCount }: HomeProps) {
     const [inscriptions, setInscriptions] = useState<Inscription[]>(initialInscriptions);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState({ sortOrder: 'oldest', contentType: '', contentTypeType: '', page: 1, cursed: false });
@@ -43,10 +44,11 @@ export default function Home({ initialInscriptions }: HomeProps) {
     const [selectedSortOption, setSelectedSortOption] = useState<string>('Oldest');
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [rightPosition, setRightPosition] = useState('0px');
-    const [fetchedCount, setFetchedCount] = useState(0);
+    const [fetchedCount, setFetchedCount] = useState(totalCount);
+    const [filterTypeDesc, setFilterType] = useState('');
 
 
-    const cardRefs =  useRef<(HTMLDivElement | null)[]>([]);
+    const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -77,12 +79,12 @@ export default function Home({ initialInscriptions }: HomeProps) {
 
     const fetchInscriptions = async () => {
         setLoading(true);
-    
+
         try {
             // Base URL for the inscriptions endpoints
-            
+
             let baseUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions`;
-    
+
             // Determine the correct endpoint based on the filters
             if (filter.contentTypeType) {
                 baseUrl += `/content_type_type/${filter.contentTypeType}`;
@@ -91,7 +93,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
             } else {
                 baseUrl += '/'; // Default to getting all inscriptions
             }
-    
+
             // Build the query parameters
             const queryParams = new URLSearchParams({
                 sortOrder: filter.sortOrder,
@@ -99,17 +101,17 @@ export default function Home({ initialInscriptions }: HomeProps) {
                 cursed: filter.cursed.toString(),
                 limit: '50', // Assuming you want to keep the limit or it can be adjusted based on your requirements
             }).toString();
-    
+
             // Complete URL with query parameters
             const url = `${baseUrl}?${queryParams}`;
-    
+
             // Fetch the data from the backend
             const response = await fetch(url);
             const data = await response.json();
-    
+
             // Concatenate the new data with the existing inscriptions
             setInscriptions(prevInscriptions => [...prevInscriptions, ...data]);
-    
+
             // Check if the number of fetched items is less than 50, indicating no more inscriptions to load
             setHasMore(data.length === 50);
         } catch (error) {
@@ -120,7 +122,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
         }
     };
 
-    
+
 
     const isInitialMount = useRef(true);
     useEffect(() => {
@@ -193,11 +195,11 @@ export default function Home({ initialInscriptions }: HomeProps) {
                 rootMargin: '100px',
             }
         );
-    
+
         if (loader.current) {
             observer.observe(loader.current);
         }
-    
+
         return () => {
             if (loader.current) {
                 observer.unobserve(loader.current);
@@ -219,26 +221,37 @@ export default function Home({ initialInscriptions }: HomeProps) {
             // If "All" is selected, clear both contentType and contentTypeType filters
             newFilter.contentType = '';
             newFilter.contentTypeType = '';
-        } else if(filterType === 'SVG' ){
+            setFilterType('')
+        } else if (filterType === 'SVG') {
             newFilter.contentType = 'image%2Fsvg+xml'
-        } else if(filterType === 'GIF' ) {
+            setFilterType('SVG')
+        } else if (filterType === 'GIF') {
             newFilter.contentType = 'image%2Fgif'
-        } else if(filterType === 'HTML' ) {
+            setFilterType('GIF')
+        } else if (filterType === 'HTML') {
             newFilter.contentType = 'text%2Fhtml%3Bcharset%3Dutf-8'
+            setFilterType('HTML')
         } else if (filterType === 'PDF') {
             newFilter.contentType = 'application%2Fpdf'
-        } else if (filterType === 'JSON'  ){
+            setFilterType('PDF')
+        } else if (filterType === 'JSON') {
             newFilter.contentType = 'application%2Fjson'
-        } else if (filterType === '3D' ) {
-            newFilter.contentTypeType = 'model'             
-        } else if (filterType === 'Text' ) {
+            setFilterType('JSON')
+        } else if (filterType === '3D') {
+            newFilter.contentTypeType = 'model'
+            setFilterType('3D')
+        } else if (filterType === 'Text') {
             newFilter.contentTypeType = 'text'
-        } else if (filterType === 'Audio' ) {
+            setFilterType('Text')
+        } else if (filterType === 'Audio') {
             newFilter.contentTypeType = 'audio'
-        } else if (filterType === 'Videos' ) {
+            setFilterType('Audio')
+        } else if (filterType === 'Videos') {
             newFilter.contentTypeType = 'video'
-        } else if (filterType === 'Images' ) {
+            setFilterType('Video')
+        } else if (filterType === 'Images') {
             newFilter.contentTypeType = 'image'
+            setFilterType('Image')
         }
         setFilter(newFilter);
     };
@@ -348,9 +361,13 @@ export default function Home({ initialInscriptions }: HomeProps) {
                         </div>
                     )}
                 </div>
+
+                {/* Inscriptions Count */}
                 <div className='pt-4 '>
-                    <Typography placeholder={undefined} className='text-gray-500 text-md'>Found <span className='text-white'>{fetchedCount.toLocaleString()}</span> inscriptions</Typography>
+                    <Typography placeholder={undefined} variant="lead" className='text-gray-500 text-md'>Found <span className='text-white'>{`${fetchedCount.toLocaleString()} ${filterTypeDesc}`}</span> inscriptions</Typography>
                 </div>
+
+                {/* Inscriptions */}
                 <div className="grid pt-8 gap-1" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
                     {Array.isArray(inscriptions) && inscriptions.map((inscription, index) => (
                         <div key={inscription.inscription_id} ref={el => el && (cardRefs.current[index] = el)} data-inscription-id={inscription.inscription_id}>
