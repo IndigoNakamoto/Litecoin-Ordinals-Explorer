@@ -28,15 +28,16 @@ body {
 
 html {
   overflow-y: scroll; /* This will always show the vertical scrollbar */
+  overflow-x: hidden; /* Hide horizontal scrollbar */
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0); /* Make scrollbar transparent */
 }
+
 
 /* For Webkit (Chrome, Edge, Safari) */
 body::-webkit-scrollbar {
   width: 12px;
 }
-
 body::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0); /* Transparent track */
 }
@@ -48,9 +49,8 @@ body::-webkit-scrollbar-thumb {
 body:hover::-webkit-scrollbar-thumb {
   background-color: #a0a0a0; /* Change to visible color on hover */
 }
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-}
+} 

@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { InscriptionCard } from './components/inscriptionCard';
 import { debounce } from 'lodash';
+import { Typography } from "@material-tailwind/react";
+import { Button} from "@material-tailwind/react";
 
 export interface Inscription {
     address: string;
@@ -41,6 +43,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
     const [selectedSortOption, setSelectedSortOption] = useState<string>('Oldest');
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [rightPosition, setRightPosition] = useState('0px');
+    const [fetchedCount, setFetchedCount] = useState(0);
 
 
     const cardRefs =  useRef<(HTMLDivElement | null)[]>([]);
@@ -94,7 +97,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
                 sortOrder: filter.sortOrder,
                 page: filter.page?.toString() || '1',
                 cursed: filter.cursed.toString(),
-                limit: '100', // Assuming you want to keep the limit or it can be adjusted based on your requirements
+                limit: '50', // Assuming you want to keep the limit or it can be adjusted based on your requirements
             }).toString();
     
             // Complete URL with query parameters
@@ -107,8 +110,8 @@ export default function Home({ initialInscriptions }: HomeProps) {
             // Concatenate the new data with the existing inscriptions
             setInscriptions(prevInscriptions => [...prevInscriptions, ...data]);
     
-            // Check if the number of fetched items is less than 100, indicating no more inscriptions to load
-            setHasMore(data.length === 100);
+            // Check if the number of fetched items is less than 50, indicating no more inscriptions to load
+            setHasMore(data.length === 50);
         } catch (error) {
             console.error("Failed to fetch inscriptions:", error);
             // Handle error (e.g., show error message to user)
@@ -116,10 +119,8 @@ export default function Home({ initialInscriptions }: HomeProps) {
             setLoading(false);
         }
     };
-    
-    
-    
 
+    
 
     const isInitialMount = useRef(true);
     useEffect(() => {
@@ -130,6 +131,7 @@ export default function Home({ initialInscriptions }: HomeProps) {
             // This code now runs only on updates, not on the initial mount
             // setInscriptions([]);
             fetchInscriptions();
+            fetchTotalCount();
         }
     }, [filter]);
 
@@ -179,6 +181,30 @@ export default function Home({ initialInscriptions }: HomeProps) {
         }
     }, []);
 
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            entries => {
+                const entry = entries[0];
+                if (entry.isIntersecting && hasMore && !loading) {
+                    handleLoadMore();
+                }
+            },
+            {
+                rootMargin: '100px',
+            }
+        );
+    
+        if (loader.current) {
+            observer.observe(loader.current);
+        }
+    
+        return () => {
+            if (loader.current) {
+                observer.unobserve(loader.current);
+            }
+        };
+    }, [loading, hasMore]);
+
 
 
     const handleFilterClick = (filterType: string) => {
@@ -209,14 +235,66 @@ export default function Home({ initialInscriptions }: HomeProps) {
             newFilter.contentTypeType = 'text'
         } else if (filterType === 'Audio' ) {
             newFilter.contentTypeType = 'audio'
-        } else if (filterType === 'Video' ) {
+        } else if (filterType === 'Videos' ) {
             newFilter.contentTypeType = 'video'
-        } else if (filterType === 'Image' ) {
+        } else if (filterType === 'Images' ) {
             newFilter.contentTypeType = 'image'
         }
-    
         setFilter(newFilter);
     };
+
+
+    const fetchTotalCount = async () => {
+        try {
+            if (filter.contentType === '' && filter.contentTypeType === '') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/total_count`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            } else if (filter.contentType === 'image%2Fsvg+xml') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/content_type_count/image%2Fsvg+xml`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            } else if (filter.contentType === 'image%2Fgif') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/content_type_count/image%2Fgif`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            } else if (filter.contentType === 'text%2Fhtml%3Bcharset%3Dutf-8') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/content_type_count/text%2Fhtml%3Bcharset%3Dutf-8`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            } else if (filter.contentType === 'application%2Fpdf') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/content_type_count/application%2Fpdf`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            } else if (filter.contentType === 'application%2Fjson') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/content_type_count/application%2Fjson`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            } else if (filter.contentTypeType === 'model') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/content_type_type_count/model`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            } else if (filter.contentTypeType === 'text') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/content_type_type_count/text`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            } else if (filter.contentTypeType === 'audio') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/content_type_type_count/audio`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            } else if (filter.contentTypeType === 'video') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/content_type_type_count/video`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            } else if (filter.contentTypeType === 'image') {
+                const count = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/stats/content_type_type_count/image`)
+                    .then(response => response.json());
+                setFetchedCount(count.count);
+            }
+        } catch (error) {
+            console.error("Failed to fetch inscriptions count:", error);
+        }
+    }
 
     const updateFilter = (type: 'sortOrder' | 'contentType' | 'contentTypeType' | 'cursed', value: string | boolean) => {
         setHasMore(true);
@@ -242,19 +320,16 @@ export default function Home({ initialInscriptions }: HomeProps) {
 
     return (
         <>
-            <div className="mx-auto p-4 max-w-screen-2xl mb-16">
-                <h1 className="text-2xl font-bold">Inscriptions</h1>
-
+            <div className="mx-auto p-8 mb-16">
                 {/* Filter Buttons */}
-                <div className="flex gap-2 overflow-x-auto no-scrollbar pt-2">
-                    {['All', 'Video', 'Image', 'SVG', 'GIF', 'JSON', 'Text', 'PDF', 'Audio', '3D'].map((type) => ( //'HTML', 
-                        <button
+                <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                    {['All', 'Images', 'GIF', 'Text', 'SVG', 'Videos', 'JSON', 'PDF', 'Audio', '3D'].map((type) => ( //'HTML', 
+                        <Button
                             key={type}
                             onClick={() => handleFilterClick(type)}
-                            className={`px-3 py-1 text-sm rounded-3xl ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-400 to-blue-700 text-white' : 'bg-gradient-to-br from-white to-gray-400 text-black'}`}
-                        >
+                            className={`px-6 py-1.5 text-sm rounded-3xl ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-400 to-blue-700 text-white' : 'bg-gradient-to-br from-white to-gray-400 text-black'}`} placeholder={undefined}                        >
                             {type}
-                        </button>
+                        </Button>
                     ))}
                 </div>
 
@@ -273,11 +348,10 @@ export default function Home({ initialInscriptions }: HomeProps) {
                         </div>
                     )}
                 </div>
-
-
-                
-                
-                <div className="grid grid-cols-2 pt-8 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+                <div className='pt-4 '>
+                    <Typography placeholder={undefined} className='text-gray-500 text-md'>Found <span className='text-white'>{fetchedCount.toLocaleString()}</span> inscriptions</Typography>
+                </div>
+                <div className="grid pt-8 gap-1" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
                     {Array.isArray(inscriptions) && inscriptions.map((inscription, index) => (
                         <div key={inscription.inscription_id} ref={el => el && (cardRefs.current[index] = el)} data-inscription-id={inscription.inscription_id}>
                             <InscriptionCard {...inscription} />
@@ -300,118 +374,9 @@ export default function Home({ initialInscriptions }: HomeProps) {
                     </button>
                 )}
 
-                <div className="flex justify-center">
-                    {!loading && hasMore && (
-                        <button
-                            onClick={handleLoadMore}
-                            className="w-40 py-2 px-4 mt-4 bg-gradient-to-br from-blue-400 to-blue-700 text-white rounded-lg"
-                        >
-                            Load More
-                        </button>
-                    )}
-                </div>
+                <div ref={loader} className="h-10" />
+                <div ref={loader} />
             </div>
         </>
     );
 }
-
-
-
-
-
-
-
-
-    // const fetchInscriptions = async () => {
-
-    //     setLoading(true);
-
-    //     try {
-    //         const query = new URLSearchParams({
-    //             contentTypeType: filter.contentTypeType || '',
-    //             contentType: filter.contentType || '',
-    //             sortOrder: filter.sortOrder,
-    //             page: filter.page?.toString() || '1',
-    //             cursed: filter.cursed.toString(),
-    //             limit: '100' // Request 100 inscriptions each time
-    //         }).toString();
-    //         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions?${query}`);
-    //         const data = await response.json();
-
-    //         setInscriptions(prev => [...prev, ...data]);
-
-    //         // Check if the number of fetched items is less than 100, which means there are no more inscriptions to load
-    //         setHasMore(data.length === 100);
-    //     } catch (error) {
-    //         console.error("Failed to fetch inscriptions:", error);
-    //         // Handle error (e.g., show error message to user)
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
-    // const fetchInscriptions = async () => {
-    //     setLoading(true);
-    
-    //     try {
-    //         // Base URL for the inscriptions endpoints
-    //         let baseUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions`;
-    
-    //         // Determine the correct endpoint based on the filters
-    //         if (filter.contentTypeType) {
-    //             baseUrl += `/content_type_type/${filter.contentTypeType}`;
-    //         } else if (filter.contentType) {
-    //             baseUrl += `/content_type/${filter.contentType}`;
-    //         } else {
-    //             baseUrl += '/'; // Default to getting all inscriptions
-    //         }
-    
-    //         // Build the query parameters
-    //         const queryParams = new URLSearchParams({
-    //             sortOrder: filter.sortOrder,
-    //             page: filter.page?.toString() || '1',
-    //             cursed: filter.cursed.toString(),
-    //             limit: '100', // Assuming you want to keep the limit or it can be adjusted based on your requirements
-    //         }).toString();
-    
-    //         // Complete URL with query parameters
-    //         const url = `${baseUrl}?${queryParams}`;
-    
-    //         // Fetch the data from the backend
-    //         const response = await fetch(url);
-    //         const data = await response.json();
-    
-    //         // Update state with the new inscriptions
-    //         setInscriptions(prev => [...prev, ...data]);
-    
-    //         // Check if the number of fetched items is less than 100, indicating no more inscriptions to load
-    //         setHasMore(data.length === 100);
-    //     } catch (error) {
-    //         console.error("Failed to fetch inscriptions:", error);
-    //         // Handle error (e.g., show error message to user)
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
-
-
-        
-
-    // const handleFilterClick = (filterType: string) => {
-    //     setActiveFilterButton(filterType);
-    //     updateFilter('contentTypeType', filterType);
-    // };
-
-    // all maps to /inscriptions
-    // image maps to /inscriptions/content_type_type/image
-    // svg maps to /inscriptions/content_type/image%2Fsvg
-    // gif maps to /inscriptions/content_type/image%2Fgif
-    // 3D maps to /inscriptions/content_type/model
-    // text maps to /inscriptions/content_type/text
-    // html maps to /inscriptions/content_type/text%2Fhtml
-    // audio maps to /inscriptions/content_type_type/audio
-    // video maps to /inscriptions/content_type_type/video
-    // application maps to /inscriptions/content_type_type/application
-    // pdf maps to /inscriptions/content_type/application%2Fpdf
-    // json maps to /inscriptions/content_type/application%2Fjson

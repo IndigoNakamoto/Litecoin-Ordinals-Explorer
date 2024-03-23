@@ -22,7 +22,6 @@ const useFetchContent = (inscription_id: string, content_type: string) => {
     const [content, setContent] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
     useEffect(() => {
         async function fetchData() {
             try {
@@ -41,7 +40,7 @@ const useFetchContent = (inscription_id: string, content_type: string) => {
                     setContent(text);
                 } else   if (content_type === 'model/gltf-binary' || content_type === 'model/gltf+json') {
                     return (
-                      <div style={{ height: '500px', width: '100%' }}>
+                      <div>
                         <Canvas>
                           <ambientLight intensity={0.5} />
                           <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />

@@ -49,6 +49,44 @@ export async function getInscriptionStats() {
   }
 }
 
+export async function getTotalCount() {
+  try {
+    const count = await Inscription.count();
+    return count;
+  } catch (error) {
+    console.error('Failed to get total count:', error);
+    throw error;
+  }
+}
+
+export async function getContentTypeCount(contentType: string) {
+  try {
+    const count = await Inscription.count({
+      where: {
+        content_type: contentType,
+      },
+    });
+    return count;
+  } catch (error) {
+    console.error('Failed to get content type count:', error);
+    throw error;
+  }
+}
+
+export async function getContentTypeTypeCount(contentTypeType: string) {
+  try {
+    const count = await Inscription.count({
+      where: {
+        content_type_type: contentTypeType,
+      },
+    });
+    return count;
+  } catch (error) {
+    console.error('Failed to get content type type count:', error);
+    throw error;
+  }
+}
+
 
 export async function returnBlockHeight() { 
   return await getBlockHeight();

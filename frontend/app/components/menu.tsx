@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from "next/legacy/image"; // Import Next.js Image component for optimized images
-import { Avatar } from "@material-tailwind/react";
-import { Typography, Button, Input, Card } from "@material-tailwind/react";
+import { Button} from "@material-tailwind/react";
 import ConnectModal from './ConnectModal';
 import { ProfileMenu } from './ProfileMenu';
 
@@ -18,17 +17,14 @@ const Menu = () => {
   }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
+
   const handleButtonClick = () => {
     setIsModalOpen(true);
   };
 
   return (
     <nav className='bg-gradient-to-br from-white to-gray-300 max-w-full shadow-md '>
-      {/* <MetaMaskProvider> */}
-      <div className="flex items-center py-4 mx-auto max-w-screen-2xl">
+      <div className="flex items-center py-4 px-4 mx-auto">
         {/* Logo and OrdLite.io text */}
         <Link href="/" passHref className="flex items-center text-black font-semibold py-1 px-4 text-2xl cursor-pointer">
           {/* SVG logo next to the text */}
@@ -58,11 +54,10 @@ const Menu = () => {
               <div className="hidden md:flex">
                 <Button
                   onClick={handleButtonClick}
-                  color="blue"
                   size="md"
-                  variant="outlined"
-                  className="p-2 flex h-10 items-center justify-center gap-2 text-blue-600 w-full" placeholder={undefined}                >
-                  Connect Wallet
+                  variant="filled"
+                  className="p-2 flex h-10 items-center justify-center gap-2 text-white w-28 bg-gradient-to-br from-blue-400 to-blue-700" placeholder={undefined}                >
+                  Connect
                 </Button>
               </div>
             }

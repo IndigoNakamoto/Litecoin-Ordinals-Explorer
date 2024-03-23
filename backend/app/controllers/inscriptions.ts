@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import { getInscriptionData } from '../utils/ord-litecoin';
 import { FindOptions } from 'sequelize';
 
-const PAGE_SIZE = 100; // Number of items per page
+const PAGE_SIZE = 50; // Number of items per page
 
 export const getInscriptionById = async (req: Request, res: Response) => {
     try {

@@ -70,7 +70,7 @@ async function fetchInscriptions(filter: FilterType) {
     sortOrder: 'oldest',
     page: filter.page?.toString() || '1',
     cursed: filter.cursed.toString(),
-    limit: '100', // Assuming you want to keep the limit or it can be adjusted based on your requirements
+    limit: '50', // Assuming you want to keep the limit or it can be adjusted based on your requirements
   }).toString();
 
   // Complete URL with query parameters
@@ -86,8 +86,8 @@ async function fetchInscriptions(filter: FilterType) {
 export default async function Page() {
   // Example data fetching in Server Component
   const filter = { sortBy: 'oldest', contentType: '', contentTypeType: '', page: 1, cursed: false };
-  const inscriptions = await fetchInscriptions(filter);
+  // const inscriptions = await fetchInscriptions(filter);
   // const inscriptions:Inscription[] = []
   // Forward fetched data to your Client Component
-  return <HomePage initialInscriptions={inscriptions} />;
+  return <HomePage initialInscriptions={[]} />;
 }

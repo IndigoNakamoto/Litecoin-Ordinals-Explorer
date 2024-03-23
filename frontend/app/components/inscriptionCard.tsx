@@ -55,7 +55,7 @@ export const InscriptionCard: React.FC<InscriptionCardProps> = ({
         <div className="overflow-hidden shadow-lg cursor-pointer transition-transform duration-200 ease-in-out hover:scale-105">
             <Link href={`/${inscription_number}`} target="_blank" rel="noopener">
                 <div 
-                    className={`aspect-w-1 aspect-h-1 min-w-full min-h-[325px] overflow-hidden rounded-3xl bg-gradient-to-br from-gray-800 to-transparent flex items-center justify-center relative`}
+                    className={`aspect-w-1 aspect-h-1 w-[200px] h-[200px] overflow-hidden rounded-3xl flex items-center justify-center relative bg-gradient-to-br from-gray-800 to-transparent`}
                     style={{ maxHeight }} // Apply the maxHeight value here
                 >
                     <ContentRenderer
