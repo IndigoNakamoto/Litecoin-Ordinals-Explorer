@@ -31,7 +31,6 @@ router.get('/blockHeight', async (req: Request, res: Response) => {
         statsCache.set("blockHeight", result);
         res.json(result)
     }
-    res.json(result);
 });
 
 router.get('/total_count', async (req: Request, res: Response) => {
