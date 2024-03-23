@@ -9,11 +9,14 @@ import { ProfileMenu } from './ProfileMenu';
 
 const Menu = () => {
   const [connected, setConnected] = useState('false');
+  const [user, setUser] = useState('');
   useEffect(() => {
     const connected = localStorage.getItem('connected');
+    const username = localStorage.getItem('username')
     if (connected === 'true') {
       setConnected('true')
     }
+    setUser(String(username))
   }, []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,7 +26,7 @@ const Menu = () => {
   };
 
   return (
-    <nav className='bg-gradient-to-br from-white to-gray-300 max-w-full shadow-md '>
+    <nav className='bg-gradient-to-br from-white to-gray-500 max-w-full shadow-md '>
       <div className="flex items-center py-2 md:p-4 mx-auto">
         {/* Logo and OrdLite.io text */}
         <Link href="/" passHref className="flex items-center text-black font-semibold py-1 px-4 text-2xl cursor-pointer">
@@ -49,7 +52,8 @@ const Menu = () => {
           {/*  */}
           <div className='pr-4'>
             {connected === 'true' ?
-              <ProfileMenu /> :
+
+                <ProfileMenu user={user}/>:
               // This div will now be hidden on screens smaller than 'md' (768px by default) and displayed on larger screens
               <div className="hidden md:flex">
                 <Button

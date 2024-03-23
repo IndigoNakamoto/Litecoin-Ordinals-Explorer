@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Menu from './components/menu';
 import StickyFooter from "./components/StickyFooter";
-import Head from 'next/head'; // Import Head
+// import Head from 'next/head'; // Import Head
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,12 +24,7 @@ export default function RootLayout({
 
   return (
     <>
-      <Head>
-        {/* <title>{metadata.title ?? ''}</title> */}
-        {/* <title>stuff</title>  not wokring */}
-        <meta name="description" content={metadata.description ?? ''} />
-        {/* Add more global metadata tags here */}
-      </Head>
+
       <html lang="en">
         <body className={inter.className}>
           <Menu />

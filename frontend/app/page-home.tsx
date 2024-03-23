@@ -370,7 +370,7 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
                 </div>
 
                 {/* Inscriptions */}
-                <div className="grid pt-8 gap-1" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))' }}>
+                <div className="grid pt-8 gap-1.5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))' }}>
                     {Array.isArray(inscriptions) && inscriptions.map((inscription, index) => (
                         <div key={inscription.inscription_id} ref={el => el && (cardRefs.current[index] = el)} data-inscription-id={inscription.inscription_id}>
                             <InscriptionCard {...inscription} />

@@ -44,45 +44,6 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         }
     }, []);
 
-    // const connectWithLitescribe = async () => {
-
-    //     if (typeof window.litescribe !== 'undefined') {
-    //         setIsLitescribeInstalled(true);
-    //         const requestedAccounts = await window.litescribe.requestAccounts();
-    //         console.log('requestedAccounts: ', requestedAccounts)
-
-    //         const getNetwork = await window.litescribe.getNetwork();
-    //         console.log('getNetwork: ', getNetwork)
-
-    //         const getAccounts = await window.litescribe.getAccounts();
-    //         console.log('getAccounts: ', getAccounts)
-
-    //         const getPublicKey = await window.litescribe.getPublicKey();
-    //         console.log('getPublicKey: ', getPublicKey)
-
-    //         const getBalance = await window.litescribe.getBalance();
-    //         console.log('getBalance: ', getBalance)
-
-    //         const getInscriptions = await window.litescribe.getInscriptions(0, 10000);
-    //         console.log('getInscriptions: ', getInscriptions)
-
-    //         // const value = await window.litescribe.signMessage(`${requestedAccounts[0]} - OrdLite.io`)
-    //         // console.log('value signed: ', value)
-
-    //         // localStorage.setItem('inscriptions', JSON.stringify(InscriptionTranslated));
-    //         // setInscriptions(InscriptionTranslated);
-    //         // setAccount
-
-    //         // redirect to profile page
-    //         localStorage.setItem('connected', 'true');
-    //         localStorage.setItem('provider', 'litescribe')
-    //         // window.location.href = '/account';
-    //     } else {
-    //         console.log('LiteScribe is not installed. Please consider installing it.');
-    //     }
-    // }
-
-
     const connectWithLitescribe = async () => {
         if (typeof window.litescribe !== 'undefined') {
             setIsConnectButtonDisabled(true);
@@ -118,6 +79,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                     const newAccount = await response.json();
                     localStorage.setItem('connected', 'true');
                     localStorage.setItem('provider', 'litescribe')
+                    localStorage.setItem('username', requestedAccounts[0]);
                     window.location.href = '/account';
                     // console.log('New account created:', newAccount);
                     // Do something with the newly created account if needed

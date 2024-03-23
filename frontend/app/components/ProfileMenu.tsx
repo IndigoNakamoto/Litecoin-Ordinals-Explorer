@@ -5,10 +5,16 @@ import {
     MenuItem,
     Avatar,
     Typography,
+    Button
 } from "@material-tailwind/react";
 import Link from "next/link";
 
-export function ProfileMenu() {
+type ProfileMenuProps = {
+    user: string;
+};
+
+
+export function ProfileMenu({ user }: ProfileMenuProps) {
 
     const handleSignOut = () => {
         localStorage.setItem('connected', 'false');
@@ -19,15 +25,19 @@ export function ProfileMenu() {
         localStorage.setItem('username', '');
         window.location.href = '/';
     }
+    
 
     return (
         <Menu>
             <MenuHandler>
-                <Avatar
-                    variant="circular"
-                    alt="User Avatar"
-                    className="cursor-pointer w-11 h-11"
-                    src="/avatar.png" placeholder={undefined} />
+                <Button placeholder={undefined} variant="gradient" className='rounded-lg flex' size='sm'>
+                    <Avatar
+                        variant="circular"
+                        alt="User Avatar"
+                        className="cursor-pointer w-6 h-6"
+                        src="/avatar.png" placeholder={undefined} />
+                    <p className='p-1'>{user ? `${user.slice(0, 4)}...${user.slice(-4)}` : ''}</p>
+                </Button>
             </MenuHandler>
             <MenuList placeholder={undefined}>
                 <MenuItem placeholder={undefined}>
