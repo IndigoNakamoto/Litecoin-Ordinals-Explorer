@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from "next/legacy/image"; // Import Next.js Image component for optimized images
-import { Button} from "@material-tailwind/react";
+import { Button, IconButton } from "@material-tailwind/react";
 import ConnectModal from './ConnectModal';
 import { ProfileMenu } from './ProfileMenu';
 
@@ -45,30 +45,49 @@ const Menu = () => {
           <Link href="/inscribe" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
             Inscribe
           </Link>
+        </div>
+        <div className="flex-initial">
+          <Link href="/liteclash" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
+            LiteClash
+          </Link>
         </div> */}
-        <div className="flex-initial ml-auto">
+        <div className="flex items-center ml-auto space-x-2">
           {/* Added ml-auto to move this item to the far right */}
-
-          {/*  */}
+          <Link href="https://discord.com/invite/z2FWv5v5uJ" passHref>
+            <IconButton variant="gradient" className="rounded-full bg-gradient-to-br from-white to-gray-500" placeholder={undefined}>
+              <Image
+                src="/logos/discord.svg"
+                alt="litescribe"
+                width={24}
+                height={24}
+              />
+            </IconButton>
+          </Link>
+          <Link href="https://x.com/ordlite" passHref>
+            <IconButton variant="gradient" className="rounded-full bg-gradient-to-br from-white to-gray-500" placeholder={undefined}>
+              <Image
+                src="/logos/x.svg"
+                alt="litescribe"
+                className='text-white'
+                width={24}
+                height={24}
+              />
+            </IconButton>
+          </Link>
           <div className='pr-4'>
             {connected === 'true' ?
-
-                <ProfileMenu user={user}/>:
-              // This div will now be hidden on screens smaller than 'md' (768px by default) and displayed on larger screens
+              <ProfileMenu user={user} /> :
               <div className="hidden md:flex">
                 <Button
                   onClick={handleButtonClick}
                   size="md"
                   variant="filled"
-                  className="p-2 flex h-10 items-center justify-center gap-2 text-white w-28 bg-gradient-to-br from-blue-400 to-blue-700" placeholder={undefined}                >
+                  className="p-2 flex h-10 items-center justify-center gap-2 text-black w-28 bg-gradient-to-br from-white to-gray-500" placeholder={undefined}                >
                   Connect
                 </Button>
               </div>
             }
           </div>
-          {/*  */}
-
-          {/* </Link> */}
         </div>
       </div >
       <ConnectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />

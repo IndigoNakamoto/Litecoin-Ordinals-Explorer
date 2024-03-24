@@ -342,7 +342,7 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
                             onClick={() => handleFilterClick(type)}
                             // size="sm"
                             // variant="gradient"
-                            className={`rounded-3xl w-min px-4 py-1 ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-300 to-blue-800 text-white' : 'bg-gradient-to-br from-white to-gray-600 text-black'}`}                       >
+                            className={`rounded-3xl w-min px-4 py-1 ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-300 to-blue-800 text-white' : 'bg-gradient-to-br from-white to-gray-500 text-black'}`}                       >
                             {type}
                         </button>
                     ))}

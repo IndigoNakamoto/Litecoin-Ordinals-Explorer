@@ -32,11 +32,11 @@ export function ProfileMenu({ user }: ProfileMenuProps) {
             <MenuHandler>
                 <Button placeholder={undefined} variant="gradient" className='rounded-lg flex' size='sm'>
                     <Avatar
-                        variant="circular"
+                        variant="rounded"
                         alt="User Avatar"
-                        className="cursor-pointer w-6 h-6"
+                        className="cursor-pointer w-7 h-7"
                         src="/avatar.png" placeholder={undefined} />
-                    <p className='p-1'>{user ? `${user.slice(0, 4)}...${user.slice(-4)}` : ''}</p>
+                    <p className='p-1 pl-3'>{user ? `${user.slice(0, 4)}...${user.slice(-4)}` : ''}</p>
                 </Button>
             </MenuHandler>
             <MenuList placeholder={undefined}>
