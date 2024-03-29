@@ -24,6 +24,20 @@ export interface Inscription {
     timestamp: string;
 }
 
+export interface WebhookEvent {
+    type: string;
+    // Include other properties based on the webhook payload you expect
+    // For example, if you handle invoices:
+    invoiceId?: string;
+    // You might also have a timestamp, or details specific to the type of webhook event
+    timestamp?: number;
+    metadata?: any;
+    webhookId?: string;
+    partiallyPaid?: boolean;
+    deliveryId?: string;
+    // Add other event-specific details as needed
+}
+
 export interface PreInscription {
     address: string;
     content_length: number;
@@ -48,12 +62,12 @@ export interface PreInscription {
 
 export interface Inscribe {
     commit: string;
-    inscriptions: [{id: string, locatoin: string}];
+    inscriptions: [{ id: string, locatoin: string }];
     parent: string;
     reveal: string;
     total_fees: number;
 }
 
-export interface InscriptionSent { 
+export interface InscriptionSent {
     transaction: string;
 }

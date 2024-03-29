@@ -3,11 +3,22 @@ import express, { Request, Response } from 'express';
 import Invoice from '../models/Invoice';
 import File from '../models/File';
 import { config } from 'dotenv';
-
+config();
 
 
 // store_id: BhDs47oxRpXbLLBMfAYpA4SYTSasvT3Cg8WBP6tpMWhX
 
+// This could be placed in the same file, or better, in a separate types or models file, then imported.
+
+interface WebhookEvent {
+    type: string;
+    // Include other properties based on the webhook payload you expect
+    // For example, if you handle invoices:
+    invoiceId?: string;
+    // You might also have a timestamp, or details specific to the type of webhook event
+    timestamp?: number;
+    // Add other event-specific details as needed
+}
 
 
 class InscriptionService {
@@ -24,10 +35,25 @@ class InscriptionService {
         return hash === signature;
     }
 
+    public async handleEvent(event: WebhookEvent) {
+        switch (event.type) {
+            case 'InvoiceCreated':
+                await this.handleInvoiceCreated(event);
+                break;
+            case 'InvoiceExpired':
+                await this.handleInvoiceExpired(event);
+                break;
+            // Handle other types as necessary
+            default:
+                console.log('Unhandled event type:', event.type);
+        }
+    }
+
+
     private async handleInvoiceCreated(eventData: any) {
         // Handle invoice created event
         console.log('Invoice Created:', eventData);
-        Invoice.create({ invoiceId: eventData.invoiceId, createdAt: eventData.timestamp, updatedAt: eventData.timestamp });
+        // Invoice.create({ invoiceId: eventData.invoiceId, createdAt: eventData.timestamp, updatedAt: eventData.timestamp });
         // TODO: From metadata, get the files and create file records in the database
         // TODO: Validate the files and update their status in the database
     }
@@ -35,7 +61,7 @@ class InscriptionService {
     private async handleInvoiceExpired(eventData: any) {
         // Handle invoice expired event
         console.log('Invoice Expired:', eventData);
-        Invoice.update({ paymentStatus: 'Expired', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
+        // Invoice.update({ paymentStatus: 'Expired', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
         // TODO: From metadata, get the files, delete them from storage and update their status to 'Deleted'
     }
 

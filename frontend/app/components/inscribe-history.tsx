@@ -2,9 +2,7 @@
 import React from "react";
 import { useState } from 'react';
 import InvoiceModal from "./InvoiceModal";
-
-// TODO: Error reported to admin: WE WILL BE EMAILING YOU AT <EMAIL_ADDRESS> THAT YOU USED TO CREATE YOUR ACCOUNT AT GOOGLE | TWITTER
-// EXPECT AN EMAIL WITH 24 HOURS
+import { InscribeOrderContext } from "./contexts/InscribeOrderContext";
 
 // @material-tailwind/react
 import {

@@ -3,7 +3,11 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../../config/database'; // Import the Sequelize instance
 
-class Invoice extends Model { }
+class Invoice extends Model {
+    invoiceId: any;
+    inscribeStatus!: string | 'Pending';
+    paymentStatus!: string | 'New';
+}
 
 Invoice.init(
   {
@@ -17,13 +21,25 @@ Invoice.init(
       unique: true,
       allowNull: false,
     },
+    ipaddress: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    accountid: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     inscribeStatus: {
-      type: DataTypes.ENUM('Pending','Processing', 'Completed', 'Error'),
+      type: DataTypes.ENUM('Pending','Processing', 'Completed', 'Error', 'Cancelled'),
       defaultValue: 'Pending',
     },
     paymentStatus: {
       type: DataTypes.ENUM('New', 'Processing', 'Expired', 'Invalid', 'Settled'),
       defaultValue: 'New',
+    },
+    receivingaddress: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     createdAt: {
       type: DataTypes.DATE,

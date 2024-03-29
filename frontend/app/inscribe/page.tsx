@@ -5,29 +5,14 @@ import {
 } from "@material-tailwind/react";
 import FileUpload from "../components/FileUpload";
 import FileUploadAlert from "../components/FileUploadAlert";
-// import InscribeOrder from '../components/inscribe-order'
-// import OrderSummary from "../components/InscribeOrderSummary";
-import InvoiceHistory from '../components/inscribe-history'
-import { createContext, useContext, useState } from 'react';
-import { code } from "three/examples/jsm/nodes/Nodes.js";
-
-export interface InscribeOrderContextType {
-    fileName: string;
-    setFileName: React.Dispatch<React.SetStateAction<string>>;
-    files: File[];
-    setFiles: React.Dispatch<React.SetStateAction<File[]>>;
-    fileSize: number;
-    setFileSize: React.Dispatch<React.SetStateAction<number>>;
-    error: string | null; // Add this line
-    setError: React.Dispatch<React.SetStateAction<string | null>>; // Add this line
-    code: string | null;
-    setCode: React.Dispatch<React.SetStateAction<string | null>>;
-    credit: number | null;
-    setCredit: React.Dispatch<React.SetStateAction<number | null>>;
-    receivingAddress: string | null;
-    setReceivingAddress: React.Dispatch<React.SetStateAction<string | null>>;
-}
-
+import InscribeOrder from '../components/inscribe-order'
+import OrderSummary from "../components/InscribeOrderSummary";
+// import InvoiceHistory from '../components/inscribe-history'
+import { useState } from 'react';
+import { InscribeOrderContext } from "../components/contexts/InscribeOrderContext";
+import PaymentModal from "../components/paymentModal";
+import { set } from "lodash";
+import InvoiceHistory from "../components/InvoiceHistory";
 
 
 export default function Page() {
@@ -35,71 +20,156 @@ export default function Page() {
     const [fileSize, setFileSize] = useState<number>(0); // State to store file size
     const [files, setFiles] = useState<File[]>([]); // State to store files
     const [error, setError] = useState<string | null>(null);
+    const [inProgress, setInProgress] = useState<boolean>(false);
     const [code, setCode] = useState<string | null>(null);
     const [credit, setCredit] = useState<number | null>(null);
     const [receivingAddress, setReceivingAddress] = useState<string | null>(null);
+    const [serviceFee, setServiceFee] = useState<number | null>(null);
+    const [ltcUSD, setLtcUSD] = useState<number>(0);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const handleFileSelect = (file: File) => {
-        setFileName(file.name); // Update file name state
-        setFiles(prevFiles => [...prevFiles, file]); // Append file to files state
-        const fileSize = file.size; // Retrieve file size
-        setFileSize(fileSize); // Update file size state
+    const [invoiceId, setInvoiceId] = useState<string | null>(null);
+    const [invoiceExpirationTime, setInvoiceExpirationTime] = useState<string | null>(null);
+    const [invoiceAmount, setInvoiceAmount] = useState<number | null>(null);
+    const [invoiceStatus, setInvoiceStatus] = useState<string | null>(null);
+    const [invoiceCreatedTime, setInvoiceCreatedTime] = useState<string | null>(null);
+    const [invoicePaymentLink, setInvoicePaymentLink] = useState<string | null>(null);
+    const [destinationAddress, setDestinationAddress] = useState<string | null>(null);
+    // const user_id = localStorage.getItem('username');
 
-        // If you add more states related to the context, you can log them here as well
+
+
+    const handleFileSelect = async (file: File) => {
+        const requestedAccounts = await window.litescribe.requestAccounts();
+        const user_id = requestedAccounts[0];
+        console.log('HANDLE FILE SELECT')
+        try {
+            const response = await fetch(`http://localhost:3005/api/invoice/new/account/${user_id}`)        // If you add more states related to the context, you can log them here as well
+            const doesNewInvoiceExist = await response.json();
+            if (doesNewInvoiceExist.hasNewInvoice) {
+                console.log('User has an invoice in progress');
+                setInProgress(true);
+                // Delete the uploaded files
+                setError("You have an invoice in progress. Please settle it before uploading new files or cancel the invoice.");
+            } else {
+                setFileName(file.name); // Update file name state
+                setFiles(prevFiles => [...prevFiles, file]); // Append file to files state
+                const fileSize = file.size; // Retrieve file size
+                setFileSize(fileSize); // Update file size state
+                const ltcusd = await fetch('https://payment.ordlite.com/api/rates?storeId=AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf');
+                const ltcUSD = await ltcusd.json();
+                setLtcUSD(ltcUSD[0].rate);
+            }
+        } catch (error) {
+            console.error('Error checking for existing invoice:', error);
+            setError(String(error)); // Display the error message in the client component
+        }
+
     };
 
     const handleSubmit = async () => {
         console.log('HANDLE SUBMIT');
+        // Placeholder values for demonstration. Replace these with actual data as necessary.
+        const requestedAccounts = await window.litescribe.requestAccounts();
+        const user_id = requestedAccounts[0];
+
         const formData = new FormData();
         files.forEach(file => {
             formData.append("files", file); // Use "files" for multiple files
         });
-
-        // Get address from local storage
-        formData.append("user_id", 'user_123');
+        formData.append("account_id", user_id || "");
+        formData.append("receivingAddress", receivingAddress || "");
 
         try {
-            const response = await fetch('http://localhost:3005/upload/', {
+            const response = await fetch('http://localhost:3005/api/upload/', {
                 method: 'POST',
                 body: formData,
             });
-            const response_invoice = await fetch('http://localhost:3005/invoice/', {
-                method: 'POST',
-                body: formData,
-            })
-            if (!response.ok) {
-                throw new Error(`Error: ${response.statusText}`);
-            }
-
-            const result = await response.text();
-            console.log('Result: ', result);
-        } catch (error: any) {
-            console.error('Upload failed:', error.message);
-            setError(error.message);
+            setInProgress(false);
+            // TODO: result should be invoice and payment method
+            const result = await response.json()
+            // console.log('Result: ', result);
+            setInvoiceId(result.id);
+            setInvoiceExpirationTime(result.expirationTime);
+            setInvoiceAmount(result.due);
+            setInvoiceStatus(result.status);
+            setInvoiceCreatedTime(result.createdTime);
+            setInvoicePaymentLink(result.paymentLink);
+            setDestinationAddress(result.destination);
+            // TODO: set invoice and payment method in state and pass to payment modal
+        } catch (error) {
+            console.error('Upload failed:', error);
+            setError(String(error)); // Display the error message in the client component
         }
-
         setFiles([]);
+
+
+        // loading while waiting for response from server's invoice creation
+        // if successful, open payment dialog and pass in invoice and payment method
+        if (!inProgress || code === null) setIsModalOpen(true);
     };
 
-
     return (
-
-        <section className="mx-auto max-w-full bg-gray-200 lg:py-36">
-            <div className="mx-auto p-4 max-w-screen-lg">
-                <Typography variant="h1" className="mb-6 font-2xl text-gray-900" placeholder={undefined}>
-                    Inscribe
-                </Typography>
-                <div className="grid grid-cols-1 pt-8 gap-4">
-                    {error ? <FileUploadAlert /> : <FileUpload onFileSelect={handleFileSelect}/>}
-                    <div className="w-full text-black">
-                        {/* <InscribeOrder /> */}
-                        {/* <OrderSummary onSubmit={handleSubmit} /> */}
+        <InscribeOrderContext.Provider
+            value={{
+                fileName,
+                setFileName,
+                files,
+                setFiles,
+                fileSize,
+                setFileSize,
+                error,
+                setError,
+                code,
+                setCode,
+                credit,
+                setCredit,
+                receivingAddress,
+                setReceivingAddress,
+                serviceFee,
+                setServiceFee,
+                ltcUSD,
+                setLtcUSD,
+                destinationAddress,
+                setDestinationAddress,
+                invoicePaymentLink,
+                setInvoicePaymentLink
+            }}
+        >
+            <section className="mx-auto max-w-full bg-gray-200 lg:py-36">
+                <div className="mx-auto p-4 max-w-screen-lg">
+                    <Typography variant="h1" className="mb-6 font-2xl text-gray-900" placeholder={undefined}>
+                        Inscribe
+                    </Typography>
+                    <div className="grid grid-cols-1 pt-8 gap-4">
+                        {error ? <FileUploadAlert /> : <FileUpload onFileSelect={handleFileSelect} />}
+                        <div className="w-full text-black">
+                            <InscribeOrder />
+                            <OrderSummary onSubmit={handleSubmit} />
+                        </div>
+                    </div>
+                    <div className="my-6">
+                        <InvoiceHistory />
                     </div>
                 </div>
-                <div className="my-6">
-                    <InvoiceHistory />
-                </div>
-            </div>
-        </section>
+                <PaymentModal
+                    isOpen={isModalOpen}
+                    onClose={() => {
+                        setIsModalOpen(false)
+                        // if now < expirationTime, then 
+                    }}
+                    id={String(invoiceId)}
+                    expirationTime={String(invoiceExpirationTime)}
+                    createdTime={String(invoiceCreatedTime)}
+                    due={String(invoiceAmount)}
+                    LTC_USD={ltcUSD}
+                    currency="LTC"
+                    paymentLink={String(invoicePaymentLink)}
+                    metadata={{}}
+                    paymentAddress={String(destinationAddress)}
+                />
+
+            </section>
+        </InscribeOrderContext.Provider>
     );
 }

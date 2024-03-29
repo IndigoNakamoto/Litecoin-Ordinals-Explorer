@@ -33,13 +33,13 @@ services:
       - POSTGRES_PASSWORD=ord_lite_pass
       - POSTGRES_DB=ord_lite_db
       # Set custom environment variable for shared_buffers
-      - POSTGRES_SHARED_BUFFERS=65536  # Adjust the value as needed
+      - POSTGRES_SHARED_BUFFERS=131072  # Adjust the value as needed
     command:
       - "postgres"
       - "-c"
-      - "shared_buffers=128000"
+      - "shared_buffers=1048576"
       - "-c"
-      - "work_mem=256000"
+      - "work_mem=524288"
       
   # litecoind:
   #   image: litecoinproject/litecoin-core

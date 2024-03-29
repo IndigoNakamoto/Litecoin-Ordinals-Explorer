@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useContext } from "react";
 import { Card } from "@material-tailwind/react"
-
+import { InscribeOrderContext } from "./contexts/InscribeOrderContext";
 
 const supportedMimeTypes = new Set([
     'image/apng', 'text/plain', 'application/octet-stream',
@@ -17,19 +17,25 @@ interface FileUploadProps {
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
+    const context = useContext(InscribeOrderContext);
+    if (!context) {
+        throw new Error("FileUpload must be used within a InscribeOrderContext.Provider");
+    }
+    const { setError } = context;
 
     const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
 
         if (file) {
             const fileExtension = file?.name.split('.').pop()?.toLowerCase(); // Add null check for fileExtension
+            // console.log('filetype: ', file.type); // Add this line to log the MIME type
             if ((!supportedMimeTypes.has(file.type) && !['gltf', 'glb'].includes(fileExtension || ''))) { // Add null check for fileExtension
-                localStorage.setItem('fileError', 'Invalid file type. Please upload a file with a supported MIME type.');
+                setError("Invalid file type. Please upload a file with a supported MIME type.");
             } else if (file.size > 400 * 1000) { // Adjusted to 400 KB to match requirement
-                localStorage.setItem('fileError', 'File size exceeds the maximum limit of 400 KB.');
+                setError("File size exceeds the maximum limit of 400 KB.");
             } else {
                 onFileSelect(file);
-                localStorage.setItem('fileError', ''); // Clear any existing errors
+                setError(null); // Clear any existing errors
             }
         }
     };

@@ -41,12 +41,12 @@ const Menu = () => {
             Stats
           </Link>
         </div>
-        {/* <div className="flex-initial">
+        <div className="flex-initial">
           <Link href="/inscribe" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
             Inscribe
           </Link>
         </div>
-        <div className="flex-initial">
+        {/* <div className="flex-initial">
           <Link href="/liteclash" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
             LiteClash
           </Link>

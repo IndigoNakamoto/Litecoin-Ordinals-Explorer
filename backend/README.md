@@ -188,3 +188,7 @@ docker exec -it docker-postgres-1 psql -U ord_lite_user -d ord_lite_db
 sudo lsof -i :3000 -i :3005
 
 kill <PID3000> <PID3005>
+
+
+# Alter table - Add column
+https://chat.openai.com/c/b9301642-7bfb-45eb-be03-3f3f6fe3e1951
