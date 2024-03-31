@@ -1,14 +1,16 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import express, { Request, Response } from 'express';
 import Invoice from '../models/Invoice';
+import { exec } from 'child_process';
 import File from '../models/File';
 import { config } from 'dotenv';
+import fs from 'fs';
+import { promisify } from 'util';
+import LitecoinInscriptionService from './LitecoinInscriptionService';
 config();
 
+const execAsync = promisify(exec);
 
-// store_id: BhDs47oxRpXbLLBMfAYpA4SYTSasvT3Cg8WBP6tpMWhX
-
-// This could be placed in the same file, or better, in a separate types or models file, then imported.
 
 interface WebhookEvent {
     type: string;
@@ -19,6 +21,8 @@ interface WebhookEvent {
     timestamp?: number;
     // Add other event-specific details as needed
 }
+
+const litecoinInscriptionService = new LitecoinInscriptionService();
 
 
 class InscriptionService {
@@ -43,6 +47,16 @@ class InscriptionService {
             case 'InvoiceExpired':
                 await this.handleInvoiceExpired(event);
                 break;
+            case 'InvoiceInvalid':
+                await this.handleInvoiceInvalid(event);
+                break;
+            case 'InvoiceProcessing':
+                await this.handleInvoiceProcessing(event);
+                break;
+            case 'InvoiceSettled':
+                await this.handleInvoiceSettled(event);
+                break;
+
             // Handle other types as necessary
             default:
                 console.log('Unhandled event type:', event.type);
@@ -61,115 +75,147 @@ class InscriptionService {
     private async handleInvoiceExpired(eventData: any) {
         // Handle invoice expired event
         console.log('Invoice Expired:', eventData);
-        // Invoice.update({ paymentStatus: 'Expired', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
-        // TODO: From metadata, get the files, delete them from storage and update their status to 'Deleted'
+        const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
+        const BTCPAY_USERNAME = 'ordlite@gmail.com'
+        const BTCPAY_PASSWORD = '$had0wTaxih'
+        const base64Credentials = Buffer.from(BTCPAY_USERNAME + ':' + BTCPAY_PASSWORD).toString(
+            'base64'
+        )
+
+        const auth = `Basic ${base64Credentials}`
+
+        let updatedFiles = eventData.metadata.files.map((file: any) => {
+            return { ...file, fileStatus: 'Deleted', inscribeStatus: 'Cancelled' }; // Update each file's status to 'Deleted'
+        });
+
+        let updatedMetadata = { ...eventData.metadata, status: 'Cancelled', files: updatedFiles };
+
+        const update_metadata = await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
+            metadata: updatedMetadata
+        }, {
+            headers: { 'Authorization': auth }
+        });
+
+        console.log('handleInvoiceExpired - Update Metadata:', update_metadata.data)
+
+
+        const update = await Invoice.update({ paymentStatus: 'Expired', inscribeStatus: 'Cancelled', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
+        if (update && update_metadata) {
+            const files = eventData.metadata.files_location;
+            // delete files from upload folder
+            for (let file of files) {
+                console.log('Deleting file:', file);
+                fs.unlink(file, (err) => {
+                    if (err) {
+                        console.error('Error deleting file:', err);
+                    }
+                });
+            }
+        }
     }
 
     private async handleInvoiceInvalid(eventData: any) {
         console.log('Invoice Invalid:', eventData);
-        Invoice.update({ paymentStatus: 'Invalid', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
-        // TODO: From metadata, get the files, delete them from storage and update their status to 'Deleted'
+        const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
+        const BTCPAY_USERNAME = 'ordlite@gmail.com'
+        const BTCPAY_PASSWORD = '$had0wTaxih'
+        const base64Credentials = Buffer.from(BTCPAY_USERNAME + ':' + BTCPAY_PASSWORD).toString(
+            'base64'
+        )
+
+        const auth = `Basic ${base64Credentials}`
+
+        let updatedFiles = eventData.metadata.files.map((file: any) => {
+            return { ...file, fileStatus: 'Deleted', inscribeStatus: 'Cancelled' }; // Update each file's status to 'Deleted'
+        });
+
+        let updatedMetadata = { ...eventData.metadata, status: 'Cancelled', files: updatedFiles };
+
+        const update_metadata = await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
+            metadata: updatedMetadata
+        }, {
+            headers: { 'Authorization': auth }
+        });
+
+        // console.log('handleInvoiceInvalid - Update Metadata:', update_metadata.data)
+
+        const update = await Invoice.update({ paymentStatus: 'Invalid', inscribeStatus: 'Cancelled', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
+        if (update && update_metadata) {
+            const files = eventData.metadata.files_location;
+            // delete files from upload folder
+            for (let file of files) {
+                console.log('Deleting file:', file);
+                fs.unlink(file, (err) => {
+                    if (err) {
+                        console.error('Error deleting file:', err);
+                    }
+                });
+            }
+        }
     }
 
     private async handleInvoiceProcessing(eventData: any) {
         console.log('Invoice Processing:', eventData);
+        const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
+        const BTCPAY_USERNAME = 'ordlite@gmail.com'
+        const BTCPAY_PASSWORD = '$had0wTaxih'
+        const base64Credentials = Buffer.from(BTCPAY_USERNAME + ':' + BTCPAY_PASSWORD).toString(
+            'base64'
+        )
+
+        const auth = `Basic ${base64Credentials}`
+        let updatedFiles = eventData.metadata.files.map((file: any) => {
+            return { ...file, inscribeStatus: 'Processing' }; // Update each file's status to 'Deleted'
+        });
+
+        let updatedMetadata = { ...eventData.metadata, status: 'Processing', files: updatedFiles };
+        const update_metadata = await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
+            metadata: updatedMetadata
+        }, {
+            headers: { 'Authorization': auth }
+        });
+
+        // Inscribe files for the settled invoice
+        litecoinInscriptionService.inscribeFilesForInvoice(eventData.invoiceId).then(() => {
+            console.log(`Inscription process completed successfully for invoice: ${eventData.invoiceId}.`);
+        }).catch((error) => {
+            console.error('Inscription process failed:', error);
+        });
+
         Invoice.update({ paymentStatus: 'Processing', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
+    }
+
+    private async syncFilesFromVpsToLocal() {
+        const vpsUser = process.env.VPS_USER;
+        const vpsIp = process.env.VPS_IP;
+        const remoteFolderPath = process.env.REMOTE_FOLDER_PATH;
+        const localFolderPath = process.env.LOCAL_FOLDER_PATH;
+
+        const rsyncCommand = `rsync -avz --delete ${vpsUser}@${vpsIp}:${remoteFolderPath}/ ${localFolderPath}`;
+        try {
+            const { stdout, stderr } = await execAsync(rsyncCommand);
+            console.log(stdout);
+            if (stderr) {
+                console.error(stderr);
+            }
+        } catch (error) {
+            console.error('Failed to sync files:', error);
+            throw error;
+        }
     }
 
     // Inscribe files when invoice is settle
     private async handleInvoiceSettled(eventData: any) {
         console.log('Invoice Settled:', eventData);
-        const invoice = await Invoice.findOne({ where: { invoiceId: eventData.invoiceId } });
-        // inscribe files for the invoice
+
+        // Sync files from VPS to local
+        // TODO
+        // await this.syncFilesFromVpsToLocal();
+
+
         Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
-
     }
 
-    private async handleInvoiceReceivedPayment(eventData: any) {
-        // Handle invoice received payment event
-        console.log('Invoice Received Payment:', eventData);
-        Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
-
-    }
-
-    private async inscribeFiles(invoiceId: string) {
-        // Iterate over each file and inscribe it
-        const files = await File.findAll({ where: { invoiceId, inscribeStatus: 'Pending' } });
-        // let error = false
-        for (let file of files) {
-            // generate the yaml file
-            // run the yaml file
-            // if error, set error to true and update file inscribe status in database ['Error']
-            // else update file inscribe status in database ['Inscribed']
-            // delete file from storage
-            // update file storage status in database ['Deleted']
-        }
-        // if error is true, update invoice inscribe status in database ['Error']
-        // else update invoice inscribe status in database ['Completed']
-    }
-
-    public async listenForWebhookEvents(request: Request, response: Response) {
-        try {
-            // Verify the request signature
-            const signatureVerified = await this.verifySignature(request);
-            if (!signatureVerified) {
-                return response.status(403).json({ error: 'Invalid signature' });
-            }
-
-            // Get the event data from the request body
-            const eventData = request.body;
-
-            // Handle the event based on its type
-            switch (eventData.type) {
-                case 'InvoiceCreated':
-                    await this.handleInvoiceCreated(eventData);
-                    break;
-                case 'InvoiceExpired':
-                    await this.handleInvoiceExpired(eventData);
-                    break;
-                case 'InvoiceInvalid':
-                    await this.handleInvoiceInvalid(eventData);
-                    break;
-                case 'InvoiceProcessing':
-                    await this.handleInvoiceProcessing(eventData);
-                    break;
-                case 'InvoiceSettled':
-                    await this.handleInvoiceSettled(eventData);
-                    break;
-                case 'InvoiceReceivedPayment':
-                    await this.handleInvoiceReceivedPayment(eventData);
-                    break;
-                // Add cases for other event types...
-                default:
-                    console.log('Unhandled event type:', eventData.type);
-            }
-
-            return response.status(200).json({ message: 'Event handled successfully' });
-        } catch (error) {
-            console.error('Error handling webhook event:', error);
-            return response.status(500).json({ error: 'Internal server error' });
-        }
-    }
-
-    public async subscribeToWebhook(storeId: string, webhookUrl: string, events: string[]) {
-        const webhookData = {
-            enabled: true,
-            automaticRedelivery: true,
-            url: webhookUrl,
-            authorizedEvents: {
-                everything: true,
-                specificEvents: events,
-            },
-            secret: this.appSecret,
-        };
-
-        try {
-            const response = await axios.post(`/api/v1/stores/${storeId}/webhooks`, webhookData, config as AxiosRequestConfig);
-            console.log('Webhook subscribed successfully:', response.data);
-        } catch (error: any) {
-            console.error('Error subscribing to webhook:', error.response.data);
-        }
-    }
 }
 
 export default InscriptionService;

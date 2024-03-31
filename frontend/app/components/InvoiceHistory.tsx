@@ -14,7 +14,7 @@ import {
   Tooltip,
 } from "@material-tailwind/react";
 
-const TABLE_HEAD = ["Invoice ID", "Amount", "Date", "Status", ""];
+const TABLE_HEAD = ["Invoice ID", "Amount", "Date", "Payment Status", "Inscribe Status", ""];
 
 // Define the structure of your transaction data for TypeScript
 interface Transaction {
@@ -25,6 +25,7 @@ interface Transaction {
   createdTime: number;
   currency: string;
   metadata: {
+    status: string;
     files: {
       fileName: string;
       fileSize: number;
@@ -156,8 +157,26 @@ export default function TransactionsTable() {
                       color={
                         transaction.status === "New"
                           ? "green"
-                          : transaction.status === "Pending"
-                            ? "amber"
+                          : transaction.status === "Processing"
+                            ? "yellow"
+                            : transaction.status === "Settled"
+                            ? "green"
+                            : "red"
+                      }
+                    />
+                  </td>
+                  <td className={classes}>
+                    <Chip
+                      size="sm"
+                      variant="ghost"
+                      value={transaction.metadata.status}
+                      color={
+                        transaction.metadata.status === "Pending"
+                          ? "amber"
+                          : transaction.metadata.status === "Processing"
+                            ? "yellow"
+                            : transaction.metadata.status === "Inscribed"
+                            ? "green"
                             : "red"
                       }
                     />

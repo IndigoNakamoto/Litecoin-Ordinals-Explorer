@@ -120,7 +120,7 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
                     </div>
                     <div className='flex gap-2'>
                         <Typography variant='h6' className='w-40 text-gray-900 font-bold text-md' placeholder={undefined}> Inscribe Status: </Typography>
-                        <Typography variant='lead' className='text-gray-900 text-md' placeholder={undefined}> {fetchedInvoice?.inscribeStatus}</Typography>
+                        <Typography variant='lead' className='text-gray-900 text-md' placeholder={undefined}> {fetchedInvoice?.metadata.status}</Typography>
                     </div>
                     <div className='flex gap-2'>
                         <Typography variant='h6' className='w-40 text-gray-900 font-bold text-md' placeholder={undefined}> Created:</Typography>
@@ -145,6 +145,7 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
                                     <th className="border-b-2">Postage Fee</th>
                                     <th className="border-b-2">Service Fee</th>
                                     <th className="border-b-2">Total</th>
+                                    <th className="border-b-2">Inscribe Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -156,6 +157,7 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
                                         <td className="p-2">{formatLitsToLitecoin(file.postage) || '0.00 000 000'} LTC</td>
                                         <td className="p-2">{formatLitsToLitecoin(file.serviceFee)} LTC</td>
                                         <td className="p-2">{formatLitsToLitecoin(file.total)} LTC</td>
+                                        <td className="p-2">{file.inscribeStatus}</td>
                                     </tr>
                                 ))}
                             </tbody>

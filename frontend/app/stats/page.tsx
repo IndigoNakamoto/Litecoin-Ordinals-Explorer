@@ -203,13 +203,13 @@ export default function StatsPage() {
           <Typography
             variant="lead"
             className="mt-3 w-full !text-gray-500 lg:w-11/12" placeholder={undefined}          >
-            The inaugural inscription, Inscription #0, on Litecoin was none other than the Mimblewimble White Paper, symbolizing a significant leap in Litecoin&apos;s journey. With the integration of MWEB alongside Taproot on block 2,257,920, this milestone underscored Litecoin&apos;s dedication to enhancing privacy, scalability, and security.
+            The inaugural inscription, Inscription #0, on Litecoin was none other than the Mimblewimble White Paper, symbolizing a significant leap in Litecoin&apos;s journey. With the integration of MWEB alongside Taproot on block 2,257,920, this milestone underscored Litecoin&apos;s dedication to enhancing privacy, scalability, and security. By allocating a highly prunable block space for fungible transactions, MWEB cleverly removes competition for space within the base and the SegWit blocks, which are crucial for the support of ordinals. This innovation not only enhances transaction privacy but also optimizes the network&apos;s overall performance and scalability.
           </Typography>
-          <Typography
+          {/* <Typography
             variant="lead"
             className="mt-3 w-full !text-gray-500 lg:w-11/12" placeholder={undefined}          >
             Introducing the groundbreaking Mimblewimble Extension Block (MWEB) feature, Litecoin has set a new standard for transaction privacy and efficiency. By allocating a highly prunable block space for fungible transactions, MWEB cleverly removes competition for space within the base and the SegWit blocks, which are crucial for the support of ordinals. This innovation not only enhances transaction privacy but also optimizes the network&apos;s overall performance and scalability.
-          </Typography>
+          </Typography> */}
         </div>
         <div className="w-full bg-black">
           <Typography variant="h4" className="mb-6 text-white underline underline-offset-1 font-medium" placeholder={undefined}>

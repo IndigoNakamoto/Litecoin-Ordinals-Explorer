@@ -27,6 +27,7 @@ import upload from './app/routes/upload';
 import invoice from './app/routes/invoice';
 import account from './app/routes/account';
 import payment from './app/routes/payment';
+import litecoinRoutes from './app/routes/litecoinInscription';
 
 // Middleware
 app.use(cors());
@@ -41,6 +42,7 @@ app.use('/api/stats', stats);
 app.use('/api/upload', upload);
 app.use('/api/invoice', invoice);
 app.use('/api/payment', payment);
+app.use('/api/ord', litecoinRoutes);
 
 
 

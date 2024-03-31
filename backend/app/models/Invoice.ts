@@ -30,7 +30,7 @@ Invoice.init(
       allowNull: false,
     },
     inscribeStatus: {
-      type: DataTypes.ENUM('Pending','Processing', 'Completed', 'Error', 'Cancelled'),
+      type: DataTypes.ENUM('Pending', 'Invalid', 'Processing', 'Completed', 'Error', 'Cancelled'),
       defaultValue: 'Pending',
     },
     paymentStatus: {

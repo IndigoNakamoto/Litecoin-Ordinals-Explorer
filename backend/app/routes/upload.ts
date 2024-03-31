@@ -87,6 +87,10 @@ router.post('/', upload.array('files', 20), async (req, res) => {
         const serviceFee = SERVICE_FEE_LIT_RATE;
         const total = contentFee + POSTAGE + serviceFee;
         return {
+          location: file.path,
+          fileStatus: 'Uploaded', // Enum: Uploaded, Deleted
+          inscribeStatus: 'Pending', // Enum: Pending, Processing, Completed, Cancelled
+          inscriptionId: null,
           fileName: file.originalname,
           fileSize,
           contentFee,
@@ -118,7 +122,9 @@ router.post('/', upload.array('files', 20), async (req, res) => {
             receivingAddress,
             account_id,
             files: invoiceBreakdown,
-            ltc_usd_rate: LTC_USD
+            files_location: files.map(file => file.path),
+            ltc_usd_rate: LTC_USD,
+            status: 'Pending' // Enum: Pending, Processing, Completed, Cancelled
           },
           receipt: {
             "enabled": true,
@@ -141,8 +147,8 @@ router.post('/', upload.array('files', 20), async (req, res) => {
 
         // Send invoiceData invoice.data: id, amount, status, expirationTime, createdTime, currency, metadata, receivingAddress
         // Send paymentMethods: paymentLink
-        console.log('Payment Method Response', payment[0])
-        console.log({ id, expirationTime, createdTime, due, destination, paymentLink, metadata, status, currency, LTC_USD })
+        // console.log('Payment Method Response', payment[0])
+        // console.log({ id, expirationTime, createdTime, due, destination, paymentLink, metadata, status, currency, LTC_USD })
         res.send({ id, expirationTime, createdTime, due, destination, paymentLink, metadata, status, currency, LTC_USD })
       } catch (error) {
         console.error('Error creating invoice:', error);
