@@ -8,7 +8,7 @@ import {
     Button
 } from "@material-tailwind/react";
 import Image from 'next/image';
-import PaymentModal from './PaymentModal';
+import PaymentModal from './paymentModal';
 import { InscribeOrderContext } from "../components/contexts/InscribeOrderContext";
 
 const fetchInvoiceData = async (invoice_id: string) => {
@@ -56,7 +56,7 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
     useEffect(() => {
         const fetchData = async () => {
             const data = await fetchInvoiceData(invoiceId);
-            console.log('Data:', data);
+            // console.log('Data:', data);
             setFetchedInvoice(data);
         };
 
@@ -206,17 +206,17 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
             </Dialog>
             <PaymentModal isOpen={isPaymentModalOpen} onClose={function (): void {
                 throw new Error('Function not implemented.');
-            }} 
-            id={fetchedInvoice?.id} 
-            expirationTime={fetchedInvoice?.expirationTime} 
-            createdTime={fetchedInvoice?.createdTime} 
-            due={fetchedInvoice?.amount} 
-            metadata={fetchedInvoice?.metadata} 
-            paymentLink={String(invoicePaymentLink)}  
-            currency={'LTC'} 
-            LTC_USD={Number(fetchedInvoice?.metadata.ltc_usd_rate)} 
-            paymentAddress={String(destinationAddress)} 
-            /> 
+            }}
+                id={fetchedInvoice?.id}
+                expirationTime={fetchedInvoice?.expirationTime}
+                createdTime={fetchedInvoice?.createdTime}
+                due={fetchedInvoice?.amount}
+                metadata={fetchedInvoice?.metadata}
+                paymentLink={String(invoicePaymentLink)}
+                currency={'LTC'}
+                LTC_USD={Number(fetchedInvoice?.metadata.ltc_usd_rate)}
+                paymentAddress={String(destinationAddress)}
+            />
         </>
     );
 };

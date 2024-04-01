@@ -58,7 +58,7 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
                         // Assuming each card has an ID that corresponds to the inscription_id
                         const cardId = entry.target.getAttribute('data-inscription-id');
                         // Logic to load card content goes here
-                        console.log(`Load content for card ${cardId}`);
+                        // console.log(`Load content for card ${cardId}`);
                     }
                 });
             },

@@ -74,7 +74,7 @@ export default function Page() {
                     setBalance(balance.toString());
                 }
             } catch (error) {
-                console.error('Error fetching inscriptions:', error);
+                // console.error('Error fetching inscriptions:', error);
             }
         };
 

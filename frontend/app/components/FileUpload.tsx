@@ -24,6 +24,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
     const { setError } = context;
 
     const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
+        console.log('handleFileSelect')
         const file = event.target.files?.[0];
 
         if (file) {

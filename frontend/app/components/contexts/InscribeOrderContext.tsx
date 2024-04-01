@@ -8,8 +8,8 @@ interface InscribeOrderContextType {
     setFiles: React.Dispatch<React.SetStateAction<File[]>>;
     fileSize: number;
     setFileSize: React.Dispatch<React.SetStateAction<number>>;
-    error: string | null; // Add this line
-    destinationAddresssetError: React.Dispatch<React.SetStateAction<string | null>>; // Add this line
+    error: string | null; 
+    setError: React.Dispatch<React.SetStateAction<string | null>>; 
     code: string | null;
     setCode: React.Dispatch<React.SetStateAction<string | null>>;
     credit: number | null;
@@ -24,6 +24,8 @@ interface InscribeOrderContextType {
     setDestinationAddress: React.Dispatch<React.SetStateAction<string | null>>;
     invoicePaymentLink: string | null;
     setInvoicePaymentLink: React.Dispatch<React.SetStateAction<string | null>>;
+    user: string | null; 
+    setUser: React.Dispatch<React.SetStateAction<string | null>>;
 }
 export const InscribeOrderContext = createContext<InscribeOrderContextType | null>(null);
 

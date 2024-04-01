@@ -85,10 +85,12 @@ class InscriptionService {
         const auth = `Basic ${base64Credentials}`
 
         let updatedFiles = eventData.metadata.files.map((file: any) => {
-            return { ...file, fileStatus: 'Deleted', inscribeStatus: 'Cancelled' }; // Update each file's status to 'Deleted'
+            return { ...file, fileStatus: 'Deleted', inscribeStatus: 'Cancelled'}; // Update each file's status to 'Deleted'
         });
+        console.log('Updated Files:', updatedFiles);
 
         let updatedMetadata = { ...eventData.metadata, status: 'Cancelled', files: updatedFiles };
+        console.log('Updated Metadata:', updatedMetadata);
 
         const update_metadata = await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
             metadata: updatedMetadata
@@ -175,44 +177,19 @@ class InscriptionService {
             headers: { 'Authorization': auth }
         });
 
-        // Inscribe files for the settled invoice
-        litecoinInscriptionService.inscribeFilesForInvoice(eventData.invoiceId).then(() => {
-            console.log(`Inscription process completed successfully for invoice: ${eventData.invoiceId}.`);
-        }).catch((error) => {
-            console.error('Inscription process failed:', error);
-        });
-
         Invoice.update({ paymentStatus: 'Processing', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
-    }
-
-    private async syncFilesFromVpsToLocal() {
-        const vpsUser = process.env.VPS_USER;
-        const vpsIp = process.env.VPS_IP;
-        const remoteFolderPath = process.env.REMOTE_FOLDER_PATH;
-        const localFolderPath = process.env.LOCAL_FOLDER_PATH;
-
-        const rsyncCommand = `rsync -avz --delete ${vpsUser}@${vpsIp}:${remoteFolderPath}/ ${localFolderPath}`;
-        try {
-            const { stdout, stderr } = await execAsync(rsyncCommand);
-            console.log(stdout);
-            if (stderr) {
-                console.error(stderr);
-            }
-        } catch (error) {
-            console.error('Failed to sync files:', error);
-            throw error;
-        }
     }
 
     // Inscribe files when invoice is settle
     private async handleInvoiceSettled(eventData: any) {
         console.log('Invoice Settled:', eventData);
 
-        // Sync files from VPS to local
-        // TODO
-        // await this.syncFilesFromVpsToLocal();
-
-
+        // Inscribe files for the settled invoice
+        litecoinInscriptionService.inscribeFilesForInvoice(eventData.invoiceId).then(() => {
+            console.log(`Inscription process completed successfully for invoice: ${eventData.invoiceId}.`);
+        }).catch((error) => {
+            console.error('Inscription process failed:', error);
+        });
         Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
     }
 

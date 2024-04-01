@@ -2,18 +2,19 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
-import Invoice from '../models/Invoice';
 import axios from 'axios';
 import yaml from 'js-yaml';
 import { promises as fsPromises } from 'fs';
 const execAsync = promisify(exec);
 
+/* 
+Refactor implementation:
 
-interface InscriptionMetadata {
-    // Define any additional metadata you need for the inscription process
-    invoiceId: string;
-    fileLocations: string[];
-}
+Execution to /ord must be syncronous. Implement a queue system to ensure only 1 request at a time. 
+
+We can only run inscribeFilesForInvoice, generateAddress or getWalletBalance or any of the functions 1 at a time to /ord
+*/
+
 
 class LitecoinInscriptionService {
     rpcPassword: string = 'your_rpc_password';
@@ -80,91 +81,31 @@ class LitecoinInscriptionService {
 
     private async inscribeFile(file: any, invoice: any): Promise<{ stdout: string; file: any; } | undefined> {
         try {
+            console.log('Inscribing file: ', file)
             // Placeholder for generating YAML file or any other preparation needed
             const yamlFilePath = await this.prepareInscriptionFile(file, invoice);
-
+            
             // Execute the inscription command
-            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} wallet inscribe --fee-rate 1.1 --batch ${yamlFilePath}`);
-            console.log('Response for Inscription execution: ');
-            console.log(stdout);
-            console.log('Error for Inscription execution: ')
-            console.log(stderr);
+            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir "/Users/indigo/Library/Application Support/ord2" wallet inscribe --fee-rate 1.2 --batch ${yamlFilePath}`);
 
-            /*
-            Sample output:
-                {
-                "commit": "04535ce43ec08df2d804f9765d02ed49b1a64b3110e383512ec796a7dcd848e9",
-                "inscriptions": [
-                    {
-                    "id": "487c21367bdc28897193489104262c4018fab9e5759262d119f0512497d8bb57i0",
-                    "location": "487c21367bdc28897193489104262c4018fab9e5759262d119f0512497d8bb57:0:0"
-                    }
-                ],
-                "parent": null,
-                "reveal": "487c21367bdc28897193489104262c4018fab9e5759262d119f0512497d8bb57",
-                "total_fees": 3826
-                }
-            */
+
             // When inscribe command is successful, stdout should contain the inscription transaction details
             if (stderr && stderr.trim() !== '') {
                 console.error('Error during inscription:', stderr);
                 throw new Error(stderr);
             }
 
-            // This does not correctly update the status of the file in metadata.files array.
-
-            // const fileIndex = invoice.data.metadata.files.findIndex((f: { fileName: any; }) => f.fileName === file.originalname); // Is originalname the correct property? Should be the same as the file name in the metadata
-            // if (fileIndex !== -1) {
-            //     invoice.data.metadata.files[fileIndex].inscribeStatus = 'Inscribed'; // Update the status
-            // }
-
-            // // Prepare for API request
-            // const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
-            // const BTCPAY_USERNAME = 'ordlite@gmail.com';
-            // const BTCPAY_PASSWORD = '$had0wTaxih';
-            // const base64Credentials = Buffer.from(`${BTCPAY_USERNAME}:${BTCPAY_PASSWORD}`).toString('base64');
-            // const auth = `Basic ${base64Credentials}`;
-
-            // // Execute the API request to update invoice metadata
-            // await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${invoice.data.id}`, {
-            //     metadata: invoice.data.metadata // Ensure this matches the API's expected format
-            // }, {
-            //     headers: { 'Authorization': auth }
-            // });
-
-            // Optionally, delete local file or move it to a permanent storage
-            // this.cleanupFile(file);
-
+            console.log('Success inscribing file - Response: ', stdout)
             return { stdout, file };
         } catch (error) {
             console.error('Error inscribing file:', error);
-            // Update the status to 'Error' for the file, assuming a similar approach as above
-            // const fileIndex = invoice.data.metadata.files.findIndex((f: { fileName: any; }) => f.fileName === file.originalname); // Is originalname the correct property? Should be the same as the file name in the metadata
-            // if (fileIndex !== -1) {
-            //     invoice.data.metadata.files[fileIndex].inscribeStatus = 'Error'; // Ensure this updates correctly for error handling
-            // }
-            // // Prepare for API request
-            // const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
-            // const BTCPAY_USERNAME = 'ordlite@gmail.com';
-            // const BTCPAY_PASSWORD = '$had0wTaxih';
-            // const base64Credentials = Buffer.from(`${BTCPAY_USERNAME}:${BTCPAY_PASSWORD}`).toString('base64');
-            // const auth = `Basic ${base64Credentials}`;
-
-            // // Execute the API request to update invoice metadata
-            // await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${invoice.data.id}`, {
-            //     metadata: invoice.data.metadata // Ensure this matches the API's expected format
-            // }, {
-            //     headers: { 'Authorization': auth }
-            // });
         }
     }
 
 
     private async prepareInscriptionFile(file: any, invoice: any): Promise<string> {
         // Define the YAML content structure
-        console.log(invoice.data.metadata.receivingAddress)
         const absoluteFilePath = path.resolve(__dirname, '..', file.location);
-        console.log('Absolute File Path to file for inscription', absoluteFilePath)
         const yamlContent = {
             mode: 'separate-outputs',
             parent: null,
@@ -179,7 +120,6 @@ class LitecoinInscriptionService {
         const yamlStr = yaml.dump(yamlContent);
 
         // Define a path for the YAML file
-        // Consider using a unique identifier or timestamp to avoid overwriting files
         const yamlDir = path.join(__dirname, 'yaml'); // __dirname is the current directory of this file
         // Ensure the directory exists
         if (!fs.existsSync(yamlDir)) {
@@ -188,27 +128,12 @@ class LitecoinInscriptionService {
 
         const yamlFilePath = path.join(yamlDir, `inscription-${Date.now()}.yaml`);
 
-
         // Write the YAML string to a file
         await writeFileAsync(yamlFilePath, yamlStr, 'utf8');
 
         // Return the file path of the newly created YAML file
         return yamlFilePath;
     }
-
-    // private async updateInscriptionStatus(file: any, status: string): Promise<void> {
-    //     // Update the inscription status of the file in the database
-    //     await File.update({ inscribeStatus: status }, { where: { id: file.id } });
-    // }
-
-    // private cleanupFile(file: any): void {
-    //     // Delete the file from local storage or move it to a permanent storage
-    //     const filePath = path.join('/path/to/files', file.fileName);
-    //     fs.unlink(filePath, (err) => {
-    //         if (err) console.error('Error deleting file:', err);
-    //         else console.log(`File ${file.fileName} deleted successfully`);
-    //     });
-    // }
 
     public async generateAddresses(count: number): Promise<string[]> {
         let addresses: string[] = [];
@@ -264,8 +189,6 @@ async function writeFileAsync(filePath: string, data: any, encoding: BufferEncod
         throw error; // Rethrowing the error to handle it in the calling function
     }
 }
-
-
 
 export default LitecoinInscriptionService;
 

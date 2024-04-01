@@ -35,6 +35,7 @@ export default function Page() {
     const [invoiceCreatedTime, setInvoiceCreatedTime] = useState<string | null>(null);
     const [invoicePaymentLink, setInvoicePaymentLink] = useState<string | null>(null);
     const [destinationAddress, setDestinationAddress] = useState<string | null>(null);
+    const [user, setUser] = useState<string | null>(null);
     // const user_id = localStorage.getItem('username');
 
 
@@ -133,11 +134,13 @@ export default function Page() {
                 destinationAddress,
                 setDestinationAddress,
                 invoicePaymentLink,
-                setInvoicePaymentLink
+                setInvoicePaymentLink,
+                user: null,
+                setUser
             }}
         >
             <section className="mx-auto max-w-full bg-gray-200 lg:py-36">
-                <div className="mx-auto p-4 max-w-screen-lg">
+                <div className="mx-auto p-4 max-w-screen-2xl">
                     <Typography variant="h1" className="mb-6 font-2xl text-gray-900" placeholder={undefined}>
                         Inscribe
                     </Typography>

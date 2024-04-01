@@ -244,35 +244,3 @@ function InvoiceHistory() {
 }
 
 export default InvoiceHistory;
-
-
-
-
-const TABLE_ROW_TRANSACTION = [
-  {
-    "commit": "88dc33f3b752d6829944c5b0f93edd57413eafe06645636cc91c51274ea620e6",
-    "inscriptions": [
-      {
-        "id": "b84df77d70cab9c51685e7e2b91681c414a9ee675fe86375e51b1803c130147fi0",
-        "location": "b84df77d70cab9c51685e7e2b91681c414a9ee675fe86375e51b1803c130147f:0:0",
-        "content_length": 399,
-        "file_name": "image.jpeg"
-      }
-    ],
-    "parent": null,
-    "reveal": "b84df77d70cab9c51685e7e2b91681c414a9ee675fe86375e51b1803c130147f",
-    "total_fees": 67403
-  },
-  {
-    "commit": "20930da8aacf7807ed169e3639a1a5caeacfc2473d9974688828a9546d8f97b8",
-    "inscriptions": [
-      {
-        "id": "94c3cfcac9db3a097231c2ef64c884b75aad9dc88ec9e2152c9796105f34de5fi0",
-        "location": "94c3cfcac9db3a097231c2ef64c884b75aad9dc88ec9e2152c9796105f34de5f:0:0"
-      }
-    ],
-    "parent": null,
-    "reveal": "94c3cfcac9db3a097231c2ef64c884b75aad9dc88ec9e2152c9796105f34de5f",
-    "total_fees": 67403
-  }
-]

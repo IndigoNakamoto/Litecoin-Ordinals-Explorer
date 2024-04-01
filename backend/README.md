@@ -26,6 +26,10 @@ Run Command: docker-compose down -v
 OR
 docker ps
 docker kill <container>
+OR
+sudo docker rm -f 158387e64292
+OR
+sudo snap stop docker
 
 ### WARNING: Clear the Persistent Volume
 From: /Users/indigo/Dev/ordlite.io/backend/docker

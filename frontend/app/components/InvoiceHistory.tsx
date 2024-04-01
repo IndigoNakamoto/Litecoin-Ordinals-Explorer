@@ -49,13 +49,19 @@ export default function TransactionsTable() {
 
   // Encapsulate the data fetching logic into a function
   const fetchTransactions = async () => {
-    const requestedAccounts = await window.litescribe.requestAccounts();
-    const username = requestedAccounts[0];
-    setUsername(username);
-    fetch(`http://localhost:3005/api/invoice/account/${username}`)
-      .then(response => response.json())
-      .then(data => setTransactions(data))
-      .catch(error => console.error('Error fetching transactions:', error));
+    if(window.litescribe){
+      const requestedAccounts = await window.litescribe.requestAccounts();
+      const username = requestedAccounts[0];
+      setUsername(username);
+      if(username === null) { 
+        return
+      } else { 
+        fetch(`http://localhost:3005/api/invoice/account/${username}`)
+          .then(response => response.json())
+          .then(data => setTransactions(data))
+          .catch(error => console.error('Error fetching transactions:', error));
+      }
+    }
   };
 
   // Call fetchTransactions on component mount
