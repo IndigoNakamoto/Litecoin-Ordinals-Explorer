@@ -7,9 +7,9 @@ import { FindOptions } from 'sequelize';
 const PAGE_SIZE = 50; // Number of items per page
 
 export const getInscriptionById = async (req: Request, res: Response) => {
+    const { inscriptionId } = req.params;
     try {
-        const { inscriptionId } = req.params;
-        const inscription = await Inscription.findByPk(inscriptionId);
+        const inscription = await Inscription.findOne({where: {inscription_id: inscriptionId}});
         if (inscription) {
             res.json(inscription);
         } else {

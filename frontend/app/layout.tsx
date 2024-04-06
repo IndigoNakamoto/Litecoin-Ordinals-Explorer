@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Menu from './components/menu';
 import StickyFooter from "./components/StickyFooter";
+import Footer from './components/Footer'
 // import Head from 'next/head'; // Import Head
 
 const inter = Inter({ subsets: ["latin"] });
@@ -27,9 +28,11 @@ export default function RootLayout({
 
       <html lang="en">
         <body className={inter.className}>
-          <Menu />
-          {children}
-          <StickyFooter />
+          <div className="flex flex-col min-h-screen">
+            <Menu />
+            <div className="flex-grow">{children}</div>
+            <Footer />
+          </div>
         </body>
       </html>
     </>

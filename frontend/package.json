@@ -17,6 +17,8 @@
     "@types/three": "^0.161.2",
     "framer-motion": "^11.0.8",
     "lodash": "^4.17.21",
+    "mammoth": "^1.7.1",
+    "markdown-to-jsx": "^7.4.5",
     "next": "14.1.0",
     "next-auth": "^4.24.7",
     "react": "^18",

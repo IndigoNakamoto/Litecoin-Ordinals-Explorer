@@ -78,7 +78,7 @@ function InscribeOrder() {
   const POSTAGE = 10000;
   const SERVICE_USD_FEE = 0.5; // USD
   const LTCUSD = context?.ltcUSD || 100;
-  const SERVICE_FEE = Number((SERVICE_USD_FEE / LTCUSD).toFixed(8)) * 100000000;
+  const SERVICE_FEE = Math.floor(Number((SERVICE_USD_FEE / LTCUSD * 100000000)))
 
   const files: { index: number, file_name: string, content_length: number, content_fee: number, service_fee: number, total: number, postage: number }[] | undefined = context?.files.map((file: FileDetails, index: number) => {
     return {
@@ -101,6 +101,30 @@ function InscribeOrder() {
       setFiles(updatedFiles ?? []);
     }
   };
+
+  /* 
+  handleFileEdit
+  Will open a dialog
+  import {
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  DialogFooter,
+} from "@material-tailwind/react";
+
+
+  we want to add two new properties to each file: MetaTitle and MetaDescription. 
+
+
+  MetaTitle should be limited to 70 characters
+  import { Input } from "@material-tailwind/react";
+  <Input variant="outlined" label="Outlined" placeholder="Outlined"/>
+
+  MetaDescription should be limited to 300 characters
+  import { Textarea } from "@material-tailwind/react";
+  <Textarea variant="outlined" label="Outlined" />
+  
+  */
 
   return (
     <section className="">
@@ -214,6 +238,8 @@ function InscribeOrder() {
                           <MenuList placeholder={undefined}>
                             {/* TODO: METADATA <MenuItem placeholder={undefined}>Edit</MenuItem> */}
                             <MenuItem placeholder={undefined} onClick={() => handleDelete(index)}>Delete</MenuItem>
+                            {/* TODO: handleFileEdit */}
+                            {/* <MenuItem placeholder={undefined}>Edit</MenuItem> */}
                           </MenuList>
                         </Menu>
                       </td>

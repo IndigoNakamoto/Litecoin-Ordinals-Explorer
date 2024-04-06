@@ -1,7 +1,13 @@
-import { Dialog, DialogBody, DialogHeader, Typography, Button } from "@material-tailwind/react";
+import {
+    Dialog, DialogBody, DialogHeader, Typography, Button, Card,
+    CardHeader, CardBody,
+    Chip,
+    CardFooter,
+} from "@material-tailwind/react";
 import type { DialogHeaderStylesType } from "@material-tailwind/react";
 import type { DialogBodyStylesType } from "@material-tailwind/react";
 import { QRCode } from 'react-qrcode-logo';
+import Image from "next/image";
 
 import React, { useState, useEffect } from 'react';
 
@@ -36,10 +42,47 @@ interface ModalProps {
     paymentAddress: string;
 }
 
+interface Invoice {
+    destination: string;
+    due: string;
+    paymentLink: string;
+    metadata: {
+        inscribeStatus: string;
+        files: {
+            fileName: string;
+            fileSize: number;
+            total: number;
+            inscribeStatus: string;
+        }[];
+    };
+}
+
 const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddress, expirationTime, createdTime, due, paymentLink, metadata, currency, LTC_USD }) => {
     const [paymentStatus, setPaymentStatus] = useState('New'); // New, Processing, Settled, Expired
     const [inscribeStatus, setInscribeStatus] = useState('Pending')
-    const [invoice, setInvoice] = useState({});
+
+    
+    // Then update your useState declaration for invoice
+    const [invoice, setInvoice] = useState<Invoice>({destination: '', due: '0', paymentLink: '', metadata: {inscribeStatus: '', files: []}});
+
+
+    const resetPaymentState = () => {
+        setPaymentStatus('New');
+        setInscribeStatus('Pending');
+        setInvoice({destination: '', due: '0', paymentLink: '', metadata: {inscribeStatus: '', files: []}});
+        setTimeLeft('');
+        // Add any other state variables that need to be reset
+    };
+
+    useEffect(() => {
+        if (!isOpen) {
+            resetPaymentState();
+        }
+    }, [isOpen]);
+
+
+
+
 
     useEffect(() => {
         let intervalId: any;
@@ -57,20 +100,26 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
                     setInvoice(invoiceData);
                 }
 
-                console.log('Payment Status:', data.paymentStatus, 'ID:', id, 'isOpen:', isOpen)
+                console.log('Payment Status:', data.paymentStatus, 'ID:', id, 'isOpen:', isOpen, 'Inscribe Status: ', data.inscribeStatus)
                 if (data.paymentStatus) {
                     setPaymentStatus(data.paymentStatus);
                 }
-                if (data.inscribeStatus) {
-                    setInscribeStatus(data.inscribeStatus)
+                if (invoiceData.metadata.inscribeStatus) {
+                    setInscribeStatus(invoiceData.metadata.inscribeStatus)
                 }
             } catch (error) {
                 console.error("Failed to fetch invoice status:", error);
             }
         };
+ 
+
+        
         const shouldContinuePolling = isOpen && (inscribeStatus === 'Pending' || inscribeStatus === 'Processing');
         if (shouldContinuePolling) {
+            console.log('shouldContinuePolling: ', shouldContinuePolling)
             fetchPaymentStatus(); // Fetch immediately when modal opens and conditions are met
+            console.log('IsOpen: ', isOpen)
+            console.log('Inscribe Status: ', inscribeStatus)
             intervalId = setInterval(fetchPaymentStatus, 5000); // Then every 5 seconds
         }
 
@@ -79,7 +128,14 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
                 clearInterval(intervalId); // Cleanup on unmount or when conditions are not met anymore
             }
         };
-    }, [isOpen, paymentStatus, id]);
+    }, [isOpen, paymentStatus, id, inscribeStatus]);
+
+
+
+
+
+
+
 
     const [timeLeft, setTimeLeft] = useState('');
 
@@ -89,7 +145,7 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
 
     const copyToClipboard = async () => {
         try {
-            await navigator.clipboard.writeText(paymentAddress);
+            await navigator.clipboard.writeText(invoice.destination);
             setCopiedOpacity(1); // Make "Copied!" visible
             setTimeout(() => setCopiedOpacity(0), 2000); // Fade out after 2 seconds
         } catch (err) {
@@ -121,14 +177,6 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
         return () => clearInterval(intervalId); // Cleanup on unmount
     }, [expirationTime]);
 
-
-    // TODO: We want to poll the server every 5 seconds for the status of the invoice and update the UI accordingly while 
-    // the invoice is still active. We can use the following endpoint to get the status of the invoice:
-    // fetch localhost:3005/api/invoice/status/:invoiceId
-
-    // if paymentStatus is Processing, show a spinner with a message "Processing Payment..."
-    // if paymentStatus is Settled, show a success message "Payment Successful"
-    // if paymentStatus is Expired, show "Payment Expired"
 
 
     return (
@@ -169,15 +217,15 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
                         <Typography variant='lead' className='text-md' placeholder={undefined}>${LTC_USD.toFixed(2) || "Loading..."}</Typography>
                     </div>
                     <div className="flex justify-between">
-                        <Typography variant='h6' placeholder={undefined}>Order Total: </Typography>
-                        <Typography variant='lead' className='text-md' placeholder={undefined}>{formatLitsToLitecoin(Number(due)) || "0.000 000 00"} LTC</Typography>
+                        <Typography variant='h6' placeholder={undefined}>Total Due: </Typography>
+                        <Typography variant='lead' className='text-md' placeholder={undefined}>{formatLitsToLitecoin(Number(invoice.due)) || "0.000 000 00"} LTC</Typography>
                     </div>
 
                     {paymentStatus === 'New' && (
                         <div className="py-4">
                             <div style={{ display: 'flex', justifyContent: 'center' }} className="bg-white rounded-xl p-2"  >
                                 <div className="bg-white rounded-xl p-2">
-                                    <QRCode value={paymentLink} logoImage={'/ordlite.svg'} size={275} eyeRadius={[
+                                    <QRCode value={invoice.paymentLink} logoImage={'/ordlite.svg'} size={275} eyeRadius={[
                                         100,  // top/left eye
                                         100, // top/right eye
                                         100,  // bottom/left eye
@@ -188,7 +236,7 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
                                 <Typography variant='h6' placeholder={undefined}>Payment Address: </Typography>
                                 <Button onClick={copyToClipboard} fullWidth className="bg-white rounded-xl p-4 flex justify-between" placeholder={undefined}>
                                     <Typography variant='lead' placeholder={undefined} className='text-gray-800 text-md md:text-lg'>
-                                        {paymentAddress || "LTC1..."}
+                                        {invoice.destination || "LTC1..."}
                                     </Typography>
                                     {/* Copied? <Typography type='small' text-blue-500 >Copied! </> Show this for a brief period. Fade in out*/}
                                     <img src="/icon_copy.svg" alt="copy" className="h-6 w-6 inline-block ml-2" />
@@ -200,36 +248,69 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
                         </div>
                     )}
 
-                    <div className="py-4">
-                        {invoice?.metadata?.files && (
-                            <table className="w-full mt-16 border-collapse text-gray-900 table-auto text-left">
-                                <thead>
-                                    <tr>
-                                        <th className="border-b-2">File Name</th>
-                                        <th className="border-b-2">Size</th>
-                                        {/* <th className="border-b-2">Content Fee</th>
+
+                    {(paymentStatus === 'Processing' || paymentStatus === 'Settled') && (
+                        <div className="py-4">
+                            <div style={{ display: 'flex', justifyContent: 'center' }} className="bg-white rounded-xl p-2"  >
+                                <div className="bg-white rounded-xl p-2">
+                                    <Image src={"/OrdinalsLiteLogo3.svg"} alt={""} width={275} height={275}/>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <Card className="py-4" placeholder={undefined}>
+
+                        <Typography variant="h5" color="blue-gray" className=" p-4" placeholder={undefined}>
+                            Files
+                        </Typography>
+
+                        <CardBody placeholder={undefined}>
+                            {invoice?.metadata?.files && (
+                                <table className="w-full mt-4 border-collapse text-gray-900 table-auto text-left">
+                                    <thead>
+                                        <tr>
+                                            <th className="border-b-2">File Name</th>
+                                            <th className="border-b-2">Size</th>
+                                            {/* <th className="border-b-2">Content Fee</th>
                                         <th className="border-b-2">Postage Fee</th>
                                         <th className="border-b-2">Service Fee</th> */}
-                                        <th className="border-b-2">Total</th>
-                                        <th className="border-b-2">Inscribe Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {invoice?.metadata?.files.map((file: any, index: number) => (
-                                        <tr key={index}>
-                                            <td className="p-2">{file.fileName}</td>
-                                            <td className="p-2">{file.fileSize} bytes</td>
-                                            {/* <td className="p-2">{formatLitsToLitecoin(file.contentFee)} LTC</td>
+                                            <th className="border-b-2">Total</th>
+                                            <th className="border-b-2">Inscribe Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {invoice?.metadata?.files.map((file: any, index: number) => (
+                                            <tr key={index}>
+                                                <td className="p-2">{file.fileName}</td>
+                                                <td className="p-2">{file.fileSize} bytes</td>
+                                                {/* <td className="p-2">{formatLitsToLitecoin(file.contentFee)} LTC</td>
                                             <td className="p-2">{formatLitsToLitecoin(file.postage) || '0.00 000 000'} LTC</td>
                                             <td className="p-2">{formatLitsToLitecoin(file.serviceFee)} LTC</td> */}
-                                            <td className="p-2">{formatLitsToLitecoin(file.total)} LTC</td>
-                                            <td className="p-2">{file.inscribeStatus}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
+                                                <td className="p-2">{formatLitsToLitecoin(file.total)} LTC</td>
+                                                <td>
+                                                    <Chip
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        value={file.inscribeStatus}
+                                                        color={
+                                                            file.inscribeStatus === "Pending"
+                                                                ? "amber"
+                                                                : file.inscribeStatus === "Processing"
+                                                                    ? "yellow"
+                                                                    : file.inscribeStatus === "Inscribed"
+                                                                        ? "green"
+                                                                        : "red"
+                                                        }
+                                                    />
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </CardBody>
+                    </Card>
                 </div>
             </DialogBody>
         </Dialog>

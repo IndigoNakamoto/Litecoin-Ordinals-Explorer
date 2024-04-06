@@ -8,7 +8,7 @@ interface LayoutProps {
 const InscriptionLayout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <>
-      <article className="mx-auto p-4 max-w-[700px] pb-16">
+      <article className="mx-auto p-4 max-w-screen-lg pb-16">
         {children}
       </article>
     </>

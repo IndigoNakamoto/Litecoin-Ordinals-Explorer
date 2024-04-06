@@ -7,6 +7,7 @@ import { config } from 'dotenv';
 import fs from 'fs';
 import { promisify } from 'util';
 import LitecoinInscriptionService from './LitecoinInscriptionService';
+import OrdService from './OrdService';
 config();
 
 const execAsync = promisify(exec);
@@ -23,6 +24,7 @@ interface WebhookEvent {
 }
 
 const litecoinInscriptionService = new LitecoinInscriptionService();
+const ordService = new OrdService();
 
 
 class InscriptionService {
@@ -85,7 +87,7 @@ class InscriptionService {
         const auth = `Basic ${base64Credentials}`
 
         let updatedFiles = eventData.metadata.files.map((file: any) => {
-            return { ...file, fileStatus: 'Deleted', inscribeStatus: 'Cancelled'}; // Update each file's status to 'Deleted'
+            return { ...file, fileStatus: 'Deleted', inscribeStatus: 'Cancelled' }; // Update each file's status to 'Deleted'
         });
         console.log('Updated Files:', updatedFiles);
 
@@ -158,6 +160,32 @@ class InscriptionService {
 
     private async handleInvoiceProcessing(eventData: any) {
         console.log('Invoice Processing:', eventData);
+        // const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
+        // const BTCPAY_USERNAME = 'ordlite@gmail.com'
+        // const BTCPAY_PASSWORD = '$had0wTaxih'
+        // const base64Credentials = Buffer.from(BTCPAY_USERNAME + ':' + BTCPAY_PASSWORD).toString(
+        //     'base64'
+        // )
+
+        // const auth = `Basic ${base64Credentials}`
+        // let updatedFiles = eventData.metadata.files.map((file: any) => {
+        //     return { ...file, inscribeStatus: 'Processing' }; // Update each file's status to 'Deleted'
+        // });
+
+        // let updatedMetadata = { ...eventData.metadata, status: 'Processing', files: updatedFiles };
+        // const update_metadata = await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
+        //     metadata: updatedMetadata
+        // }, {
+        //     headers: { 'Authorization': auth }
+        // });
+
+        Invoice.update({ paymentStatus: 'Processing', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
+    }
+
+    // Inscribe files when invoice is settle
+    private async handleInvoiceSettled(eventData: any) {
+        console.log('Invoice Settled:', eventData);
+
         const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
         const BTCPAY_USERNAME = 'ordlite@gmail.com'
         const BTCPAY_PASSWORD = '$had0wTaxih'
@@ -171,26 +199,21 @@ class InscriptionService {
         });
 
         let updatedMetadata = { ...eventData.metadata, status: 'Processing', files: updatedFiles };
-        const update_metadata = await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
+        await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
             metadata: updatedMetadata
         }, {
             headers: { 'Authorization': auth }
         });
 
-        Invoice.update({ paymentStatus: 'Processing', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
-    }
-
-    // Inscribe files when invoice is settle
-    private async handleInvoiceSettled(eventData: any) {
-        console.log('Invoice Settled:', eventData);
-
         // Inscribe files for the settled invoice
-        litecoinInscriptionService.inscribeFilesForInvoice(eventData.invoiceId).then(() => {
+        ordService.inscribeFilesForInvoice(eventData.invoiceId).then(() => {
             console.log(`Inscription process completed successfully for invoice: ${eventData.invoiceId}.`);
+            Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp, inscribeStatus: 'Inscribed' }, { where: { invoiceId: eventData.invoiceId } });
         }).catch((error) => {
             console.error('Inscription process failed:', error);
+            Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp, inscribeStatus: 'Error' }, { where: { invoiceId: eventData.invoiceId } });
         });
-        Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
+
     }
 
 }

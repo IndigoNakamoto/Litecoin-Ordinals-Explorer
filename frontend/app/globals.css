@@ -3,17 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+  --foreground-rgb: 255, 255, 255; /* Light text */
+  --background-start-rgb: 0, 0, 0; /* Dark background start */
+  --background-end-rgb: 0, 0, 0; /* Dark background end */
 }
 
 body {
@@ -32,7 +24,6 @@ html {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0); /* Make scrollbar transparent */
 }
-
 
 /* For Webkit (Chrome, Edge, Safari) */
 body::-webkit-scrollbar {
@@ -53,4 +44,4 @@ body:hover::-webkit-scrollbar-thumb {
   .text-balance {
     text-wrap: balance;
   }
-} 
+}

@@ -90,5 +90,5 @@ export default async function Page() {
   const totalCount = await fetchTotalCount();
   // const inscriptions:Inscription[] = []
   // Forward fetched data to your Client Component
-  return <HomePage initialInscriptions={inscriptions} totalCount={totalCount}/>;
+  return <HomePage initialInscriptions={inscriptions}/>;
 }

@@ -1,10 +1,20 @@
+/* eslint-disable react/no-children-prop */
 'use client'
 // app/page-home.tsx
 import React, { useEffect, useState, useRef } from 'react';
 import { InscriptionCard } from './components/inscriptionCard';
 import { debounce } from 'lodash';
 import { Typography } from "@material-tailwind/react";
-import { Button } from "@material-tailwind/react";
+
+// Import Tabs components from Material Tailwind
+import {
+    Tabs,
+    TabsHeader,
+    TabsBody,
+    Tab,
+    TabPanel,
+} from "@material-tailwind/react";
+
 
 export interface Inscription {
     address: string;
@@ -31,10 +41,9 @@ export interface Inscription {
 
 interface HomeProps {
     initialInscriptions: Inscription[];
-    totalCount: number;
 }
 
-export default function Home({ initialInscriptions, totalCount }: HomeProps) {
+export default function Home({ initialInscriptions }: HomeProps) {
     const [inscriptions, setInscriptions] = useState<Inscription[]>(initialInscriptions);
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState({ sortOrder: 'oldest', contentType: '', contentTypeType: '', page: 1, cursed: false });
@@ -44,9 +53,8 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
     const [selectedSortOption, setSelectedSortOption] = useState<string>('Oldest');
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [rightPosition, setRightPosition] = useState('0px');
-    const [fetchedCount, setFetchedCount] = useState(totalCount);
+    const [fetchedCount, setFetchedCount] = useState(0);
     const [filterTypeDesc, setFilterType] = useState('');
-
 
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -311,7 +319,7 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
 
     const updateFilter = (type: 'sortOrder' | 'contentType' | 'contentTypeType' | 'cursed', value: string | boolean) => {
         setHasMore(true);
-        setFilter(prev => ({ ...prev, [type]: value }));
+        setFilter(prev => ({ ...prev, [type]: value, page: 1 }));
     };
 
     const handleSortOptionSelect = (option: string) => {
@@ -326,6 +334,8 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
         // updateFilter('sortOrder', option.toLowerCase().replace(' ', ''));
     };
 
+
+
     const toggleDropdown = () => {
         setDropdownOpen(prevState => !prevState);
     };
@@ -335,22 +345,19 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
         <>
             <div className="mx-auto p-4 md:p-8 mb-16">
                 {/* Filter Buttons */}
-                <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                    {['All', 'Images', 'GIF', 'Text', 'SVG', 'Videos', 'JSON', 'PDF', 'Audio', '3D'].map((type) => ( //'HTML', 
-                        <button
-                            key={type}
-                            onClick={() => handleFilterClick(type)}
-                            // size="sm"
-                            // variant="gradient"
-                            className={`rounded-3xl w-min px-4 py-1 ${activeFilterButton === type ? 'bg-gradient-to-br from-blue-300 to-blue-800 text-white' : 'bg-gradient-to-br from-white to-gray-500 text-black'}`}                       >
-                            {type}
-                        </button>
-                    ))}
-                </div>
+                <Tabs value={activeFilterButton} className='max-w-screen-md'>
+                    <TabsHeader placeholder={undefined}>
+                        {['All', 'Images', 'GIF', 'Text', 'SVG', 'Videos', 'JSON', 'PDF', 'Audio', '3D'].map(type => (
+                            <Tab key={type} value={type} onClick={() => handleFilterClick(type)} placeholder={undefined}>
+                                {type}
+                            </Tab>
+                        ))}
+                    </TabsHeader>
+                </Tabs>
 
                 {/* Sort Dropdown */}
                 <div className="relative inline-block pt-4">
-                    <button onClick={toggleDropdown} className="w-32 px-3 py-1.5 text-sm rounded-lg bg-gradient-to-br from-blue-400 to-blue-700 text-white">
+                    <button onClick={toggleDropdown} className="w-32 px-3 py-1.5 text-sm rounded-md bg-gradient-to-br from-blue-400 to-blue-700 text-white">
                         {selectedSortOption} <svg className="inline-block w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                     </button>
                     {dropdownOpen && (
@@ -370,7 +377,7 @@ export default function Home({ initialInscriptions, totalCount }: HomeProps) {
                 </div>
 
                 {/* Inscriptions */}
-                <div className="grid pt-8 gap-1.5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))' }}>
+                <div className="grid pt-8 gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))' }}>
                     {Array.isArray(inscriptions) && inscriptions.map((inscription, index) => (
                         <div key={inscription.inscription_id} ref={el => el && (cardRefs.current[index] = el)} data-inscription-id={inscription.inscription_id}>
                             <InscriptionCard {...inscription} />

@@ -12,11 +12,12 @@ const supportedMimeTypes = new Set([
     'image/webp', 'font/woff', 'font/woff2', 'text/yaml'
 ]);
 
-interface FileUploadProps {
-    onFileSelect: (file: File) => void;
+interface FilesUploadProps {
+    onFilesSelect: (files: File[]) => void;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
+
+const FileUpload: React.FC<FilesUploadProps> = ({ onFilesSelect }) => {
     const context = useContext(InscribeOrderContext);
     if (!context) {
         throw new Error("FileUpload must be used within a InscribeOrderContext.Provider");
@@ -24,20 +25,28 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
     const { setError } = context;
 
     const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
-        console.log('handleFileSelect')
-        const file = event.target.files?.[0];
-
-        if (file) {
-            const fileExtension = file?.name.split('.').pop()?.toLowerCase(); // Add null check for fileExtension
-            // console.log('filetype: ', file.type); // Add this line to log the MIME type
-            if ((!supportedMimeTypes.has(file.type) && !['gltf', 'glb'].includes(fileExtension || ''))) { // Add null check for fileExtension
+        const files = event.target.files;
+        if (!files) return;
+    
+        const selectedFiles = Array.from(files);
+        let hasError = false; // Track if any error occurred
+    
+        for (const file of selectedFiles) {
+            const fileExtension = file.name.split('.').pop()?.toLowerCase();
+            if (!supportedMimeTypes.has(file.type) && !['gltf', 'glb'].includes(fileExtension || '')) {
                 setError("Invalid file type. Please upload a file with a supported MIME type.");
-            } else if (file.size > 400 * 1000) { // Adjusted to 400 KB to match requirement
+                hasError = true; // Set error flag
+                break; // Exit the loop early
+            } else if (file.size > 400 * 1000) {
                 setError("File size exceeds the maximum limit of 400 KB.");
-            } else {
-                onFileSelect(file);
-                setError(null); // Clear any existing errors
+                hasError = true; // Set error flag
+                break; // Exit the loop early
             }
+        }
+    
+        if (!hasError) {
+            onFilesSelect(selectedFiles);
+            setError(null); // Clear any existing errors
         }
     };
 
@@ -54,7 +63,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
                         <p className="text-sm p-2 text-blue-500 dark:text-blue-400 text-center">Supported Extensions:</p>
                         <p className="text-xs px-20 text-blue-500 dark:text-blue-400 text-center">apng asc bin binpb cbor css flac gif glb gltf html jpg js json md mp3 mp4 otf pdf png py stl svg ttf txt wav webm webp woff woff2 yaml</p>
                     </div>
-                    <input id="dropzone-file" type="file" className="hidden" onChange={handleFileSelect} />
+                    <input id="dropzone-file" type="file" multiple className="hidden" onChange={handleFileSelect} />
                 </label>
             </Card>
         </div>

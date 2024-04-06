@@ -53,6 +53,7 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
     const [fetchedInvoice, setFetchedInvoice] = useState<any | null>(null);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false); // State to manage Payment modal visibility
 
+
     useEffect(() => {
         const fetchData = async () => {
             const data = await fetchInvoiceData(invoiceId);
@@ -128,35 +129,37 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
                     </div>
                     <div className='flex gap-2'>
                         <Typography variant='h6' className='w-40 text-gray-900 font-bold text-md' placeholder={undefined}> Total Due:</Typography>
-                        <Typography variant='lead' className='text-gray-900 text-md' placeholder={undefined}>  {formatLitsToLitecoin(Number(fetchedInvoice?.amount)) || "0"} LTC </Typography>
+                        <Typography variant='lead' className='text-gray-900 text-md' placeholder={undefined}>  {formatLitsToLitecoin(Number(fetchedInvoice?.due)) || "0"} LTC </Typography>
                     </div>
-                    <div className='flex gap-2'>
+                    {/* <div className='flex gap-2'>
                         <Typography variant='h6' className='w-40 text-gray-900 font-bold text-md' placeholder={undefined}> LTC/USD Rate: </Typography>
                         <Typography variant='lead' className='text-gray-900 text-md' placeholder={undefined}>  {`$${fetchedInvoice?.metadata.ltc_usd_rate.toFixed(2)}`} </Typography>
-                    </div>
+                    </div> */}
 
                     {fetchedInvoice?.metadata?.files && (
-                        <table className="w-full mt-16 border-collapse text-gray-900">
+                        <table className="w-full mt-16 border-collapse text-gray-900 text-lefttable-auto ">
                             <thead>
                                 <tr>
-                                    <th className="border-b-2">File Name</th>
-                                    <th className="border-b-2">Size</th>
-                                    <th className="border-b-2">Content Fee</th>
-                                    <th className="border-b-2">Postage Fee</th>
-                                    <th className="border-b-2">Service Fee</th>
-                                    <th className="border-b-2">Total</th>
-                                    <th className="border-b-2">Inscribe Status</th>
+                                    <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">File Name</th>
+                                    <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">Size</th>
+                                    <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">Content Fee</th>
+                                    <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">Postage Fee</th>
+                                    <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">Service Fee</th>
+                                    <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">Total</th>
+                                    <th className='border-b border-blue-gray-100 bg-blue-gray-50 p-4'>Inscription</th>
+                                    <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">Inscribe Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {fetchedInvoice.metadata.files.map((file: any, index: number) => (
-                                    <tr key={index}>
+                                    <tr key={index} className='even:bg-blue-gray-50/50'>
                                         <td className="p-2">{file.fileName}</td>
                                         <td className="p-2">{file.fileSize} bytes</td>
                                         <td className="p-2">{formatLitsToLitecoin(file.contentFee)} LTC</td>
                                         <td className="p-2">{formatLitsToLitecoin(file.postage) || '0.00 000 000'} LTC</td>
                                         <td className="p-2">{formatLitsToLitecoin(file.serviceFee)} LTC</td>
                                         <td className="p-2">{formatLitsToLitecoin(file.total)} LTC</td>
+                                        <td className="p-2">View</td>
                                         <td className="p-2">{file.inscribeStatus}</td>
                                     </tr>
                                 ))}
@@ -200,13 +203,16 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
                         </div>
                     </DialogFooter>
                 ) || (
-                        <DialogFooter placeholder={undefined} className='pb-16'>
+                        // eslint-disable-next-line react/no-children-prop
+                        <DialogFooter placeholder={undefined} className='pb-16' children={undefined}>
                         </DialogFooter>
                     )}
             </Dialog>
-            <PaymentModal isOpen={isPaymentModalOpen} onClose={function (): void {
-                throw new Error('Function not implemented.');
-            }}
+            <PaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={function (): void {
+                    throw new Error('Function not implemented.');
+                }}
                 id={fetchedInvoice?.id}
                 expirationTime={fetchedInvoice?.expirationTime}
                 createdTime={fetchedInvoice?.createdTime}

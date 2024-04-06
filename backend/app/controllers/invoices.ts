@@ -3,6 +3,8 @@ import Invoice from '../models/Invoice';
 import { Op } from 'sequelize';
 const axios = require('axios');
 
+
+// TODO: Update return data only needed. Only include createdTime, expirationTime, id, inscribeStatus, metadata, status
 export const getInvoiceById = async (req: Request, res: Response) => {
     try {
         const { invoiceId } = req.params;
@@ -18,12 +20,18 @@ export const getInvoiceById = async (req: Request, res: Response) => {
             headers: { 'Authorization': `${auth}` },
         });
 
+        const {createdTime, expirationTime, id, metadata, status} = invoice.data
         const invoiceDB = await Invoice.findOne({ where: { invoiceId } });
         // console.log('Invoice:', invoice.data);
         // console.log('InvoiceDB:', invoiceDB?.dataValues.inscribeStatus);
 
+        const payment_method = await getPaymentMethod(id)
+        // console.log('Payment Method object: ', payment_method)
+        const {due, destination, paymentLink} = payment_method[0]
+ 
+
         if (invoice&& invoiceDB) {
-            res.json({...invoice.data, inscribeStatus:invoiceDB?.dataValues.inscribeStatus});
+            res.json({id, createdTime, expirationTime, due, destination, paymentLink, metadata, status, inscribeStatus:invoiceDB?.dataValues.inscribeStatus, });
         } else {
             res.status(404).json({ error: 'Invoice not found' });
         }

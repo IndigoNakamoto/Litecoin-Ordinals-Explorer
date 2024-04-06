@@ -95,17 +95,17 @@ class OrdService {
 
                 // Now, directly replace the files within invoice metadata with filesInscribed
                 invoiceData.metadata.files = filesInscribed;
-                if (!errorFlag) {
-                    invoiceData.metadata.inscribeStatus = 'Inscribed'; // Update the status of the invoice
-                    invoiceData.metadata.status = 'Inscribed'; // Update the status of the invoice
-                } else if (errorFlag) {
-                    invoiceData.metadata.inscribeStatus = 'Error'; // Update the status of the invoice
-                    invoiceData.metadata.status = 'Error'; // Update the status of the invoice
+
+                let inscribeStatus = 'Inscribed'; // Update the status of the invoice
+                let status = 'Inscribed'; // Update the status of the invoice
+                if (errorFlag) {
+                    inscribeStatus = 'Error'; // Update the status of the invoice
+                    status = 'Error'; // Update the status of the invoice
                 }
 
                 // Finally, update the invoice with the modified metadata
                 await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${invoiceData.id}`, {
-                    metadata: invoiceData.metadata // This now includes the updated files
+                    metadata: {...invoiceData.metadata, inscribeStatus, status} // This now includes the updated files
                 }, {
                     headers: { 'Authorization': auth }
                 });
@@ -147,9 +147,9 @@ class OrdService {
         const yamlContent = {
             mode: 'separate-outputs',
             parent: null,
-            postage: 10000, 
+            postage: 10000,
             inscriptions: [{
-                file: file.location, 
+                file: file.location,
                 destination: invoice.data.metadata.receivingAddress
             }]
         };
@@ -158,7 +158,7 @@ class OrdService {
         const yamlStr = yaml.dump(yamlContent);
 
         // Define a path for the YAML file
-        const yamlDir = path.join(__dirname, 'yaml'); 
+        const yamlDir = path.join(__dirname, 'yaml');
         // Ensure the directory exists
         if (!fs.existsSync(yamlDir)) {
             fs.mkdirSync(yamlDir, { recursive: true });

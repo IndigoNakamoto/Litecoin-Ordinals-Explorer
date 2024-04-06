@@ -86,7 +86,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ inscription_id
     } else if (contentType.startsWith('text/') || contentType === 'application/json') {
         return <pre className="text-white">{content}</pre>;
     } else if (contentType === 'application/pdf') {
-        return <iframe src={content} width="100%" height="500px"></iframe>;
+        return <iframe src={content} width="100%" height="1000px"></iframe>;
     } else if (contentType.startsWith('video/')) {
         return <video src={content} controls width="100%"></video>;
     } else if (contentType.startsWith('audio/')) {

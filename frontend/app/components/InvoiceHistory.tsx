@@ -45,21 +45,33 @@ export default function TransactionsTable() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null); // State to hold the selected transactio
   const [username, setUsername] = useState<string | null>(null);
 
-  
+
 
   // Encapsulate the data fetching logic into a function
   const fetchTransactions = async () => {
-    if(window.litescribe){
-      const requestedAccounts = await window.litescribe.requestAccounts();
-      const username = requestedAccounts[0];
+    if (window.litescribe) {
+      // const requestedAccounts = await window.litescribe.requestAccounts();
+      const username = localStorage.getItem('username')
       setUsername(username);
-      if(username === null) { 
+      if (username === null) {
         return
-      } else { 
+      } else {
         fetch(`http://localhost:3005/api/invoice/account/${username}`)
-          .then(response => response.json())
-          .then(data => setTransactions(data))
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (Array.isArray(data)) {
+              setTransactions(data);
+            } else {
+              console.error('Data received from API is not an array:', data);
+            }
+          })
           .catch(error => console.error('Error fetching transactions:', error));
+
       }
     }
   };
@@ -166,8 +178,8 @@ export default function TransactionsTable() {
                           : transaction.status === "Processing"
                             ? "yellow"
                             : transaction.status === "Settled"
-                            ? "green"
-                            : "red"
+                              ? "green"
+                              : "red"
                       }
                     />
                   </td>
@@ -182,8 +194,8 @@ export default function TransactionsTable() {
                           : transaction.metadata.status === "Processing"
                             ? "yellow"
                             : transaction.metadata.status === "Inscribed"
-                            ? "green"
-                            : "red"
+                              ? "green"
+                              : "red"
                       }
                     />
                   </td>

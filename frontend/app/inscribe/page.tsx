@@ -8,11 +8,12 @@ import FileUploadAlert from "../components/FileUploadAlert";
 import InscribeOrder from '../components/inscribe-order'
 import OrderSummary from "../components/InscribeOrderSummary";
 // import InvoiceHistory from '../components/inscribe-history'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { InscribeOrderContext } from "../components/contexts/InscribeOrderContext";
 import PaymentModal from "../components/paymentModal";
 import { set } from "lodash";
 import InvoiceHistory from "../components/InvoiceHistory";
+import ConnectModal from '@/app/components/ConnectModal'
 
 
 export default function Page() {
@@ -27,6 +28,7 @@ export default function Page() {
     const [serviceFee, setServiceFee] = useState<number | null>(null);
     const [ltcUSD, setLtcUSD] = useState<number>(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
 
     const [invoiceId, setInvoiceId] = useState<string | null>(null);
     const [invoiceExpirationTime, setInvoiceExpirationTime] = useState<string | null>(null);
@@ -38,35 +40,86 @@ export default function Page() {
     const [user, setUser] = useState<string | null>(null);
     // const user_id = localStorage.getItem('username');
 
+    const [connected, setConnected] = useState('false');
+    useEffect(() => {
+        const connected = localStorage.getItem('connected');
+        const username = localStorage.getItem('username')
+        if (connected === 'true') {
+            setConnected('true')
+        }
+        setUser(String(username))
+    }, []);
 
 
-    const handleFileSelect = async (file: File) => {
-        const requestedAccounts = await window.litescribe.requestAccounts();
-        const user_id = requestedAccounts[0];
-        console.log('HANDLE FILE SELECT')
-        try {
-            const response = await fetch(`http://localhost:3005/api/invoice/new/account/${user_id}`)        // If you add more states related to the context, you can log them here as well
-            const doesNewInvoiceExist = await response.json();
-            if (doesNewInvoiceExist.hasNewInvoice) {
-                console.log('User has an invoice in progress');
-                setInProgress(true);
-                // Delete the uploaded files
-                setError("You have an invoice in progress. Please settle it before uploading new files or cancel the invoice.");
-            } else {
-                setFileName(file.name); // Update file name state
-                setFiles(prevFiles => [...prevFiles, file]); // Append file to files state
-                const fileSize = file.size; // Retrieve file size
-                setFileSize(fileSize); // Update file size state
-                const ltcusd = await fetch('https://payment.ordlite.com/api/rates?storeId=AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf');
-                const ltcUSD = await ltcusd.json();
-                setLtcUSD(ltcUSD[0].rate);
+    const handleButtonClick = () => {
+        setIsModalOpen(true);
+    };
+
+
+
+    // const handleFileSelect = async (file: File) => {
+    //     const requestedAccounts = await window.litescribe.requestAccounts();
+    //     const user_id = requestedAccounts[0];
+    //     console.log('HANDLE FILE SELECT')
+    //     try {
+    //         const response = await fetch(`http://localhost:3005/api/invoice/new/account/${user_id}`)        // If you add more states related to the context, you can log them here as well
+    //         const doesNewInvoiceExist = await response.json();
+    //         if (doesNewInvoiceExist.hasNewInvoice) {
+    //             console.log('User has an invoice in progress');
+    //             setInProgress(true);
+    //             // Delete the uploaded files
+    //             setError("You have an invoice in progress. Please settle it before uploading new files or cancel the invoice.");
+    //         } else {
+    //             setFileName(file.name); // Update file name state
+    //             setFiles(prevFiles => [...prevFiles, file]); // Append file to files state
+    //             const fileSize = file.size; // Retrieve file size
+    //             setFileSize(fileSize); // Update file size state
+    //             const ltcusd = await fetch('https://payment.ordlite.com/api/rates?storeId=AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf');
+    //             const ltcUSD = await ltcusd.json();
+    //             setLtcUSD(ltcUSD[0].rate);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error checking for existing invoice:', error);
+    //         setError(String(error)); // Display the error message in the client component
+    //     }
+
+    // };
+
+    const handleFilesSelect = async (files: File[]) => {
+
+        if (connected === 'false') {
+            setIsConnectModalOpen(true)
+        } else {
+            console.log('HANDLE FILES SELECT');
+            const user_id = localStorage.getItem('username')
+            try {
+                const response = await fetch(`http://localhost:3005/api/invoice/new/account/${user_id}`); // If you add more states related to the context, you can log them here as well
+                const doesNewInvoiceExist = await response.json();
+                if (doesNewInvoiceExist.hasNewInvoice) {
+                    console.log('User has an invoice in progress');
+                    setInProgress(true);
+                    // Delete the uploaded files
+                    setError("You have an invoice in progress. Please settle it before uploading new files or cancel the invoice.");
+                } else {
+                    const updatedFiles = [...files];
+                    updatedFiles.forEach(file => {
+                        setFileName(file.name); // Update file name state
+                        setFiles(prevFiles => [...prevFiles, file]); // Append file to files state
+                        const fileSize = file.size; // Retrieve file size
+                        setFileSize(fileSize); // Update file size state
+                    });
+                    const ltcusd = await fetch('https://payment.ordlite.com/api/rates?storeId=AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf');
+                    const ltcUSD = await ltcusd.json();
+                    setLtcUSD(ltcUSD[0].rate);
+                }
+            } catch (error) {
+                console.error('Error checking for existing invoice:', error);
+                setError(String(error)); // Display the error message in the client component
             }
-        } catch (error) {
-            console.error('Error checking for existing invoice:', error);
-            setError(String(error)); // Display the error message in the client component
         }
 
     };
+
 
     const handleSubmit = async () => {
         console.log('HANDLE SUBMIT');
@@ -140,12 +193,12 @@ export default function Page() {
             }}
         >
             <section className="mx-auto max-w-full bg-gray-200 lg:py-36">
-                <div className="mx-auto p-4 max-w-screen-2xl">
+                <div className="mx-auto p-4 max-w-screen-2xl min-h-screen">
                     <Typography variant="h1" className="mb-6 font-2xl text-gray-900" placeholder={undefined}>
                         Inscribe
                     </Typography>
                     <div className="grid grid-cols-1 pt-8 gap-4">
-                        {error ? <FileUploadAlert /> : <FileUpload onFileSelect={handleFileSelect} />}
+                        {error ? <FileUploadAlert /> : <FileUpload onFilesSelect={handleFilesSelect} />}
                         <div className="w-full text-black">
                             <InscribeOrder />
                             <OrderSummary onSubmit={handleSubmit} />
@@ -171,7 +224,7 @@ export default function Page() {
                     metadata={{}}
                     paymentAddress={String(destinationAddress)}
                 />
-
+                <ConnectModal isOpen={isConnectModalOpen} onClose={() => setIsConnectModalOpen(false)} />
             </section>
         </InscribeOrderContext.Provider>
     );
