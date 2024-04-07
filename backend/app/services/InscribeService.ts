@@ -185,6 +185,7 @@ class InscriptionService {
     // Inscribe files when invoice is settle
     private async handleInvoiceSettled(eventData: any) {
         console.log('Invoice Settled:', eventData);
+        Invoice.update({paymentStatus: 'Settled', updatedAt: eventData.timestamp}, {where: {invoiceId: eventData.invoiceId}});
 
         const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
         const BTCPAY_USERNAME = 'ordlite@gmail.com'
@@ -195,10 +196,10 @@ class InscriptionService {
 
         const auth = `Basic ${base64Credentials}`
         let updatedFiles = eventData.metadata.files.map((file: any) => {
-            return { ...file, inscribeStatus: 'Processing' }; // Update each file's status to 'Deleted'
+            return { ...file, inscribeStatus: 'Queued' }; // Update each file's status to 'Deleted'
         });
 
-        let updatedMetadata = { ...eventData.metadata, status: 'Processing', files: updatedFiles };
+        let updatedMetadata = { ...eventData.metadata, status: 'Queued', files: updatedFiles };
         await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
             metadata: updatedMetadata
         }, {
@@ -208,7 +209,7 @@ class InscriptionService {
         // Inscribe files for the settled invoice
         ordService.inscribeFilesForInvoice(eventData.invoiceId).then(() => {
             console.log(`Inscription process completed successfully for invoice: ${eventData.invoiceId}.`);
-            Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp, inscribeStatus: 'Inscribed' }, { where: { invoiceId: eventData.invoiceId } });
+            Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp, inscribeStatus: 'Committed' }, { where: { invoiceId: eventData.invoiceId } });
         }).catch((error) => {
             console.error('Inscription process failed:', error);
             Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp, inscribeStatus: 'Error' }, { where: { invoiceId: eventData.invoiceId } });

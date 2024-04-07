@@ -1,7 +1,7 @@
 'use client'
 // app/components/ContentRenderer.tsx
 import { useEffect, useState } from 'react';
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 
@@ -82,7 +82,7 @@ export const ContentRenderer: React.FC<ContentRendererProps> = ({ inscription_id
     if (!content) return null;
 
     if (contentType.startsWith('image/')) {
-        return <Image src={content} alt={`Inscription ${formattedInscriptionNumber}`} layout="fill" objectFit="cover" />;
+        return <Image src={content} alt={`Inscription ${formattedInscriptionNumber}`} fill={true} priority={true} objectFit="cover" />;
     } else if (contentType.startsWith('text/') || contentType === 'application/json') {
         return <pre className="text-white">{content}</pre>;
     } else if (contentType === 'application/pdf') {

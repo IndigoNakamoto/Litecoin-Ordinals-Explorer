@@ -55,36 +55,6 @@ export default function Page() {
         setIsModalOpen(true);
     };
 
-
-
-    // const handleFileSelect = async (file: File) => {
-    //     const requestedAccounts = await window.litescribe.requestAccounts();
-    //     const user_id = requestedAccounts[0];
-    //     console.log('HANDLE FILE SELECT')
-    //     try {
-    //         const response = await fetch(`http://localhost:3005/api/invoice/new/account/${user_id}`)        // If you add more states related to the context, you can log them here as well
-    //         const doesNewInvoiceExist = await response.json();
-    //         if (doesNewInvoiceExist.hasNewInvoice) {
-    //             console.log('User has an invoice in progress');
-    //             setInProgress(true);
-    //             // Delete the uploaded files
-    //             setError("You have an invoice in progress. Please settle it before uploading new files or cancel the invoice.");
-    //         } else {
-    //             setFileName(file.name); // Update file name state
-    //             setFiles(prevFiles => [...prevFiles, file]); // Append file to files state
-    //             const fileSize = file.size; // Retrieve file size
-    //             setFileSize(fileSize); // Update file size state
-    //             const ltcusd = await fetch('https://payment.ordlite.com/api/rates?storeId=AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf');
-    //             const ltcUSD = await ltcusd.json();
-    //             setLtcUSD(ltcUSD[0].rate);
-    //         }
-    //     } catch (error) {
-    //         console.error('Error checking for existing invoice:', error);
-    //         setError(String(error)); // Display the error message in the client component
-    //     }
-
-    // };
-
     const handleFilesSelect = async (files: File[]) => {
 
         if (connected === 'false') {

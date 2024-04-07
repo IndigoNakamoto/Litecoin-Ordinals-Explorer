@@ -55,6 +55,14 @@ class OrdService {
 
     constructor(private ordPath = '/Users/indigo/dev/ord-litecoin-0.15/target/release') { }
 
+    public getQueuedFilesInfo(): { queued: boolean; count: number; files: any[] } {
+        const queued = this.taskQueue.queue.length > 0;
+        const count = this.taskQueue.queue.length;
+        const files = this.taskQueue.queue.map(task => task()); // Assuming each task returns a Promise with file info
+
+        return { queued, count, files };
+    }
+
     public inscribeFilesForInvoice(invoiceId: string) {
         return this.taskQueue.enqueue(async () => {
 
@@ -82,8 +90,8 @@ class OrdService {
 
                 for (let file of files) {
                     try {
-                        const response = await this.inscribeFile(file, invoiceResponse); // Assuming inscribeFile is properly defined elsewhere
-                        filesInscribed.push({ ...file, inscribeStatus: 'Inscribed', inscription: JSON.parse(response!.stdout) });
+                        const response = await this.commitFile(file, invoiceResponse); // Assuming commitFile is properly defined elsewhere
+                        filesInscribed.push({ ...file, inscribeStatus: 'Committed', inscription: JSON.parse(response!.stdout) });
                     } catch (error) {
                         errorFlag = true;
                         console.error('Error inscribing file:', error);
@@ -91,13 +99,13 @@ class OrdService {
                     }
                 }
 
-                console.log('Files inscribed:', filesInscribed);
+                console.log('Files commited:', filesInscribed);
 
                 // Now, directly replace the files within invoice metadata with filesInscribed
                 invoiceData.metadata.files = filesInscribed;
 
-                let inscribeStatus = 'Inscribed'; // Update the status of the invoice
-                let status = 'Inscribed'; // Update the status of the invoice
+                let inscribeStatus = 'Committed'; // Update the status of the invoice
+                let status = 'Committed'; // Update the status of the invoice
                 if (errorFlag) {
                     inscribeStatus = 'Error'; // Update the status of the invoice
                     status = 'Error'; // Update the status of the invoice
@@ -105,38 +113,38 @@ class OrdService {
 
                 // Finally, update the invoice with the modified metadata
                 await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${invoiceData.id}`, {
-                    metadata: {...invoiceData.metadata, inscribeStatus, status} // This now includes the updated files
+                    metadata: { ...invoiceData.metadata, inscribeStatus, status } // This now includes the updated files
                 }, {
                     headers: { 'Authorization': auth }
                 });
 
             } catch (error) {
-                console.error('Error inscribing files for invoice:', error);
+                console.error('Error processing files for invoice:', error);
             }
 
         });
     }
 
-    private async inscribeFile(file: any, invoice: any): Promise<{ stdout: string; file: any; } | undefined> {
+    private async commitFile(file: any, invoice: any): Promise<{ stdout: string; file: any; } | undefined> {
         try {
-            console.log('Inscribing file: ', file)
+            console.log('Committing file: ', file)
             // Placeholder for generating YAML file or any other preparation needed
             const yamlFilePath = await this.prepareInscriptionFile(file, invoice);
 
             // Execute the inscription command
-            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir "/Users/indigo/Library/Application Support/ord2" wallet inscribe --fee-rate 1.2 --batch ${yamlFilePath}`);
+            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir "/Users/indigo/Library/Application Support/ord2" wallet inscribe --fee-rate 1.4 --batch ${yamlFilePath}`);
 
 
             // When inscribe command is successful, stdout should contain the inscription transaction details
             if (stderr && stderr.trim() !== '') {
-                console.error('Error during inscription:', stderr);
+                console.error('Error committing file:', stderr);
                 throw new Error(stderr);
             }
 
-            console.log('Success inscribing file - Response: ', stdout)
+            console.log('Committed file - Response: ', stdout)
             return { stdout, file };
         } catch (error) {
-            console.error('Error inscribing file:', error);
+            console.error('Error committing file:', error);
         }
     }
 

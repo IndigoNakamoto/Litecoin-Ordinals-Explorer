@@ -91,7 +91,9 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
     };
 
 
-
+    // Function to open Payment modal
+    // Issue: The payment modal closes when the invoice modal is opened and the user clicks anywhere on the payment modal 
+    // Solution: The payment modal should only close when the user clicks outside the modal and should see the invoice modal
     const openPaymentModal = () => setIsPaymentModalOpen(true); // Function to open Payment modal
     const closePaymentModal = () => setIsPaymentModalOpen(false); // Function to close Payment modal
 
@@ -146,7 +148,6 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
                                     <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">Postage Fee</th>
                                     <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">Service Fee</th>
                                     <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">Total</th>
-                                    <th className='border-b border-blue-gray-100 bg-blue-gray-50 p-4'>Inscription</th>
                                     <th className="border-b border-blue-gray-100 bg-blue-gray-50 p-4">Inscribe Status</th>
                                 </tr>
                             </thead>
@@ -159,7 +160,6 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
                                         <td className="p-2">{formatLitsToLitecoin(file.postage) || '0.00 000 000'} LTC</td>
                                         <td className="p-2">{formatLitsToLitecoin(file.serviceFee)} LTC</td>
                                         <td className="p-2">{formatLitsToLitecoin(file.total)} LTC</td>
-                                        <td className="p-2">View</td>
                                         <td className="p-2">{file.inscribeStatus}</td>
                                     </tr>
                                 ))}
@@ -210,9 +210,7 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
             </Dialog>
             <PaymentModal
                 isOpen={isPaymentModalOpen}
-                onClose={function (): void {
-                    throw new Error('Function not implemented.');
-                }}
+                onClose={closePaymentModal}
                 id={fetchedInvoice?.id}
                 expirationTime={fetchedInvoice?.expirationTime}
                 createdTime={fetchedInvoice?.createdTime}

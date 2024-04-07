@@ -29,7 +29,7 @@ const upload = multer({
 });
 
 
-router.post('/', upload.array('files', 20), async (req, res) => {
+router.post('/', upload.array('files', 50), async (req, res) => {
   const { account_id, receivingAddress } = req.body; // Assuming this is how you retrieve your user's ID
   const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
   const BTCPAY_USERNAME = 'ordlite@gmail.com'

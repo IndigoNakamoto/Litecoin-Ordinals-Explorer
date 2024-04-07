@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import InvoiceModal from './InvoiceModal';
+// import InvoiceModal from './InvoiceModal';
+import PaymentModal from './paymentModal'
 
 import {
   Card,
@@ -8,11 +9,15 @@ import {
   Button,
   CardBody,
   Chip,
-  CardFooter,
-  Avatar,
+  // CardFooter,
+  // Avatar,
   IconButton,
   Tooltip,
 } from "@material-tailwind/react";
+
+import {
+  EllipsisHorizontalIcon,
+} from "@heroicons/react/24/solid";
 
 const TABLE_HEAD = ["Invoice ID", "Amount", "Date", "Payment Status", "Inscribe Status", ""];
 
@@ -33,6 +38,7 @@ interface Transaction {
       serviceFee: number;
     }[];
     account_id: string;
+    ltc_usd_rate: number;
     receivingAddress: string;
   };
 }
@@ -91,7 +97,8 @@ export default function TransactionsTable() {
   return (
     <Card className="h-full w-2xl" placeholder={undefined}>
       {isModalOpen && selectedTransaction && (
-        <InvoiceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} invoiceId={selectedTransaction.id} />
+        // <InvoiceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} invoiceId={selectedTransaction.id} />
+        <PaymentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} id={selectedTransaction.id} expirationTime={selectedTransaction.expirationTime.toString()} createdTime={selectedTransaction.createdTime.toString()} due={selectedTransaction.amount} metadata={selectedTransaction.metadata} paymentLink={''} currency={selectedTransaction.currency} LTC_USD={selectedTransaction.metadata.ltc_usd_rate} paymentAddress={''} />
       )}
       <div className='flex justify-between'>
         <CardHeader floated={false} shadow={false} className="rounded-none" placeholder={undefined}>
@@ -190,12 +197,14 @@ export default function TransactionsTable() {
                       value={transaction.metadata.status}
                       color={
                         transaction.metadata.status === "Pending"
-                          ? "amber"
-                          : transaction.metadata.status === "Processing"
-                            ? "yellow"
-                            : transaction.metadata.status === "Inscribed"
-                              ? "green"
-                              : "red"
+                          ? "orange"
+                          : transaction.metadata.status === "Committing"
+                            ? "green"
+                            : transaction.metadata.status === "Committed"
+                              ? "blue"
+                              : transaction.metadata.status === "Queued"
+                                ? "yellow"
+                                : "red"
                       }
                     />
                   </td>
@@ -203,9 +212,7 @@ export default function TransactionsTable() {
                     <Tooltip content="View Invoice">
                       {/* Open Invoice Modal on click */}
                       <IconButton variant="text" onClick={() => handleOpenModal(transaction)} placeholder={undefined}>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
+                        <EllipsisHorizontalIcon className="w-8 h-8 text-gray-600" />
 
                       </IconButton>
                     </Tooltip>

@@ -114,7 +114,7 @@ export default function StatsPage() {
     if (distributionResponse && Array.isArray(distributionResponse)) {
       setContentTypeDistribution(distributionResponse);
     } else {
-      console.error('Expected an array for content type distribution, received:', distributionResponse);
+      // console.error('Expected an array for content type distribution, received:', distributionResponse);
       setContentTypeDistribution([]); // Fallback to an empty array
     }
 
@@ -126,7 +126,7 @@ export default function StatsPage() {
       const { blockHeight } = await response.json();
       return blockHeight;
     } catch (error) {
-      console.error("Error fetching block height:", error);
+      // console.error("Error fetching block height:", error);
       return null;
     }
   };
@@ -135,7 +135,7 @@ export default function StatsPage() {
   const checkForNewBlock = useCallback(async () => {
     const newBlockHeight = await fetchBlockHeight();
     if (newBlockHeight && newBlockHeight !== currentBlockHeight) {
-      console.log(`New block detected: ${newBlockHeight}`);
+      // console.log(`New block detected: ${newBlockHeight}`);
       setCurrentBlockHeight(newBlockHeight);
       fetchData(); // This explicitly calls fetchData on block height change
     }

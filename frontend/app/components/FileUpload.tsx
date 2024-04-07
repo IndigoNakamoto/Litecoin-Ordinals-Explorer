@@ -58,9 +58,9 @@ const FileUpload: React.FC<FilesUploadProps> = ({ onFilesSelect }) => {
                         <svg className="w-8 h-8 mb-4 text-blue-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
                             <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
                         </svg>
-                        <p className="mb-2 text-sm text-blue-500 dark:text-blue-400"><span className="font-semibold">Click to select file to upload</span></p>
-                        <p className="text-sm p-2 text-blue-500 dark:text-blue-400 text-center ">To upload, your file should be less than 400KB in size</p>
-                        <p className="text-sm p-2 text-blue-500 dark:text-blue-400 text-center">Supported Extensions:</p>
+                        <p className="mb-2 text-sm text-blue-500 dark:text-blue-400"><span className="font-semibold">Click to select up to 50 files to inscribe</span></p>
+                        <p className="text-sm p-2 text-blue-500 dark:text-blue-400 text-center ">Each file should be less than 400KB in size</p>
+                        <p className="text-sm p-2 text-blue-500 dark:text-blue-400 font-semibold text-center">Supported Extensions:</p>
                         <p className="text-xs px-20 text-blue-500 dark:text-blue-400 text-center">apng asc bin binpb cbor css flac gif glb gltf html jpg js json md mp3 mp4 otf pdf png py stl svg ttf txt wav webm webp woff woff2 yaml</p>
                     </div>
                     <input id="dropzone-file" type="file" multiple className="hidden" onChange={handleFileSelect} />
