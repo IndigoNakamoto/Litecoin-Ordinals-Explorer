@@ -31,14 +31,14 @@ const Menu = () => {
         {/* Logo and OrdLite.io text */}
         <Link href="/" passHref className="flex items-center text-black font-semibold py-1 px-4 text-2xl cursor-pointer">
           {/* SVG logo next to the text */}
-          <Image src="/OrdinalsLiteLogo3.png" alt="OrdLite logo" width={42} height={42} className="h-8" />
+          <Image src="/OrdinalsLiteLogo3.png" alt="OrdLite.io Logo" width={42} height={42} />
           <span className='pl-2'>
             OrdLite.io
           </span>
         </Link>
         <div className="flex-initial">
-          <Link href="/stats" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
-            Stats
+          <Link href="/info" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
+            Info
           </Link>
         </div>
         <div className="flex-initial">
@@ -46,6 +46,23 @@ const Menu = () => {
             Inscribe
           </Link>
         </div>
+        <p className='text-gray-500'>|</p>
+        <div className="flex-initial">
+          <Link href="https://ynohtna92.github.io/ord-litecoin/" passHref target="_blank" className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
+            Get Started
+          </Link>
+        </div>
+        <div className="flex-initial">
+          <Link href="https://litecoinspace.org/" passHref target="_blank" className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
+            Explore
+          </Link>
+        </div>
+        <div className="flex-initial">
+          <Link href="https://www.lite.space/missions" passHref target="_blank" className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
+            Donate
+          </Link>
+        </div>
+
         {/* <div className="flex-initial">
           <Link href="/liteclash" passHref className="hover:text-blue-600 text-black font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
             LiteClash

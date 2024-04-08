@@ -8,7 +8,7 @@ import {
     Button
 } from "@material-tailwind/react";
 import Image from 'next/image';
-import PaymentModal from './paymentModal';
+import PaymentModal from './PaymentModal';
 import { InscribeOrderContext } from "../components/contexts/InscribeOrderContext";
 
 const fetchInvoiceData = async (invoice_id: string) => {

@@ -5,29 +5,28 @@ const currentYear = new Date().getFullYear();
 
 export function Footer() {
   return (
-    <footer className="bg-black text-gray-500 max-w-full">
-      <div className="container flex justify-between mx-auto">
-        {/* left side */}
-        <div className="mx-4 gap-4 flex">
-          <h1>
+    <div className='h-10'>
+      <footer className="bg-black text-gray-700 mx-auto max-w-screen-2xl flex pt-5">
+        <div className="container flex justify-between h-10">
+
+          {/* Left side */}
+          <h1 className='text-xs text-gray-700 '>
             All rights reserved. Copyright &copy; {currentYear} OrdLite.io.
           </h1>
-        </div>
+          {/* Justify between */}
 
-        {/* right side */}
-        <div className="mx-4 gap-4 flex">
-          <Link className="m-1" href="/terms">
-            Terms
-          </Link>
-          <Link className="m-1" href="/privacy">
-            Privacy
-          </Link>
-          {/* <Link className="m-1" href="/donate">
-            Donate
-          </Link> */}
+          {/* Right side */}
+          <div className="text-xs">
+            <Link className="m-5" href="/terms">
+              Terms
+            </Link>
+            <Link className="m-5" href="/privacy">
+              Privacy
+            </Link>
+          </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+    </div>
   );
 }
 export default Footer;

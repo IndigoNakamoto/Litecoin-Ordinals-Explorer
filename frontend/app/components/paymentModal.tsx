@@ -128,32 +128,35 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
         // setIsCommitModalOpen(true);
 
         console.log('File:', file)
-        console.log('Inscription commit: ', file.inscription.commit)
-        console.log('Inscription id: ', file.inscription.inscriptions[0].id)
+        // console.log('Inscription commit: ', file.inscription.commit)
+        // console.log('Inscription id: ', file.inscription.inscriptions[0].id)
 
-        try {
-            const response = await fetch(`http://localhost:3005/api/inscriptions/${file.inscription.inscriptions[0].id}`);
-            const data = await response.json();
-            const status = await response.status;
-            // console.log('Status: ', status)
-            if (status === 200) {
-                // console.log('Status 200')
-                // console.log('Inscription Number:', data.inscription_number)
-                // Link to /:inscription_number
-                // router.push(`/${data.inscription_number}`);
-                window.open(`/${data.inscription_number}`, '_blank');
+        if (file.inscription) {
+            try {
+                const response = await fetch(`http://localhost:3005/api/inscriptions/${file.inscription.inscriptions[0].id}`);
+                const data = await response.json();
+                const status = await response.status;
+                // console.log('Status: ', status)
+                if (status === 200) {
+                    // console.log('Status 200')
+                    // console.log('Inscription Number:', data.inscription_number)
+                    // Link to /:inscription_number
+                    // router.push(`/${data.inscription_number}`);
+                    window.open(`/${data.inscription_number}`, '_blank');
 
 
+                }
+                if (status === 404) {
+                    // console.log('Status 404')
+                    // console.log('Inscription Commit:', file.inscription.commit)
+                    // Link to new tab litecoinspace.com/tx/:commit
+                    window.open(`https://litecoinspace.org/tx/${file.inscription.commit}`, '_blank');
+                }
+            } catch (error) {
+                throw error
             }
-            if (status === 404) {
-                // console.log('Status 404')
-                // console.log('Inscription Commit:', file.inscription.commit)
-                // Link to new tab litecoinspace.com/tx/:commit
-                window.open(`https://litecoinspace.org/tx/${file.inscription.commit}`, '_blank');
-            }
-        } catch (error) {
-            throw error
         }
+
     };
 
 
@@ -163,7 +166,7 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
 
         const fetchPaymentStatus = async () => {
             try {
-                console.log('\n')
+                // console.log('\n')
                 const response = await fetch(`http://localhost:3005/api/invoice/status/${id}`);
                 const data = await response.json();
 
@@ -235,7 +238,7 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text)
             .then(() => {
-                console.log('Text copied to clipboard: ' + text);
+                // console.log('Text copied to clipboard: ' + text);
                 setShowCopiedAddress(true); // Show "Copied!" message
                 setTimeout(() => setShowCopiedAddress(false), 2000); // Hide "Copied!" message after 2 seconds
             })
@@ -248,7 +251,7 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
     const copyDueToClipboard = (text: string) => {
         navigator.clipboard.writeText(text)
             .then(() => {
-                console.log('Text copied to clipboard: ' + text);
+                // console.log('Text copied to clipboard: ' + text);
                 setDueShowCopied(true); // Show "Copied!" message
                 setTimeout(() => setDueShowCopied(false), 2000); // Hide "Copied!" message after 2 seconds
             })
@@ -330,22 +333,6 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
                                 <Typography variant='h6' placeholder={undefined}>LTC/USD Rate:</Typography>
                                 <Typography variant='lead' className='text-md' placeholder={undefined}>${LTC_USD.toFixed(2) || "Loading..."}</Typography>
                             </div>
-                            <div className="flex justify-between ">
-                                {paymentStatus === 'Settled' && (
-                                    <Typography variant='h6' placeholder={undefined}>Total Paid:</Typography>
-                                )}
-
-                                {paymentStatus !== 'Settled' && (
-                                    <Typography variant='h6' placeholder={undefined}>Total Due:</Typography>
-                                )}
-                                <Typography variant='lead' className='text-md' placeholder={undefined}>{formatLitsToLitecoin((Number(theDue))) || "Loading..."}</Typography>
-                            </div>
-                            <div className="flex justify-between ">
-                                <Typography variant='h6' placeholder={undefined}>Created:</Typography>
-                                <Typography variant='lead' className='text-md' placeholder={undefined}>{theCreatedTime || "Loading..."}</Typography>
-                            </div>
-                            <div></div>
-
                         </div>
 
                         {paymentStatus === 'New' && (

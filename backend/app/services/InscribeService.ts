@@ -210,9 +210,34 @@ class InscriptionService {
         ordService.inscribeFilesForInvoice(eventData.invoiceId).then(() => {
             console.log(`Inscription process completed successfully for invoice: ${eventData.invoiceId}.`);
             Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp, inscribeStatus: 'Committed' }, { where: { invoiceId: eventData.invoiceId } });
+
+            // const files = updatedMetadata.files_location
+            // for (let file of files) {
+            //     console.log('Deleting file:', file);
+            //     fs.unlink(file, (err) => {
+            //         if (err) {
+            //             console.error('Error deleting file:', err);
+            //         }
+            //     });
+            // }
+
+            // let updatedFiles = eventData.metadata.files.map((file: any) => {
+            //     return { ...file, fileStatus: 'Deleted'}; // Update each file's status to 'Deleted'
+            // });
+
+            // await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
+            //     metadata: updatedMetadata, status: 'Committed', inscribeStatus: 'Committed', files: updatedFiles
+            // }, {
+            //     headers: { 'Authorization': auth }
+            // });
         }).catch((error) => {
             console.error('Inscription process failed:', error);
             Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp, inscribeStatus: 'Error' }, { where: { invoiceId: eventData.invoiceId } });
+            // await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
+            //     metadata: updatedMetadata, status: 'Error', files: updatedFiles
+            // }, {
+            //     headers: { 'Authorization': auth }
+            // });
         });
 
     }

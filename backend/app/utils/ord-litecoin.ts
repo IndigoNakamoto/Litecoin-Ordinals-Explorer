@@ -16,7 +16,6 @@ async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number)
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
-
         const data = await response.json();
         return data;
     } catch (error) {
@@ -37,7 +36,7 @@ async function getInscriptionData(inscriptionId: string) {
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error('Fetch error:', error);
+        // console.error('Fetch error:', error);
         throw error;
     }
 }
@@ -70,7 +69,7 @@ async function getInscriptionContent(inscriptionId: string, contentType: string)
             throw new Error('Unhandled content type');
         }
 
-        return data; 
+        return data;
     } catch (error) {
         console.error('Fetch error:', error);
         throw error;
@@ -80,38 +79,38 @@ async function getInscriptionContent(inscriptionId: string, contentType: string)
 
 
 
-async function getBlockHeight(): Promise<number>  {
+async function getBlockHeight(): Promise<number> {
     let blockHeight;
-    
+
     try {
-      const rpcUser = 'your_rpc_username'; // Replace with your actual RPC username
-      const rpcPassword = 'your_rpc_password'; // Replace with your actual RPC password
-      const rpcHost = 'localhost';
-      const rpcPort = 9332; // Default Litecoin RPC port
-      const rpc = new BitcoinJsonRpc(`http://${rpcUser}:${rpcPassword}@${rpcHost}:${rpcPort}`);
-      
-      blockHeight = await rpc.getBlockCount();
+        const rpcUser = 'your_rpc_username'; // Replace with your actual RPC username
+        const rpcPassword = 'your_rpc_password'; // Replace with your actual RPC password
+        const rpcHost = 'localhost';
+        const rpcPort = 9332; // Default Litecoin RPC port
+        const rpc = new BitcoinJsonRpc(`http://${rpcUser}:${rpcPassword}@${rpcHost}:${rpcPort}`);
+
+        blockHeight = await rpc.getBlockCount();
     } catch (rpcError) {
-      console.error("Error fetching block height via RPC:", rpcError);
-      
-      try {
-        const { bitcoin } = mempoolJS({
-          hostname: 'litecoinspace.org',
-          network: 'mainnet', // 'signet' | 'testnet' | 'mainnet',
-        });
-  
-        // Assuming blocks.getBlockHeight() method exists and works as expected.
-        // This part might need adjustment based on the actual API of mempoolJS you're using.
-        const mempoolBlockHeight = await bitcoin.blocks.getBlockHeight({ height: 0 });
-        blockHeight = mempoolBlockHeight;
-      } catch (mempoolError) {
-        console.error("Error fetching block height via mempoolJS:", mempoolError);
-        throw new Error("Failed to fetch block height from both RPC and mempoolJS");
-      }
+        console.error("Error fetching block height via RPC:", rpcError);
+
+        try {
+            const { bitcoin } = mempoolJS({
+                hostname: 'litecoinspace.org',
+                network: 'mainnet', // 'signet' | 'testnet' | 'mainnet',
+            });
+
+            // Assuming blocks.getBlockHeight() method exists and works as expected.
+            // This part might need adjustment based on the actual API of mempoolJS you're using.
+            const mempoolBlockHeight = await bitcoin.blocks.getBlockHeight({ height: 0 });
+            blockHeight = mempoolBlockHeight;
+        } catch (mempoolError) {
+            console.error("Error fetching block height via mempoolJS:", mempoolError);
+            throw new Error("Failed to fetch block height from both RPC and mempoolJS");
+        }
     }
-  
+
     return Number(blockHeight);
-  }
+}
 
 
 

@@ -23,7 +23,7 @@ const fetchStats = async (endpoint: string): Promise<any> => {
     if (!response.ok) throw new Error('Network response was not ok');
     return await response.json();
   } catch (error) {
-    console.error("Fetch error:", error);
+    // console.error("Fetch error:", error);
     return {};
   }
 };
@@ -68,7 +68,7 @@ function StatsCard({ count, title }: StatsCardPropsType) {
         transition={{ duration: 0.5 }}
       >
         <Typography
-          className="text-4xl md:text-6xl font-bold text-white" placeholder={undefined}        >
+          className="text-5xl md:text-5xl font-bold text-white" placeholder={undefined}        >
           {count}
         </Typography>
       </motion.div>
@@ -151,13 +151,16 @@ export default function StatsPage() {
   }, [checkForNewBlock, fetchData]);
   return (
     <div>
-      <section className="container mx-auto grid gap-16 px-4 py-16 lg:grid-cols-1 lg:gap-16 lg:pt-36 xl:grid-cols-2 justify-between">
+      <section className="container mx-auto grid gap-10 px-4 py-10 lg:grid-cols-1 lg:gap-16 lg:pt-14 xl:grid-cols-2 justify-between">
 
         <div className=''>
           <Typography
             variant="h1"
-            className="text-3xl !leading-snug lg:text-5xl text-white" placeholder={undefined}          >
+            className="text-3xl !leading-snug lg:text-5xl text-white " placeholder={undefined}          >
             Ordinal Lite Stats
+          </Typography>
+          <Typography variant="lead" className="text-gray-500 pb-10" placeholder={undefined}>
+            The current state of Ordinals on the Litecoin Blockchain
           </Typography>
           <div className="grid grid-cols-1 gap-8 gap-x-28 text-white">
             <StatsCard key="inscriptions" count={(generalStats.totalInscriptions ?? 0).toLocaleString()} title="Inscriptions" />
@@ -170,7 +173,7 @@ export default function StatsPage() {
           {/* <Typography variant="h4" className="mb-6 underline underline-offset-1 text-white font-medium" placeholder={undefined}>
             File Count
           </Typography> */}
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-x-24 min-w-2xl max-w-3xl">
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-x-24 min-w-2xl max-w-3xl pt-16">
             {contentTypeDistribution.map((item) => (
               <motion.div
                 key={item.content_type_type}
@@ -203,7 +206,7 @@ export default function StatsPage() {
           <Typography
             variant="lead"
             className="mt-3 w-full !text-gray-500 lg:w-11/12" placeholder={undefined}          >
-            The inaugural inscription, Inscription #0, on Litecoin was none other than the Mimblewimble White Paper, symbolizing a significant leap in Litecoin&apos;s journey. With the integration of MWEB alongside Taproot on block 2,257,920, this milestone underscored Litecoin&apos;s dedication to enhancing privacy, scalability, and security. By allocating a highly prunable block space for fungible transactions, MWEB cleverly removes competition for space within the base and the SegWit blocks, which are crucial for the support of ordinals. This innovation not only enhances transaction privacy but also optimizes the network&apos;s overall performance and scalability.
+            The inaugural inscription, Inscription #0, on Litecoin was the Mimblewimble White Paper, symbolizing a significant leap in Litecoin&apos;s journey. With the integration of MWEB alongside Taproot on block 2,257,920, Litecoin became a complete form of digital money, enhancing privacy, scalability, and security by providing a dedicated block space for Fungible Transactions.
           </Typography>
           {/* <Typography
             variant="lead"

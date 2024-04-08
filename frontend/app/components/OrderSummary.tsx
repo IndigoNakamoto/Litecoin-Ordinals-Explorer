@@ -4,12 +4,6 @@ import Image from 'next/image';
 import { InscribeOrderContext } from "./contexts/InscribeOrderContext";
 
 
-
-// interface OrderSummaryProps {
-//     fileName: string; // Receive fileName prop
-// }
-
-// 
 interface OrderSummaryProps {
     onSubmit: () => void; // Add handleSubmit prop
 }
@@ -95,7 +89,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({ onSubmit }) => {
             <div>
                 <div>
                     <div className='p-4'>
-                        <Typography variant="h6" color="blue-gray" placeholder={undefined}>
+                        <Typography variant="h5" color="blue-gray" placeholder={undefined}>
                             Order Summary
                         </Typography>
                         <Typography

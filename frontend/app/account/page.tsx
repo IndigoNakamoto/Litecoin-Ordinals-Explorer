@@ -46,7 +46,7 @@ export default function Page() {
                     setUsername(initialized[0])
                     localStorage.setItem('username', initialized[0]);
                     let cursor = 0
-                    let size = 100
+                    let size = 10000
                     const fetchedInscriptions = await window.litescribe.getInscriptions(cursor, size);
                     // console.log('Fetched inscriptions: ', fetchedInscriptions)
 

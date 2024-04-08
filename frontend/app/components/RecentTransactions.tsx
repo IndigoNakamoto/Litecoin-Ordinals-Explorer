@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 // import InvoiceModal from './InvoiceModal';
-import PaymentModal from './paymentModal'
+import PaymentModal from './PaymentModal'
 
 import {
   Card,
@@ -109,7 +109,7 @@ export default function TransactionsTable() {
                 Recent Transactions
               </Typography>
 
-              <Typography color="gray" className="mt-1 font-normal" placeholder={undefined}>
+              <Typography color="gray" variant='small' className="text-gray-600 font-normal mt-1"  placeholder={undefined}>
                 These are details about the last transactions
               </Typography>
             </div>

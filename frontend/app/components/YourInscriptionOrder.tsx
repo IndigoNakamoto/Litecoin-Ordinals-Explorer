@@ -135,7 +135,7 @@ function InscribeOrder() {
           shadow={false}
           className="rounded-none flex flex-wrap gap-4 justify-between" placeholder={undefined}        >
           <div>
-            <Typography variant="h6" color="blue-gray" placeholder={undefined}>
+            <Typography variant="h5" color="blue-gray" placeholder={undefined}>
               Your Inscription Order
             </Typography>
             <Typography

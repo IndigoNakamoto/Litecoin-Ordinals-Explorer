@@ -5,14 +5,14 @@ import {
 } from "@material-tailwind/react";
 import FileUpload from "../components/FileUpload";
 import FileUploadAlert from "../components/FileUploadAlert";
-import InscribeOrder from '../components/inscribe-order'
-import OrderSummary from "../components/InscribeOrderSummary";
+import InscribeOrder from '../components/YourInscriptionOrder'
+import OrderSummary from "../components/OrderSummary";
 // import InvoiceHistory from '../components/inscribe-history'
 import { useState, useEffect } from 'react';
 import { InscribeOrderContext } from "../components/contexts/InscribeOrderContext";
-import PaymentModal from "../components/paymentModal";
+import PaymentModal from "../components/PaymentModal";
 import { set } from "lodash";
-import InvoiceHistory from "../components/InvoiceHistory";
+import InvoiceHistory from "../components/RecentTransactions";
 import ConnectModal from '@/app/components/ConnectModal'
 
 
@@ -60,13 +60,13 @@ export default function Page() {
         if (connected === 'false') {
             setIsConnectModalOpen(true)
         } else {
-            console.log('HANDLE FILES SELECT');
+            // console.log('HANDLE FILES SELECT');
             const user_id = localStorage.getItem('username')
             try {
                 const response = await fetch(`http://localhost:3005/api/invoice/new/account/${user_id}`); // If you add more states related to the context, you can log them here as well
                 const doesNewInvoiceExist = await response.json();
                 if (doesNewInvoiceExist.hasNewInvoice) {
-                    console.log('User has an invoice in progress');
+                    // console.log('User has an invoice in progress');
                     setInProgress(true);
                     // Delete the uploaded files
                     setError("You have an invoice in progress. Please settle it before uploading new files or cancel the invoice.");
@@ -83,7 +83,7 @@ export default function Page() {
                     setLtcUSD(ltcUSD[0].rate);
                 }
             } catch (error) {
-                console.error('Error checking for existing invoice:', error);
+                // console.error('Error checking for existing invoice:', error);
                 setError(String(error)); // Display the error message in the client component
             }
         }
@@ -92,7 +92,7 @@ export default function Page() {
 
 
     const handleSubmit = async () => {
-        console.log('HANDLE SUBMIT');
+        // console.log('HANDLE SUBMIT');
         // Placeholder values for demonstration. Replace these with actual data as necessary.
         const requestedAccounts = await window.litescribe.requestAccounts();
         const user_id = requestedAccounts[0];
@@ -122,7 +122,7 @@ export default function Page() {
             setDestinationAddress(result.destination);
             // TODO: set invoice and payment method in state and pass to payment modal
         } catch (error) {
-            console.error('Upload failed:', error);
+            // console.error('Upload failed:', error);
             setError(String(error)); // Display the error message in the client component
         }
         setFiles([]);
@@ -162,10 +162,13 @@ export default function Page() {
                 setUser
             }}
         >
-            <section className="mx-auto max-w-full bg-gray-200 lg:py-36">
+            <section className="mx-auto max-w-full bg-gray-200 lg:py-10">
                 <div className="mx-auto p-4 max-w-screen-2xl min-h-screen">
-                    <Typography variant="h1" className="mb-6 font-2xl text-gray-900" placeholder={undefined}>
+                    <Typography variant="h1" className="font-2xl text-gray-900" placeholder={undefined}>
                         Inscribe
+                    </Typography>
+                    <Typography variant='lead' className='mb-6 text-gray-600' placeholder={undefined}>
+                        Secure your files with Ordinals on Litecoin - The longest running blockchain with 100% uptime.
                     </Typography>
                     <div className="grid grid-cols-1 pt-8 gap-4">
                         {error ? <FileUploadAlert /> : <FileUpload onFilesSelect={handleFilesSelect} />}
