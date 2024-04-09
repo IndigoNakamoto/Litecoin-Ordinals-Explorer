@@ -11,9 +11,11 @@ import Image from 'next/image';
 import PaymentModal from './PaymentModal';
 import { InscribeOrderContext } from "../components/contexts/InscribeOrderContext";
 
+
+
 const fetchInvoiceData = async (invoice_id: string) => {
     // fetch data from 'localhost:3005/api/invoice/:invoiceId
-    return await fetch(`http://localhost:3005/api/invoice/${invoice_id}`)
+    return await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/invoice/${invoice_id}`)
         .then(response => response.json())
 };
 
@@ -67,7 +69,7 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
     }, [isOpen, invoiceId]);
 
     const cancelInvoice = async () => {
-        const response = await fetch(`http://localhost:3005/api/invoice/markInvalid/${invoiceId}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/invoice/markInvalid/${invoiceId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

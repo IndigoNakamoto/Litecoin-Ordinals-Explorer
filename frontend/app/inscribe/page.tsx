@@ -63,7 +63,7 @@ export default function Page() {
             // console.log('HANDLE FILES SELECT');
             const user_id = localStorage.getItem('username')
             try {
-                const response = await fetch(`http://localhost:3005/api/invoice/new/account/${user_id}`); // If you add more states related to the context, you can log them here as well
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/invoice/new/account/${user_id}`); // If you add more states related to the context, you can log them here as well
                 const doesNewInvoiceExist = await response.json();
                 if (doesNewInvoiceExist.hasNewInvoice) {
                     // console.log('User has an invoice in progress');
@@ -105,7 +105,7 @@ export default function Page() {
         formData.append("receivingAddress", receivingAddress || "");
 
         try {
-            const response = await fetch('http://localhost:3005/api/upload/', {
+            const response = await fetch('${process.env.NEXT_PUBLIC_BACKEND_URL}/upload/', {
                 method: 'POST',
                 body: formData,
             });

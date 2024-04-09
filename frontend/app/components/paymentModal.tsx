@@ -133,7 +133,7 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
 
         if (file.inscription) {
             try {
-                const response = await fetch(`http://localhost:3005/api/inscriptions/${file.inscription.inscriptions[0].id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions/${file.inscription.inscriptions[0].id}`);
                 const data = await response.json();
                 const status = await response.status;
                 // console.log('Status: ', status)
@@ -167,10 +167,10 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
         const fetchPaymentStatus = async () => {
             try {
                 // console.log('\n')
-                const response = await fetch(`http://localhost:3005/api/invoice/status/${id}`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/invoice/status/${id}`);
                 const data = await response.json();
 
-                const invoice = await fetch(`http://localhost:3005/api/invoice/${id}`);
+                const invoice = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/invoice/${id}`);
                 const invoiceData = await invoice.json();
                 // console.log('Invoice Data:', invoiceData)
                 // console.log('InvoiceData status:   ', invoiceData.metadata.status)
