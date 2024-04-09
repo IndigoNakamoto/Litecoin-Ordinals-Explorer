@@ -54,9 +54,9 @@ class OrdService {
     taskQueue = new TaskQueue();
 
     constructor(
-        private ordPath = '/root/.bin', // for Linux
+        private ordPath = '/root/bin', // for Linux
         private ordIndexPath = '/home/your_username/.local/share/ord2'  // for Linux
-        
+
         // private ordPath = '/Users/indigo/dev/ord-litecoin-0.15/target/release', // for Mac
         // private ordIndexPath = '/Users/indigo/Library/Application Support/ord2' // For macOS
     ) { } // /root/.bin/ord for Linux
