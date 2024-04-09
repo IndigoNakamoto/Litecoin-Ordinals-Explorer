@@ -5,9 +5,9 @@ const currentYear = new Date().getFullYear();
 
 export function Footer() {
   return (
-    <div className="flex items-center px-8 mx-auto min-w-full ">
-      <footer className="bg-black text-gray-700 max-w-screen-lg min-w-full">
-        <div className=" flex justify-between h-10">
+    <div className="flex items-center mx-auto min-w-full bg-black">
+      <footer className=" text-gray-700 w-full mx-auto max-w-screen-2xl p-4">
+        <div className=" flex justify-between">
 
           {/* Left side */}
           <h1 className='text-xs text-gray-700 '>

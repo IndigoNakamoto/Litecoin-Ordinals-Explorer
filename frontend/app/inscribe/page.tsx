@@ -105,13 +105,14 @@ export default function Page() {
         formData.append("receivingAddress", receivingAddress || "");
 
         try {
-            const response = await fetch('${process.env.NEXT_PUBLIC_BACKEND_URL}/upload/', {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/upload/`, {
                 method: 'POST',
                 body: formData,
             });
             setInProgress(false);
             // TODO: result should be invoice and payment method
             const result = await response.json()
+            console.log('Invoice Id needed: ', result.id);
             // console.log('Result: ', result);
             setInvoiceId(result.id);
             setInvoiceExpirationTime(result.expirationTime);

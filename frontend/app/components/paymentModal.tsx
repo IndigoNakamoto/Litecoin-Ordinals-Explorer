@@ -161,6 +161,7 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
 
 
 
+    // BUG: The issue might be here where ID is not being passed to the fetch function which means it wasn't passed to the component?
     useEffect(() => {
         let intervalId: any;
 
