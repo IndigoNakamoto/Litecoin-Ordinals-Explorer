@@ -210,3 +210,7 @@ https://chat.openai.com/c/b9301642-7bfb-45eb-be03-3f3f6fe3e1951
 
 
 ps aux | grep 'ts-node InscriptionUpdateService.ts'
+
+
+# Copy wallet dat from linux to desktop mac
+scp -r -i /Users/indigo/.ssh/id_rsa_mini root@146.190.169.166:/root/.litecoin/ord ~/Desktop/
