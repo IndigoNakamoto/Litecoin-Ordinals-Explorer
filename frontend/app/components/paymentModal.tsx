@@ -133,7 +133,7 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
 
         if (file.inscription) {
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/inscriptions/${file.inscription.inscriptions[0].id}`);
+                const response = await fetch(`https://ordlite.io/api/inscriptions/${file.inscription.inscriptions[0].id}`);
                 const data = await response.json();
                 const status = await response.status;
                 // console.log('Status: ', status)
