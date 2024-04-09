@@ -168,7 +168,7 @@ export default function Page() {
                         Inscribe
                     </Typography>
                     <Typography variant='lead' className='mb-6 text-gray-600' placeholder={undefined}>
-                        Secure your files with Ordinals on Litecoin - The longest running blockchain with 100% uptime.
+                        Secure your files with Ordinals on Litecoin - The longest running public blockchain with 100% uptime.
                     </Typography>
                     <div className="grid grid-cols-1 pt-8 gap-4">
                         {error ? <FileUploadAlert /> : <FileUpload onFilesSelect={handleFilesSelect} />}

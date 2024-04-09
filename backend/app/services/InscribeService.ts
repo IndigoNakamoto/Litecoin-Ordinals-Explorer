@@ -185,7 +185,7 @@ class InscriptionService {
     // Inscribe files when invoice is settle
     private async handleInvoiceSettled(eventData: any) {
         console.log('Invoice Settled:', eventData);
-        Invoice.update({paymentStatus: 'Settled', updatedAt: eventData.timestamp}, {where: {invoiceId: eventData.invoiceId}});
+        Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp }, { where: { invoiceId: eventData.invoiceId } });
 
         const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
         const BTCPAY_USERNAME = 'ordlite@gmail.com'
@@ -207,10 +207,10 @@ class InscriptionService {
         });
 
         // Inscribe files for the settled invoice
-        ordService.inscribeFilesForInvoice(eventData.invoiceId).then(() => {
+        ordService.inscribeFilesForInvoice(eventData.invoiceId).then(async () => {
             console.log(`Inscription process completed successfully for invoice: ${eventData.invoiceId}.`);
             Invoice.update({ paymentStatus: 'Settled', updatedAt: eventData.timestamp, inscribeStatus: 'Committed' }, { where: { invoiceId: eventData.invoiceId } });
-
+            // console.log('Update invoice record payment status to Settled and inscribe status to Committed');
             // const files = updatedMetadata.files_location
             // for (let file of files) {
             //     console.log('Deleting file:', file);
@@ -222,11 +222,11 @@ class InscriptionService {
             // }
 
             // let updatedFiles = eventData.metadata.files.map((file: any) => {
-            //     return { ...file, fileStatus: 'Deleted'}; // Update each file's status to 'Deleted'
+            //     return { ...file, fileStatus: 'Deleted' }; // Update each file's status to 'Deleted'
             // });
 
             // await axios.put(`https://payment.ordlite.com/api/v1/stores/${storeId}/invoices/${eventData.invoiceId}`, {
-            //     metadata: updatedMetadata, status: 'Committed', inscribeStatus: 'Committed', files: updatedFiles
+            //     files: updatedFiles
             // }, {
             //     headers: { 'Authorization': auth }
             // });
@@ -238,7 +238,18 @@ class InscriptionService {
             // }, {
             //     headers: { 'Authorization': auth }
             // });
-        });
+        }).finally(() => {
+            console.log('Delete files from upload folder');
+            const files = updatedMetadata.files_location
+            for (let file of files) {
+                console.log('Deleting file:', file);
+                fs.unlink(file, (err) => {
+                    if (err) {
+                        console.error('Error deleting file:', err);
+                    }
+                });
+            }
+        })
 
     }
 

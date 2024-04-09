@@ -354,7 +354,7 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
                                         </Typography>
                                     </Button>
 
-                                    <Typography variant='h6' placeholder={undefined}>Total Due: </Typography>
+                                    <Typography variant='h6' placeholder={undefined}>Amount Due: </Typography>
                                     <Button onClick={() => copyDueToClipboard(invoice.due)} fullWidth className="bg-white rounded-xl px-4 flex justify-between" placeholder={undefined}>
                                         <Typography variant='lead' placeholder={undefined} className={`text-md fade-in-out md:text-lg ${showCopiedDue ? 'text-blue-500' : 'text-gray-800'}`}>
                                             {showCopiedDue ? "Copied!" : `${formatLitsToLitecoin(Number(invoice.due))} LTC` || "0.000 000 00 LTC"}

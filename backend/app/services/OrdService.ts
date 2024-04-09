@@ -63,6 +63,23 @@ class OrdService {
         return { queued, count, files };
     }
 
+    public async updateIndex() {
+        try {
+            // Execute the inscription command
+            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir "/Users/indigo/Library/Application Support/ord2" index update`);
+
+            if (stderr && stderr.trim() !== '') {
+                console.error('Error updating index:', stderr);
+                throw new Error(stderr);
+            }
+
+            console.log('Update Index - Response: ', stdout)
+            return { stdout };
+        } catch (error) {
+            console.error('Error committing file:', error);
+        } 
+    }
+
     public inscribeFilesForInvoice(invoiceId: string) {
         return this.taskQueue.enqueue(async () => {
 

@@ -74,7 +74,11 @@ Other Command: \q
 ### Start Ord Server (username and password needed for rpc bitcoin api)
 ./ord --bitcoin-rpc-user your_rpc_username --bitcoin-rpc-pass your_rpc_password server -j
 
-
+### CLOSE A STUCK PROCESS
+ps aux | grep 'ord --bitcoin-rpc-user'
+kill <PID>
+OR
+kill -9 <PID>
 
 
 
