@@ -134,7 +134,7 @@ const Menu = () => {
           <div className="p-10 pt-20">
             {/* I want this IconButton */}
 
-            <Link href="/" passHref className="flex flex-col items-center text-white font-semibold py-1 px-4 pb-16 text-2xl cursor-pointer">
+            <Link href="/" passHref onClick={toggleMobileMenu} className="flex flex-col items-center text-white font-semibold py-1 px-4 pb-16 text-2xl cursor-pointer">
               <div className='h-40 w-40'>
                 <Image src="/OrdinalsLiteLogo3.jpeg" alt="OrdLite.io Logo" width={160} height={160} />
               </div>
@@ -144,7 +144,7 @@ const Menu = () => {
               {/* Left side yellow*/}
               <div className="flex flex-col items-center gap-4 text-4xl">
                 <div className="flex-initial">
-                  <Link href="/info" passHref className="hover:text-blue-600 text-white font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
+                  <Link href="/info" passHref onClick={toggleMobileMenu} className="hover:text-blue-600 text-white font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
                     Info
                   </Link>
                 </div>
@@ -169,7 +169,7 @@ const Menu = () => {
               {/* Right side */}
               <div className="flex items-center justify-center w-full mt-20 space-x-8">
                 {/* Added ml-auto to move this item to the far right */}
-                <Link href="https://discord.com/invite/z2FWv5v5uJ" passHref>
+                <Link href="https://discord.com/invite/z2FWv5v5uJ" target="_blank" passHref>
                   <IconButton variant="gradient" className="rounded-full bg-gradient-to-br from-white to-gray-500" placeholder={undefined}>
                     <Image
                       src="/logos/discord.svg"
@@ -179,7 +179,7 @@ const Menu = () => {
                     />
                   </IconButton>
                 </Link>
-                <Link href="https://x.com/ordlite" passHref>
+                <Link href="https://x.com/ordlite" target="_blank"  passHref>
                   <IconButton variant="gradient" className="rounded-full bg-gradient-to-br from-white to-gray-500" placeholder={undefined}>
                     <Image
                       src="/logos/x.svg"

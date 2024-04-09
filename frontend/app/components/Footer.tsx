@@ -5,9 +5,9 @@ const currentYear = new Date().getFullYear();
 
 export function Footer() {
   return (
-    <div className='h-10'>
-      <footer className="bg-black text-gray-700 mx-auto max-w-screen-2xl flex pt-5">
-        <div className="container flex justify-between h-10">
+    <div className="flex items-center px-8 mx-auto min-w-full ">
+      <footer className="bg-black text-gray-700 max-w-screen-lg min-w-full">
+        <div className=" flex justify-between h-10">
 
           {/* Left side */}
           <h1 className='text-xs text-gray-700 '>
@@ -17,10 +17,10 @@ export function Footer() {
 
           {/* Right side */}
           <div className="text-xs">
-            <Link className="m-5" href="/terms">
+            <Link className="ml-8" href="/terms">
               Terms
             </Link>
-            <Link className="m-5" href="/privacy">
+            <Link className="ml-8" href="/privacy">
               Privacy
             </Link>
           </div>
