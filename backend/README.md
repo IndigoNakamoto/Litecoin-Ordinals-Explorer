@@ -124,6 +124,10 @@ cd bin
 ./ord server -j
 ./ord --bitcoin-rpc-user your_rpc_username --bitcoin-rpc-pass your_rpc_password server --http-port 8080 -j 
 
+## Ord2
+find $HOME/.local/share/ord -name "index.redb"
+/root/.local/share/ord/index.redb
+
 
 #### Macbook pro
 cd /Users/indigo/dev/ord-litecoin-0.15/target/release
@@ -191,6 +195,7 @@ docker exec -it docker-postgres-1 psql -U ord_lite_user -d ord_lite_db
 
 
 
+
 #DEBUG
 ## terminal closes with terminals for servers:
 sudo lsof -i :3000 -i :3005
@@ -200,3 +205,8 @@ kill <PID3000> <PID3005>
 
 # Alter table - Add column
 https://chat.openai.com/c/b9301642-7bfb-45eb-be03-3f3f6fe3e1951
+
+
+
+
+ps aux | grep 'ts-node InscriptionUpdateService.ts'

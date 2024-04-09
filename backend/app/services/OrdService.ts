@@ -53,7 +53,13 @@ class OrdService {
     rpcUser = 'your_rpc_username';
     taskQueue = new TaskQueue();
 
-    constructor(private ordPath = '/Users/indigo/dev/ord-litecoin-0.15/target/release') { }
+    constructor(
+        private ordPath = '/root/.bin', // for Linux
+        private ordIndexPath = '/home/your_username/.local/share/ord2'  // for Linux
+        
+        // private ordPath = '/Users/indigo/dev/ord-litecoin-0.15/target/release', // for Mac
+        // private ordIndexPath = '/Users/indigo/Library/Application Support/ord2' // For macOS
+    ) { } // /root/.bin/ord for Linux
 
     public getQueuedFilesInfo(): { queued: boolean; count: number; files: any[] } {
         const queued = this.taskQueue.queue.length > 0;
@@ -66,7 +72,7 @@ class OrdService {
     public async updateIndex() {
         try {
             // Execute the inscription command
-            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir "/Users/indigo/Library/Application Support/ord2" index update`);
+            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} index update`); // "/home/your_username/.local/share/ord2" for Linux
 
             if (stderr && stderr.trim() !== '') {
                 console.error('Error updating index:', stderr);
@@ -149,7 +155,7 @@ class OrdService {
             const yamlFilePath = await this.prepareInscriptionFile(file, invoice);
 
             // Execute the inscription command
-            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir "/Users/indigo/Library/Application Support/ord2" wallet inscribe --fee-rate 2.5 --batch ${yamlFilePath}`);
+            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet inscribe --fee-rate 2.5 --batch ${yamlFilePath}`);
 
 
             // When inscribe command is successful, stdout should contain the inscription transaction details
@@ -205,7 +211,7 @@ class OrdService {
 
             for (let i = 0; i < count; i++) {
                 try {
-                    const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir "/Users/indigo/Library/Application Support/ord2" wallet receive`);
+                    const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet receive`);
                     if (stderr) {
                         console.error('Error generating address:', stderr);
                         continue; // Skip this iteration and try the next one
@@ -227,7 +233,7 @@ class OrdService {
     public getWalletBalance() {
         return this.taskQueue.enqueue(async () => {
             try {
-                const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir "/Users/indigo/Library/Application Support/ord2" wallet balance`);
+                const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet balance`);
                 if (stderr) {
                     console.error('Error getting wallet balance:', stderr);
                     throw new Error('Failed to get wallet balance');
