@@ -69,7 +69,12 @@ class InscriptionService {
     private async handleInvoiceCreated(eventData: any) {
         // Handle invoice created event
         console.log('Invoice Created:', eventData);
+
+        // TODO: missing Invoice.ipaddress, accountid, reeivingaddress 
         // Invoice.create({ invoiceId: eventData.invoiceId, createdAt: eventData.timestamp, updatedAt: eventData.timestamp });
+        
+
+
         // TODO: From metadata, get the files and create file records in the database
         // TODO: Validate the files and update their status in the database
     }

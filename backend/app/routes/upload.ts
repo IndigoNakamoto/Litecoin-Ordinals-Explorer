@@ -5,7 +5,7 @@ const axios = require('axios');
 import { createInvoice, getPaymentMethod } from '../controllers/invoices';
 import { createTracing } from 'trace_events';
 import fs from 'fs';
-
+import Invoice from '../models/Invoice';
 
 
 // Set up multer for file uploads
@@ -29,6 +29,8 @@ const upload = multer({
 });
 
 
+// We create the invoice when the files are uploaded
+// Need to create a reference to Invoice model after the invoice is created by BTCPay
 router.post('/', upload.array('files', 50), async (req, res) => {
   const { account_id, receivingAddress } = req.body; // Assuming this is how you retrieve your user's ID
   const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
@@ -68,6 +70,9 @@ router.post('/', upload.array('files', 50), async (req, res) => {
       res.status(400).json({ message: "You have an invoice in progress. Please settle it before uploading new files or cancel the invoice." });
 
     } else if (!hasNewInvoice) {
+
+
+
       const rates = await axios.get(`https://payment.ordlite.com/api/rates?storeId=AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf`);
 
       // console.log('\nLTC_USD Rate:', rates.data[0].rate)
@@ -134,7 +139,13 @@ router.post('/', upload.array('files', 50), async (req, res) => {
           headers: { 'Authorization': `${auth}` }
         });
         const ipaddress = req.ip as string;
-        const dbInvoice = await createInvoice(invoice.data.id, ipaddress, account_id, receivingAddress)
+        try { 
+          await createInvoice(invoice.data.id, ipaddress, account_id, receivingAddress)
+
+        } catch (error) {
+          console.error('Error creating invoice:', error);
+          res.json(error)
+        }
         const payment = await getPaymentMethod(invoice.data.id)
         // console.log('Invoice created:', dbInvoice)
         // Assuming all validations pass, send a success response
@@ -149,6 +160,16 @@ router.post('/', upload.array('files', 50), async (req, res) => {
         // Send paymentMethods: paymentLink
         // console.log('Payment Method Response', payment[0])
         // console.log({ id, expirationTime, createdTime, due, destination, paymentLink, metadata, status, currency, LTC_USD })
+
+
+
+
+
+        // TODO: Create Invoice 
+        // const invoiceDocument = await Invoice.create({ account_id, receivingAddress, files: invoiceBreakdown })
+        // console.log('Invoice Document:', invoiceDocument)
+
+        // Invoice.create({ invoiceId: eventData.invoiceId, createdAt: eventData.timestamp, updatedAt: eventData.timestamp });
         res.send({ id, expirationTime, createdTime, due, destination, paymentLink, metadata, status, currency, LTC_USD })
       } catch (error) {
         console.error('Error creating invoice:', error);

@@ -3,8 +3,6 @@ import Invoice from '../models/Invoice';
 import { Op } from 'sequelize';
 const axios = require('axios');
 
-
-// TODO: Update return data only needed. Only include createdTime, expirationTime, id, inscribeStatus, metadata, status
 export const getInvoiceById = async (req: Request, res: Response) => {
     console.log('Getting Invoice by ID')
     try {
@@ -157,6 +155,11 @@ export const getInvoiceByAccountId = async (req: Request, res: Response) => {
 }
 
 export const createInvoice = async (invoiceId: String, ipaddress: String, accountid: String, receivingAddress: String) => {
+    console.log('Creating Invoice record in app controllers invoices')
+    console.log('Invoice ID:', invoiceId)
+    console.log('IP Address:', ipaddress)
+    console.log('Account ID:', accountid)
+    console.log('Receiving Address:', receivingAddress)
     try {
         const newInvoice = await Invoice.create({
             receivingaddress: receivingAddress,
@@ -166,7 +169,8 @@ export const createInvoice = async (invoiceId: String, ipaddress: String, accoun
         });
         return newInvoice;
     } catch (error) {
-        return { error: `Error creating invoice: ${error}` };
+        throw new Error(`Error creating invoice: ${error}`);
+        // return { error: `Error creating invoice: ${error}` };
     }
 }
 

@@ -112,7 +112,7 @@ export default function Page() {
             setInProgress(false);
             // TODO: result should be invoice and payment method
             const result = await response.json()
-            console.log('Invoice Id needed: ', result.id);
+            console.log('Invoice Id needed for payment modal: ', result.id);
             // console.log('Result: ', result);
             setInvoiceId(result.id);
             setInvoiceExpirationTime(result.expirationTime);

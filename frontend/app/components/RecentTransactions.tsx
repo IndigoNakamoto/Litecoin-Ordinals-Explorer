@@ -90,6 +90,8 @@ export default function TransactionsTable() {
 
   // Function to handle modal open and set the selected transaction
   const handleOpenModal = (transaction: Transaction) => {
+    console.log('Open recent transaction invoice modal')
+    console.log('Transaction:', transaction);
     setSelectedTransaction(transaction);
     setIsModalOpen(true);
   };
