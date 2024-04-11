@@ -40,4 +40,13 @@ router.post('/:invoiceId', async (req: Request, res: Response) => {
         return res.status(500).json({message: error})
     }
 })
+
+router.get('/updateIndex', async (req: Request, res: Response) => {
+    try {
+        const response = await ordService.updateIndex()
+        return res.status(200).json(response)
+    } catch (error: any) {
+        return res.status(500).json({message: error})
+    }
+})
 export default router;

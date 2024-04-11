@@ -68,7 +68,7 @@ router.post('/', upload.array('files', 50), async (req, res) => {
         });
       });
       res.status(400).json({ message: "You have an invoice in progress. Please settle it before uploading new files or cancel the invoice." });
-
+      return;
     } else if (!hasNewInvoice) {
 
 
@@ -144,7 +144,8 @@ router.post('/', upload.array('files', 50), async (req, res) => {
 
         } catch (error) {
           console.error('Error creating invoice:', error);
-          res.json(error)
+          // res.json(error)
+          throw error;
         }
         const payment = await getPaymentMethod(invoice.data.id)
         // console.log('Invoice created:', dbInvoice)

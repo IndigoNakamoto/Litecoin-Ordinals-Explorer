@@ -20,18 +20,18 @@ export const getInvoiceById = async (req: Request, res: Response) => {
             headers: { 'Authorization': `${auth}` },
         });
 
-        const {createdTime, expirationTime, id, metadata, status} = invoice.data
+        const { createdTime, expirationTime, id, metadata, status } = invoice.data
         const invoiceDB = await Invoice.findOne({ where: { invoiceId } });
         // console.log('Invoice:', invoice.data);
         // console.log('InvoiceDB:', invoiceDB?.dataValues.inscribeStatus);
 
         const payment_method = await getPaymentMethod(id)
         // console.log('Payment Method object: ', payment_method)
-        const {due, destination, paymentLink} = payment_method[0]
- 
+        const { due, destination, paymentLink } = payment_method[0]
 
-        if (invoice&& invoiceDB) {
-            res.json({id, createdTime, expirationTime, due, destination, paymentLink, metadata, status, inscribeStatus:invoiceDB?.dataValues.inscribeStatus, });
+
+        if (invoice && invoiceDB) {
+            res.json({ id, createdTime, expirationTime, due, destination, paymentLink, metadata, status, inscribeStatus: invoiceDB?.dataValues.inscribeStatus, });
         } else {
             res.status(404).json({ error: 'Invoice not found' });
         }
@@ -48,7 +48,7 @@ export const getInvoiceStatusById = async (req: Request, res: Response) => {
         const { invoiceId } = req.params;
         const invoice = await Invoice.findOne({ where: { invoiceId } });
         if (invoice) {
-            if(invoice === null){
+            if (invoice === null) {
                 res.status(404).json({ error: 'Invoice not found' });
             }
             res.json({ inscribeStatus: invoice.inscribeStatus, paymentStatus: invoice.paymentStatus });
@@ -94,7 +94,7 @@ export const checkIfNewInvoiceExistsByAccountId = async (req: Request, res: Resp
     const BTCPAY_USERNAME = 'ordlite@gmail.com';
     const BTCPAY_PASSWORD = '$had0wTaxih';
     const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
-    
+
     // Encode credentials to Base64 for the Authorization header
     const base64Credentials = Buffer.from(`${BTCPAY_USERNAME}:${BTCPAY_PASSWORD}`).toString('base64');
     const auth = `Basic ${base64Credentials}`;

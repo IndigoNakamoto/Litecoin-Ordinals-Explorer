@@ -54,11 +54,13 @@ class OrdService {
     taskQueue = new TaskQueue();
 
     constructor(
+        // PRODUCTION
         private ordPath = '/root/bin', // for Linux
         private ordIndexPath = '/root/.local/share/ord2'  // for Linux
 
+        // DEVELOPMENT
         // private ordPath = '/Users/indigo/dev/ord-litecoin-0.15/target/release', // for Mac
-        // private ordIndexPath = '/Users/indigo/Library/Application Support/ord2' // For macOS
+        // private ordIndexPath = `'/Users/indigo/Library/Application Support/ord2'` // For macOS
     ) { } // /root/.bin/ord for Linux
 
     public getQueuedFilesInfo(): { queued: boolean; count: number; files: any[] } {
@@ -83,6 +85,7 @@ class OrdService {
             return { stdout };
         } catch (error) {
             console.error('Error committing file:', error);
+            throw error;
         } 
     }
 
