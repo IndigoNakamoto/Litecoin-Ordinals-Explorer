@@ -122,16 +122,17 @@ cd bin
 ./ord index update
 
 ./ord server -j
-./ord --bitcoin-rpc-user your_rpc_username --bitcoin-rpc-pass your_rpc_password server --http-port 8080 -j 
+./ord --bitcoin-rpc-pass 'your_rpc_password' --bitcoin-rpc-user 'your_rpc_username' server --http-port 8080 -j
 
 ## Ord2
 find $HOME/.local/share/ord -name "index.redb"
 /root/.local/share/ord/index.redb
 
 
+
 #### Macbook pro
 cd /Users/indigo/dev/ord-litecoin-0.15/target/release
-./ord --bitcoin-rpc-user your_rpc_username --bitcoin-rpc-pass your_rpc_password --http-port 8080 server -j 
+./ord --bitcoin-rpc-pass 'your_rpc_password' --bitcoin-rpc-user 'your_rpc_username' server --http-port 8080 -j
 
 ## 5. GIT Clon project
 git clone https://github.com/IndigoNakamoto/ordlite.io.git
@@ -176,6 +177,10 @@ npx ts-node InscriptionUpdateService.ts
     4. cd ../services
     5. npx ts-node InscriptionUpdateService.ts 
         1. NOTE: NANO and change to setInterval later
+
+
+.env 
+.env.locals
 
 
 

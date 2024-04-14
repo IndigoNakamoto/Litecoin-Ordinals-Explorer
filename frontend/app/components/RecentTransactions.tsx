@@ -90,8 +90,8 @@ export default function TransactionsTable() {
 
   // Function to handle modal open and set the selected transaction
   const handleOpenModal = (transaction: Transaction) => {
-    console.log('Open recent transaction invoice modal')
-    console.log('Transaction:', transaction);
+    // console.log('Open recent transaction invoice modal')
+    // console.log('Transaction:', transaction);
     setSelectedTransaction(transaction);
     setIsModalOpen(true);
   };
@@ -102,27 +102,26 @@ export default function TransactionsTable() {
         // <InvoiceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} invoiceId={selectedTransaction.id} />
         <PaymentModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} id={selectedTransaction.id} expirationTime={selectedTransaction.expirationTime.toString()} createdTime={selectedTransaction.createdTime.toString()} due={selectedTransaction.amount} metadata={selectedTransaction.metadata} paymentLink={''} currency={selectedTransaction.currency} LTC_USD={selectedTransaction.metadata.ltc_usd_rate} paymentAddress={''} />
       )}
-      <div className='flex justify-between'>
-        <CardHeader floated={false} shadow={false} className="rounded-none" placeholder={undefined}>
-          <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
-            <div>
 
-              <Typography variant="h5" color="blue-gray" placeholder={undefined}>
-                Recent Transactions
-              </Typography>
+      <CardHeader floated={false} shadow={false} className="rounded-none flex justify-between" placeholder={undefined}>
 
-              <Typography color="gray" variant='small' className="text-gray-600 font-normal mt-1"  placeholder={undefined}>
-                These are details about the last transactions
-              </Typography>
-            </div>
-          </div>
+        <div>
+          <Typography variant="h5" color="blue-gray" placeholder={undefined}>
+            Recent Transactions
+          </Typography>
 
-        </CardHeader>
+          <Typography color="gray" variant='small' className="text-gray-600 font-normal mt-1" placeholder={undefined}>
+            These are details about the last transactions
+          </Typography>
+        </div>
 
-        <Button onClick={fetchTransactions} color="black" className='p-2 m-6' size='md' variant="outlined" placeholder={undefined}>
+        <Button onClick={fetchTransactions} color="blue-gray" className='h-8 m-1 focus:outline-none' size='sm' variant="outlined" placeholder={undefined}>
           Refresh
         </Button>
-      </div>
+      </CardHeader>
+
+
+
       <CardBody className="overflow-scroll px-0" placeholder={undefined}>
         <table className="w-full min-w-max table-auto text-left">
           <thead>

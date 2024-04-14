@@ -3,52 +3,71 @@ import React from 'react';
 import InscriptionPage from './page-home';
 import Head from 'next/head'; // For setting head elements
 
-// app/[inscription_number]/page.tsx
 import type { Metadata, ResolvingMetadata } from 'next';
 
 type Props = {
   params: { inscription_number: string };
 };
 
-// This function is called during the server-side rendering process
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  // Use the inscription_number from the route params
   const inscriptionNumber = params.inscription_number;
-  
-  // Optionally, here you could fetch additional data related to the inscription if needed
-  // For simplicity, this example does not fetch additional data
 
-  // Return the dynamic metadata based on the inscription number
+  const baseUrl = 'https://ordlite.io/';
+  const imageUrl = `${baseUrl}social_background2.jpeg`;
+
   return {
     title: `Inscription ${inscriptionNumber} | OrdLite.io`,
-    description: `Inscription ${inscriptionNumber} on Litecoin.`,
+    description: `View Inscription ${inscriptionNumber} on OrdLite.io`,
+    // OpenGraph Tags for better reach on social media
+    openGraph: {
+      title: `Inscription ${inscriptionNumber} | OrdLite.io`,
+      description: `View Inscription ${inscriptionNumber} on OrdLite.io`,
+      url: `${baseUrl}${inscriptionNumber}`,
+      images: [
+        {
+          url: imageUrl,
+          width: 800,
+          height: 600,
+          alt: `Inscription ${inscriptionNumber}`,
+        }
+      ],
+      siteName: 'OrdLite.io',
+    },
+    // Twitter Card Metadata
     twitter: {
       card: 'summary_large_image',
+      site: '@ordlite',
       title: `Inscription ${inscriptionNumber} | OrdLite.io`,
-      description: `Inscription ${inscriptionNumber} on Litecoin.`,
-      creator: '@ordlite',
-      images: ['https://ordlite.io/social_background.webp'], // This must be an absolute URL
+      description: `View Inscription ${inscriptionNumber} on OrdLite.io`,
+      images: [imageUrl],
+      creator: '@ordlite'
     },
-    // If needed, you can extend or modify the parent metadata
-    // For example, to add to the existing openGraph images:
-    // openGraph: {
-    //   images: ['https://ordlite.io/some-inscription-image.jpg', ...(parent.openGraph?.images || [])],
-    // },
   };
 }
 
-
 export default function Page({ params }: { params: { inscription_number: string } }) {
-    // Dynamically generate the title and other metadata elements
     const title = `Inscription ${params.inscription_number} | OrdLite.io`;
-    const description = 'Explore the history of the Ordinals on Litecoin and its inscriptions.';
+    const description = 'Explore the inscriptions secured by Ordinals on Litecoin.';
 
     return (
         <>
-            <InscriptionPage params={{ inscription_number: params.inscription_number }} />
+          <Head>
+            <title>{title}</title>
+            <meta name="description" content={description} />
+            <meta property="og:title" content={title} />
+            <meta property="og:description" content={description} />
+            <meta property="og:type" content="website" />
+            <meta property="og:image" content="https://ordlite.io/social_background2.jpeg" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:creator" content="@ordlite" />
+            <meta name="twitter:title" content={title} />
+            <meta name="twitter:description" content={description} />
+            <meta name="twitter:image" content="https://ordlite.io/social_background2.jpeg" />
+          </Head>
+          <InscriptionPage params={{ inscription_number: params.inscription_number }} />
         </>
     );
 }

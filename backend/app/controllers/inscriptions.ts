@@ -7,14 +7,14 @@ import { FindOptions } from 'sequelize';
 const PAGE_SIZE = 50; // Number of items per page
 
 export const getInscriptionById = async (req: Request, res: Response) => {
-    console.log('Fetching inscription by ID')
+    // console.log('Fetching inscription by ID')
     const { inscriptionId } = req.params;
     try {
         const inscription = await Inscription.findOne({ where: { inscription_id: inscriptionId } });
         if (inscription) {
             res.json(inscription);
         } else {
-            console.log('Inscription not found, fetching from the blockchain');
+            // console.log('Inscription not found, fetching from the blockchain');
             try {
                 const inscriptionData = await getInscriptionData(inscriptionId);
                 const { content_length, content_type, genesis_fee, genesis_height, inscription_number, next, output_value, parent, previous, rune, sat, satpoint, timestamp, charms, children } = inscriptionData;
@@ -31,7 +31,7 @@ export const getInscriptionById = async (req: Request, res: Response) => {
                 };
                 const response = await Inscription.create(modifiedData);
                 if (response) {
-                    console.log('Inscription added to the database');
+                    // console.log('Inscription added to the database');
                 }
                 res.json(modifiedData);
 

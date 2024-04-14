@@ -47,8 +47,8 @@ export default function Page({ params }: { params: { inscription_number: string 
                         Inscription {params.inscription_number.toLocaleString()}
                     </Typography>
                 </header>
-                <div className="relative w-full overflow-hidden rounded-xl" style={{ paddingBottom: '100%' }}>
-                    <div className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-br from-gray-800 to-transparent flex items-center justify-center">
+                <div className="relative overflow-hidden rounded-xl" style={{ paddingBottom: '100%' }}>
+                    <div className="absolute top-0 left-0 right-0 bottom-0 bg-gradient-to-br from-gray-800 to-transparent flex items-center justify-center overflow-hidden	">
                         {data && <ContentRenderer
                             inscription_id={data?.inscription_id}
                             contentType={data?.content_type}

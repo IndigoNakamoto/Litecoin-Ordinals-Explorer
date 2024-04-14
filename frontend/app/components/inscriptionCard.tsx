@@ -1,8 +1,5 @@
-// app/components/inscriptionCard.tsx
-// import { useEffect, useState } from 'react';
+import React, { memo } from 'react';
 import Link from 'next/link';
-// import Image from "next/legacy/image";
-// import ModelViewer from './model-viewer';
 import { ContentRenderer } from './ContentRenderer';
 
 interface InscriptionCardProps {
@@ -22,7 +19,7 @@ const getContentTypeDescription = (contentType: string): string => {
 
     switch (type) {
         case 'text':
-            if(subtype === 'plain') return type.toUpperCase()
+            if (subtype === 'plain') return type.toUpperCase()
             else return subtype.toUpperCase(); // Text, HTML, CSS, JavaScript
         case 'image':
             return subtype.toUpperCase(); // JPEG, GIF, PNG, SVG
@@ -35,34 +32,33 @@ const getContentTypeDescription = (contentType: string): string => {
         case 'font':
             return subtype.toUpperCase();
         case 'model':
-            if(subtype.startsWith('gltf')) return 'GLTF'; // GLTF+JSON, GLTF-BINARY
+            if (subtype.startsWith('gltf')) return 'GLTF'; // GLTF+JSON, GLTF-BINARY
             else return subtype.toUpperCase()
         default:
             return 'Unknown Content Type';
     }
 };
 
-export const InscriptionCard: React.FC<InscriptionCardProps> = ({
-    inscription_id,
-    inscription_number,
-    content_type,
-    maxHeight = "175px",
-}) => {
-
+const InscriptionCard = memo<InscriptionCardProps>(({ inscription_id, inscription_number, content_type, maxHeight = "175px" }) => {
     const formattedInscriptionNumber = inscription_number.toLocaleString(); // This will format the number with commas
+    // console.log("Rendering InscriptionCard", { inscription_id, content_type, formattedInscriptionNumber });
 
     return (
-        <div className="rounded-3xl bg-gradient-to-br from-gray-800 to-transparent` p-2 overflow-hidden shadow-lg cursor-pointer transition-transform duration-200 ease-in-out hover:scale-105">
-            <Link href={`/${inscription_number}`} target="_blank" rel="noopener">
-                <div 
-                    className={`aspect-w-1 aspect-h-1 w-full min-h-[180px] overflow-hidden rounded-3xl flex items-center justify-center relative bg-gradient-to-br from-gray-800 to-transparent`}
+        <div className="rounded-3xl bg-gradient-to-br from-gray-800 to-transparent p-2 overflow-hidden shadow-lg cursor-pointer transition-transform duration-200 ease-in-out hover:scale-105">
+            <Link href={`/${inscription_number}`} rel="noopener">
+                <div
+                    className={`aspect-w-1 w-full min-h-[180px] overflow-hidden rounded-3xl flex items-center justify-center relative bg-gradient-to-br from-gray-800 to-transparent`}
                     style={{ maxHeight }} // Apply the maxHeight value here
                 >
-                    <ContentRenderer
-                        inscription_id={inscription_id}
-                        contentType={content_type}
-                        formattedInscriptionNumber={formattedInscriptionNumber}
-                    />
+                    {content_type === 'model/gltf-binary' || content_type === 'model/gltf+json' || content_type === 'text/html;charset=utf-8' ? (
+                        <p>No preview available</p>
+                    ) : (
+                        <ContentRenderer
+                            inscription_id={inscription_id}
+                            contentType={content_type}
+                            formattedInscriptionNumber={formattedInscriptionNumber}
+                        />
+                    )}
                 </div>
 
                 <div className="pt-2 p-4">
@@ -72,5 +68,9 @@ export const InscriptionCard: React.FC<InscriptionCardProps> = ({
             </Link>
         </div>
     );
-};
+});
 
+InscriptionCard.displayName = 'InscriptionCard'; // Add display name to the component
+
+
+export { InscriptionCard };

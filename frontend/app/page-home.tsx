@@ -58,31 +58,54 @@ export default function Home({ initialInscriptions }: HomeProps) {
 
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        // Assuming each card has an ID that corresponds to the inscription_id
-                        const cardId = entry.target.getAttribute('data-inscription-id');
-                        // Logic to load card content goes here
-                        // console.log(`Load content for card ${cardId}`);
-                    }
-                });
-            },
-            { rootMargin: '0px', threshold: 0.1 }
-        );
+    // useEffect(() => {
+    //     const observer = new IntersectionObserver(
+    //         (entries) => {
+    //             entries.forEach(entry => {
+    //                 if (entry.isIntersecting) {
+    //                     // Assuming each card has an ID that corresponds to the inscription_id
+    //                     const cardId = entry.target.getAttribute('data-inscription-id');
+    //                     // Logic to load card content goes here
+    //                     // console.log(`Load content for card ${cardId}`);
+    //                 }
+    //             });
+    //         },
+    //         { rootMargin: '0px', threshold: 0.1 }
+    //     );
 
-        cardRefs.current.forEach(ref => { // Observe each card
+    //     cardRefs.current.forEach(ref => { // Observe each card
+    //         if (ref) observer.observe(ref);
+    //     });
+
+    //     return () => { // Cleanup observer on component unmount
+    //         cardRefs.current.forEach(ref => {
+    //             if (ref) observer.unobserve(ref);
+    //         });
+    //     };
+    // }, [inscriptions]); // Depend on the inscriptions array
+
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const cardId = entry.target.getAttribute('data-inscription-id');
+                    // Load content for card
+                    observer.unobserve(entry.target); // Unobserve after loading content
+                }
+            });
+        }, { rootMargin: '0px', threshold: 0.1 });
+
+        cardRefs.current.forEach(ref => {
             if (ref) observer.observe(ref);
         });
 
-        return () => { // Cleanup observer on component unmount
+        return () => {
             cardRefs.current.forEach(ref => {
                 if (ref) observer.unobserve(ref);
             });
         };
     }, [inscriptions]); // Depend on the inscriptions array
+
 
 
     const fetchInscriptions = async () => {
@@ -230,10 +253,10 @@ export default function Home({ initialInscriptions }: HomeProps) {
             newFilter.contentType = '';
             newFilter.contentTypeType = '';
             setFilterType('')
-        } else if (filterType === 'SVG') {
+        } else if (filterType === 'SVGs') {
             newFilter.contentType = 'image%2Fsvg+xml'
             setFilterType('SVG')
-        } else if (filterType === 'GIF') {
+        } else if (filterType === 'GIFs') {
             newFilter.contentType = 'image%2Fgif'
             setFilterType('GIF')
         } else if (filterType === 'HTML') {
@@ -345,15 +368,22 @@ export default function Home({ initialInscriptions }: HomeProps) {
         <>
             <div className="mx-auto p-4 md:p-8 mb-16">
                 {/* Filter Buttons */}
-                <Tabs value={activeFilterButton} className='max-w-screen-md'>
-                    <TabsHeader placeholder={undefined}>
-                        {['All', 'Images', 'GIF', 'Text', 'SVG', 'Videos', 'JSON', 'PDF', 'Audio', '3D'].map(type => (
-                            <Tab key={type} value={type} onClick={() => handleFilterClick(type)} placeholder={undefined}>
-                                {type}
-                            </Tab>
-                        ))}
-                    </TabsHeader>
-                </Tabs>
+                <div className='w-full overflow-hidden'>
+                    <Tabs value={activeFilterButton} className='max-w-screen-md'>
+                        <TabsHeader placeholder={undefined} className='bg-gradient-to-br from-white to-gray-500 '>
+                            {['All',
+                                'Images', 'GIFs', 'SVGs',
+                                'Videos',
+                                'Text', 'HTML', 'JSON', 'PDF',
+                                'Audio',
+                                '3D'].map(type => (
+                                    <Tab key={type} value={type} onClick={() => handleFilterClick(type)} placeholder={undefined}>
+                                        {type}
+                                    </Tab>
+                                ))}
+                        </TabsHeader>
+                    </Tabs>
+                </div>
 
                 {/* Sort Dropdown */}
                 <div className="relative inline-block pt-4">

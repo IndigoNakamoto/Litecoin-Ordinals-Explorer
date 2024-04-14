@@ -164,7 +164,7 @@ class OrdService {
             // When inscribe command is successful, stdout should contain the inscription transaction details
             if (stderr && stderr.trim() !== '') {
                 console.error('Error committing file:', stderr);
-               // throw new Error(stderr);
+                // throw new Error(stderr);
             }
 
             console.log('Committed file - Response: ', stdout)

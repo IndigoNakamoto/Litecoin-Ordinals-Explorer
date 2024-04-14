@@ -72,7 +72,7 @@ const TABLE_HEAD = [
 function InscribeOrder() {
   const context = useContext(InscribeOrderContext);
   const [ltcusd, setLtcusd] = useState(0);
-;
+  ;
 
   const FEE_PER_BYTE = 1;
   const POSTAGE = 10000;
@@ -130,40 +130,37 @@ function InscribeOrder() {
     <section className="">
 
       <Card className="h-full w-full" placeholder={undefined}>
-        <CardHeader
-          floated={false}
-          shadow={false}
-          className="rounded-none flex flex-wrap gap-4 justify-between" placeholder={undefined}        >
-          <div>
-            <Typography variant="h5" color="blue-gray" placeholder={undefined}>
-              Your Inscription Order
-            </Typography>
-            <Typography
-              variant="small"
-              className="text-gray-600 font-normal mt-1" placeholder={undefined}            >
-              These are details for your order. You can remove files by clicking the ellipsis icon.
-            </Typography>
-          </div>
-          <div className="flex flex-wrap items-center w-full shrink-0 gap-4 md:w-max">
+        <CardHeader floated={false} shadow={false} className="rounded-none" placeholder={undefined}>
+          <div className="mb-4 flex flex-col justify-between gap-8 md:flex-row md:items-center">
+            <div className="pb-2">
+              <Typography variant="h5" color="blue-gray" placeholder={undefined}>
+                Your Inscription Order
+              </Typography>
+              <Typography
+                variant="small"
+                className=" font-normal mt-1" placeholder={undefined}            >
+                These are details for your order. You can remove files by clicking the ellipsis icon.
+              </Typography>
+            </div>
+            <div className="flex flex-wrap items-center w-full shrink-0 gap-4 md:w-max">
+            </div>
           </div>
         </CardHeader>
         <CardBody className="overflow-scroll !px-0 py-0" placeholder={undefined}>
-          <table className="w-full min-w-max table-auto">
+          <table className="w-full min-w-max table-auto text-left">
             <thead>
-              <tr className='pl-16'>
+              <tr>
                 {TABLE_HEAD.map(({ head }) => (
                   <th
                     key={head}
-                    className="border-b border-gray-300 !p-4"
+                    className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-4"
                   >
-                    <div className="flex gap-2 items-center">
-                      <Typography
-                        color="blue-gray"
-                        variant="small"
-                        className="!font-bold" placeholder={undefined}                      >
-                        {head}
-                      </Typography>
-                    </div>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal leading-none opacity-70" placeholder={undefined}                  >
+                      {head}
+                    </Typography>
                   </th>
                 ))}
               </tr>
@@ -179,7 +176,10 @@ function InscribeOrder() {
                   total,
                   postage
                 }) => {
-                  const classes = "!p-4 border-b border-gray-300";
+                  const isLast = index === files.length - 1;
+                  const classes = isLast 
+                    ? "!p-4 border-b border-gray-300"
+                    : "p-4 border-b border-blue-gray-50";
                   const truncatedFileName = file_name.length > 20 ? `...${file_name.slice(-15)}` : file_name;
                   return (
                     <tr key={index}>
@@ -196,35 +196,35 @@ function InscribeOrder() {
                       <td className={classes}>
                         <Typography
                           variant="small"
-                          className="!font-normal text-gray-600" placeholder={undefined}                        >
+                          className="!font-normal " placeholder={undefined} color="blue-gray"                      >
                           {Math.ceil(content_length / 1000)} KB
                         </Typography>
                       </td>
                       <td className={classes}>
                         <Typography
                           variant="small"
-                          className="!font-normal text-gray-600" placeholder={undefined}                        >
+                          className="!font-normal " placeholder={undefined} color="blue-gray"                    >
                           {content_fee} lits
                         </Typography>
                       </td>
                       <td className={classes}>
                         <Typography
                           variant="small"
-                          className="!font-normal text-gray-600" placeholder={undefined}                        >
+                          className="!font-normal " placeholder={undefined} color="blue-gray"                     >
                           {postage} lits
                         </Typography>
                       </td>
                       <td className={classes}>
                         <Typography
                           variant="small"
-                          className="!font-normal text-gray-600" placeholder={undefined}                        >
+                          className="!font-normal " placeholder={undefined} color="blue-gray"                   >
                           {service_fee} lits
                         </Typography>
                       </td>
                       <td className={classes}>
                         <Typography
                           variant="small"
-                          className="!font-normal text-gray-600" placeholder={undefined}                        >
+                          className="!font-normal " placeholder={undefined} color="blue-gray"                   >
                           {total} lits
                         </Typography>
                       </td>

@@ -4,10 +4,10 @@ import { Op } from 'sequelize';
 const axios = require('axios');
 
 export const getInvoiceById = async (req: Request, res: Response) => {
-    console.log('Getting Invoice by ID')
+    // console.log('Getting Invoice by ID')
     try {
         const { invoiceId } = req.params;
-        console.log('Invoice ID:', invoiceId)
+        // console.log('Invoice ID:', invoiceId)
         const BTCPAY_USERNAME = 'ordlite@gmail.com'
         const BTCPAY_PASSWORD = '$had0wTaxih'
         const storeId = 'AN4wugzAGGN56gHFjL1sjKazs89zfLouiLoeTw9R7Maf';
@@ -36,7 +36,7 @@ export const getInvoiceById = async (req: Request, res: Response) => {
             res.status(404).json({ error: 'Invoice not found' });
         }
     } catch (error) {
-        console.log('Error: ', error);
+        console.error('Error: ', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };

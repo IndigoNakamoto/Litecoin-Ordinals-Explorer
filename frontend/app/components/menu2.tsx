@@ -26,10 +26,10 @@ const Menu = () => {
     setIsModalOpen(true);
   };
   const toggleMobileMenu = () => {
-    console.log('toggleMobileMenu');
+    // console.log('toggleMobileMenu');
     // setShowMobileMenu(!showMobileMenu)
     setShowMobileMenu(current => !current);
-    console.log(showMobileMenu)
+    // console.log(showMobileMenu)
   };
 
   return (

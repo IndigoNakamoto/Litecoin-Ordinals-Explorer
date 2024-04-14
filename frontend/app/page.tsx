@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     title: 'OrdLite.io | Ordinals Explorer for Litecoin',
     description: 'Explore the history of Ordinals on Litecoin and its inscriptions.',
     creator: '@ordlite',
-    images: ['https://ordlite.io/social_background.webp'], // Must be an absolute URL
+    images: ['https://ordlite.io/social_background2.jpeg'], // Must be an absolute URL
   },
 }
 
