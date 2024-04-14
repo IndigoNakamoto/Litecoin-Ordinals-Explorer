@@ -60,12 +60,12 @@ export default function Page({ params }: { params: { inscription_number: string 
             <meta property="og:title" content={title} />
             <meta property="og:description" content={description} />
             <meta property="og:type" content="website" />
-            <meta property="og:image" content="https://ordlite.io/social_background2.jpeg" />
+            <meta property="og:image" content="https://www.ordlite.io/social_background2.jpg" />
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:creator" content="@ordlite" />
             <meta name="twitter:title" content={title} />
             <meta name="twitter:description" content={description} />
-            <meta name="twitter:image" content="https://ordlite.io/social_background2.jpeg" />
+            <meta name="twitter:image" content="https://www.ordlite.io/social_background2.jpg" />
           </Head>
           <InscriptionPage params={{ inscription_number: params.inscription_number }} />
         </>
