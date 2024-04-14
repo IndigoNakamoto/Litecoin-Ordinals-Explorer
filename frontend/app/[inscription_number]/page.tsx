@@ -16,7 +16,7 @@ export async function generateMetadata(
   const inscriptionNumber = params.inscription_number;
 
   const baseUrl = 'https://ordlite.io/';
-  const imageUrl = `${baseUrl}social_background2.jpeg`;
+  const imageUrl = `${baseUrl}social_background2.jpg`;
 
   return {
     title: `Inscription ${inscriptionNumber} | OrdLite.io`,
