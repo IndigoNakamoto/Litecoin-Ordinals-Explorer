@@ -201,12 +201,12 @@ export default function StatsPage() {
           <Typography
             variant="lead"
             className="mt-3 w-full !text-gray-500 lg:w-11/12" placeholder={undefined}          >
-            Ordinals Lite stands as a testament to secure, immutable, and decentralized data, leveraging over 1,000 Litecoin nodes worldwide on the worlds longest running blockchain with 100% uptime. The Litecoin Blockchain benefits from the protection of a dedicated network of Scrypt ASIC miners, deployed globally to ensure the network&apos;s integrity and resilience.
+            Ordinals Lite represents a cutting-edge platform that guarantees security, immutability, and decentralization, powered by over 1,000 Litecoin nodes across the globe on the most reliable blockchain with unmatched 100% uptime. This network is fortified by an extensive global network of dedicated Scrypt ASIC miners, ensuring unparalleled network stability and security.
           </Typography>
           <Typography
             variant="lead"
             className="mt-3 w-full !text-gray-500 lg:w-11/12" placeholder={undefined}          >
-            The inaugural inscription, Inscription #0, on Litecoin was the Mimblewimble White Paper, symbolizing a significant leap in Litecoin&apos;s journey. With the integration of MWEB alongside Taproot on block 2,257,920, Litecoin became a complete form of digital money, enhancing privacy, scalability, and security by providing a dedicated block space for Fungible Transactions.
+            The very first inscription, Inscription #0, featured on Litecoin was the groundbreaking Mimblewimble White Paper, heralding a significant evolution in Litecoin&apos;s capabilities. With the activation of MWEB and Taproot at block 2,257,920, Litecoin has transformed into a fully integrated digital currency, enhancing user privacy, scalability, and security through specialized block space dedicated to Fungible Transactions.
           </Typography>
           {/* <Typography
             variant="lead"

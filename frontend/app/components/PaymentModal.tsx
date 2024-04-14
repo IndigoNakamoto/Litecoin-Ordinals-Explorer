@@ -196,7 +196,7 @@ const PaymentModal: React.FC<ModalProps> = ({ isOpen, onClose, id, paymentAddres
 
 
 
-        const shouldContinuePolling = isOpen && (inscribeStatus !== 'Committed' && inscribeStatus !== 'Error');
+        const shouldContinuePolling = isOpen && (inscribeStatus !== 'Committed');
         // console.log('shouldContinuePolling: ', shouldContinuePolling)
         if (shouldContinuePolling) {
             // console.log('shouldContinuePolling: ', shouldContinuePolling)

@@ -55,7 +55,7 @@ class OrdService {
 
     constructor(
         // PRODUCTION
-        private ordPath = '/root/bin', // for Linux
+        private ordPath = '/root/bin/ord', // for Linux
         private ordIndexPath = '/root/.local/share/ord2'  // for Linux
 
         // DEVELOPMENT
@@ -74,7 +74,7 @@ class OrdService {
     public async updateIndex() {
         try {
             // Execute the inscription command
-            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} index update`); // "/home/your_username/.local/share/ord2" for Linux
+            const { stdout, stderr } = await execAsync(`${this.ordPath} --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} index update`); // "/home/your_username/.local/share/ord2" for Linux
 
             if (stderr && stderr.trim() !== '') {
                 console.error('Error updating index:', stderr);
@@ -158,13 +158,13 @@ class OrdService {
             const yamlFilePath = await this.prepareInscriptionFile(file, invoice);
 
             // Execute the inscription command
-            const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet inscribe --fee-rate 2.5 --batch ${yamlFilePath}`);
+            const { stdout, stderr } = await execAsync(`${this.ordPath} --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet inscribe --fee-rate 2.5 --batch ${yamlFilePath}`);
 
 
             // When inscribe command is successful, stdout should contain the inscription transaction details
             if (stderr && stderr.trim() !== '') {
                 console.error('Error committing file:', stderr);
-                throw new Error(stderr);
+               // throw new Error(stderr);
             }
 
             console.log('Committed file - Response: ', stdout)
@@ -214,7 +214,7 @@ class OrdService {
 
             for (let i = 0; i < count; i++) {
                 try {
-                    const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet receive`);
+                    const { stdout, stderr } = await execAsync(`${this.ordPath} --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet receive`);
                     if (stderr) {
                         console.error('Error generating address:', stderr);
                         continue; // Skip this iteration and try the next one
@@ -236,7 +236,7 @@ class OrdService {
     public getWalletBalance() {
         return this.taskQueue.enqueue(async () => {
             try {
-                const { stdout, stderr } = await execAsync(`${this.ordPath}/ord --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet balance`);
+                const { stdout, stderr } = await execAsync(`${this.ordPath} --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet balance`);
                 if (stderr) {
                     console.error('Error getting wallet balance:', stderr);
                     throw new Error('Failed to get wallet balance');
