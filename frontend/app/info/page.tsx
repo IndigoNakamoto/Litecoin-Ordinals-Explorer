@@ -4,43 +4,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { InscriptionHero } from '../components/InscriptionHero'
 import Head from 'next/head'; // For setting head elements
-import type { Metadata, ResolvingMetadata } from 'next';
-
-export async function generateMetadata(): Promise<Metadata> {
-
-
-  const baseUrl = 'https://ordlite.io/';
-  const imageUrl = `${baseUrl}social_background2.jpg`;
-
-  return {
-    title: `Ordinals Lite Statistics | OrdLite.io`,
-    description: `Explore real-time stats of Ordinals on Litecoin. Secure, immutable, and decentralized network powered by Scrypt miners.`,
-    // OpenGraph Tags for better reach on social media
-    openGraph: {
-      title: `Ordinals Lite Statistics | OrdLite.io`,
-      description: `Get up-to-block insights into Ordinals on Litecoin with OrdLite.io. Decentralization and security at its core.`,
-      url: `${baseUrl}${null}`,
-      images: [
-        {
-          url: imageUrl,
-          width: 800,
-          height: 600,
-          alt: `OrdLite.io Info Page Statistics`,
-        }
-      ],
-      siteName: 'OrdLite.io',
-    },
-    // Twitter Card Metadata
-    twitter: {
-      card: 'summary_large_image',
-      site: '@ordlite',
-      title: `Ordinals Lite Statistics | OrdLite.io`,
-      description: `Get up-to-block insights into Ordinals on Litecoin with OrdLite.io. Decentralization and security at its core.`,
-      images: [imageUrl],
-      creator: '@ordlite'
-    },
-  };
-}
 
 interface ContentTypeDistribution {
   content_type_type: string;
