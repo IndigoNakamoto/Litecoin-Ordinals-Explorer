@@ -3,7 +3,44 @@ import { Typography, Card } from "@material-tailwind/react";
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { InscriptionHero } from '../components/InscriptionHero'
+import Head from 'next/head'; // For setting head elements
+import type { Metadata, ResolvingMetadata } from 'next';
 
+export async function generateMetadata(): Promise<Metadata> {
+
+
+  const baseUrl = 'https://ordlite.io/';
+  const imageUrl = `${baseUrl}social_background2.jpg`;
+
+  return {
+    title: `Ordinals Lite Statistics | OrdLite.io`,
+    description: `Explore real-time stats of Ordinals on Litecoin. Secure, immutable, and decentralized network powered by Scrypt miners.`,
+    // OpenGraph Tags for better reach on social media
+    openGraph: {
+      title: `Ordinals Lite Statistics | OrdLite.io`,
+      description: `Get up-to-block insights into Ordinals on Litecoin with OrdLite.io. Decentralization and security at its core.`,
+      url: `${baseUrl}${null}`,
+      images: [
+        {
+          url: imageUrl,
+          width: 800,
+          height: 600,
+          alt: `OrdLite.io Info Page Statistics`,
+        }
+      ],
+      siteName: 'OrdLite.io',
+    },
+    // Twitter Card Metadata
+    twitter: {
+      card: 'summary_large_image',
+      site: '@ordlite',
+      title: `Ordinals Lite Statistics | OrdLite.io`,
+      description: `Get up-to-block insights into Ordinals on Litecoin with OrdLite.io. Decentralization and security at its core.`,
+      images: [imageUrl],
+      creator: '@ordlite'
+    },
+  };
+}
 
 interface ContentTypeDistribution {
   content_type_type: string;
@@ -149,8 +186,25 @@ export default function StatsPage() {
     }, 30000); // Adjust interval as needed
     return () => clearInterval(interval);
   }, [checkForNewBlock, fetchData]);
+
+  const title = `Ordinals Lite Statistics | OrdLite.io`;
+  const description = 'Explore real-time stats of Ordinals on Litecoin. Secure, immutable, and decentralized network powered by Scrypt miners.';
+
   return (
     <div>
+      <Head>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://www.ordlite.io/social_background2.jpg" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:creator" content="@ordlite" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content="https://www.ordlite.io/social_background2.jpg" />
+      </Head>
       <section className="container mx-auto grid gap-10 px-4 py-10 lg:grid-cols-1 lg:gap-16 lg:pt-14 xl:grid-cols-2 justify-between">
 
         <div className=''>
