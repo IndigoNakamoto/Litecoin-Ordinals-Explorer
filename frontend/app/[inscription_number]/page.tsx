@@ -20,11 +20,11 @@ export async function generateMetadata(
 
   return {
     title: `Inscription ${inscriptionNumber} | OrdLite.io`,
-    description: `View Inscription ${inscriptionNumber} on OrdLite.io`,
+    description: `View Litecoin Ordinal Inscription ${inscriptionNumber} on OrdLite.io`,
     // OpenGraph Tags for better reach on social media
     openGraph: {
       title: `Inscription ${inscriptionNumber} | OrdLite.io`,
-      description: `View Inscription ${inscriptionNumber} on OrdLite.io`,
+      description: `View Litecoin Ordinal Inscription ${inscriptionNumber} on OrdLite.io`,
       url: `${baseUrl}${inscriptionNumber}`,
       images: [
         {
@@ -41,7 +41,7 @@ export async function generateMetadata(
       card: 'summary_large_image',
       site: '@ordlite',
       title: `Inscription ${inscriptionNumber} | OrdLite.io`,
-      description: `View Inscription ${inscriptionNumber} on OrdLite.io`,
+      description: `View Litecoin Ordinal Inscription ${inscriptionNumber} on OrdLite.io`,
       images: [imageUrl],
       creator: '@ordlite'
     },

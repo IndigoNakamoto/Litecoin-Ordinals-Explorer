@@ -34,12 +34,12 @@ interface Inscription {
 
 
 export const metadata: Metadata = {
-  title: 'OrdLite.io | Ordinals Explorer',
-  description: 'Explore the history of the Ordinals on Litecoin and its inscriptions.',
+  title: 'OrdLite.io | Ordinals Explorer for Litecoin',
+  description: 'Explore the files secured by Ordinals on Litecoin - The most reliable blockchain with unmatched 100% uptime.',
   twitter: {
     card: 'summary_large_image',
     title: 'OrdLite.io | Ordinals Explorer for Litecoin',
-    description: 'Explore the history of Ordinals on Litecoin and its inscriptions.',
+    description: 'Explore the files secured by Ordinals on Litecoin - The most reliable blockchain with unmatched 100% uptime.',
     creator: '@ordlite',
     images: ['https://www.ordlite.io/social_background2.jpg'], // Must be an absolute URL
   },
