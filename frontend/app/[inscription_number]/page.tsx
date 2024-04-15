@@ -1,7 +1,6 @@
 // app/[inscription_number]/page.tsx
 import React from 'react';
 import InscriptionPage from './page-home';
-import Head from 'next/head'; // For setting head elements
 
 import type { Metadata } from 'next';
 
@@ -48,24 +47,9 @@ export async function generateMetadata(
 }
 
 export default function Page({ params }: { params: { inscription_number: string } }) {
-  const title = `Inscription ${params.inscription_number} | OrdLite.io`;
-  const description = 'Explore the inscriptions secured by Ordinals on Litecoin.';
 
   return (
     <>
-      <Head>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:type" content="website" />
-        <meta property="og:image" content="https://www.ordlite.io/social_background2.jpg" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:creator" content="@ordlite" />
-        <meta name="twitter:title" content={title} />
-        <meta name="twitter:description" content={description} />
-        <meta name="twitter:image" content="https://www.ordlite.io/social_background2.jpg" />
-      </Head>
       <InscriptionPage params={{ inscription_number: params.inscription_number }} />
     </>
   );
