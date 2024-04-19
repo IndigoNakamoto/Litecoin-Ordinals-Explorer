@@ -11,11 +11,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: 'OrdLite.io | Information and Stats for Ordinals Lite',
-    description: `Stats & info on Litecoin Ordinals: inscriptions, storage, fees, media types.`,
+    description: `Stats & info on Ordinals Lite: inscriptions, storage, fees, media types, and Inscription 0 (Mimblewimble)`,
     // OpenGraph Tags for better reach on social media
     openGraph: {
       title: 'OrdLite.io | Information and Stats for Ordinals Lite',
-      description: `Stats & info on Litecoin Ordinals: inscriptions, storage, fees, media types.`,
+      description: `Stats & info on Ordinals Lite: inscriptions, storage, fees, media types, and Inscription 0 (Mimblewimble)`,
       url: `${baseUrl}`,
       images: [
         {
@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       site: '@ordlite',
       title: 'OrdLite.io | Information and Stats for Ordinals Lite',
-      description: `Stats & info on Litecoin Ordinals: inscriptions, storage, fees, media types.`,
+      description: `Stats & info on Ordinals Lite: inscriptions, storage, fees, media types, and Inscription 0 (Mimblewimble)`,
       images: [imageUrl],
       creator: '@ordlite'
     },
@@ -41,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 function page() {
   const title = 'OrdLite.io | Information and Stats for Ordinals Lite';
-  const description = `Stats & info on Litecoin Ordinals: inscriptions, storage, fees, media types.`
+  const description = `Stats & info on Ordinals Lite: inscriptions, storage, fees, media types, and Inscription 0 (Mimblewimble)`
   return (
     <>
       <Head>
