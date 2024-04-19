@@ -158,7 +158,7 @@ class OrdService {
             const yamlFilePath = await this.prepareInscriptionFile(file, invoice);
 
             // Execute the inscription command
-            const { stdout, stderr } = await execAsync(`${this.ordPath} --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet inscribe --fee-rate 2.5 --batch ${yamlFilePath}`);
+            const { stdout, stderr } = await execAsync(`${this.ordPath} --bitcoin-rpc-user ${this.rpcUser} --bitcoin-rpc-pass ${this.rpcPassword} --data-dir ${this.ordIndexPath} wallet inscribe --fee-rate 1.5 --batch ${yamlFilePath}`);
 
 
             // When inscribe command is successful, stdout should contain the inscription transaction details
