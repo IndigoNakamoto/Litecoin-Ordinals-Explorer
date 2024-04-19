@@ -10,12 +10,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const imageUrl = `${baseUrl}social_background2.jpg`;
 
   return {
-    title: 'OrdLite.io | Information and Stats for Ordinals on Litecoin',
-    description: `Explore Ordinals Lite Info: Discover current stats and facts about Ordinals on the Litecoin blockchain, featuring over 22 million inscriptions and 22 GB of data stored on-chain. Learn about the historical Inscription #0 and Litecoin's advanced features like MWEB and Taproot for improved privacy and scalability.`,
+    title: 'OrdLite.io | Information and Stats for Ordinals Lite',
+    description: `Stats & info on Litecoin Ordinals: inscriptions, storage, fees, media types.`,
     // OpenGraph Tags for better reach on social media
     openGraph: {
-      title: 'OrdLite.io | Information and Stats for Ordinals on Litecoin',
-      description: `Explore Ordinals Lite Info: Discover current stats and facts about Ordinals on the Litecoin blockchain, featuring over 22 million inscriptions and 22 GB of data stored on-chain. Learn about the historical Inscription #0 and Litecoin's advanced features like MWEB and Taproot for improved privacy and scalability.`,
+      title: 'OrdLite.io | Information and Stats for Ordinals Lite',
+      description: `Stats & info on Litecoin Ordinals: inscriptions, storage, fees, media types.`,
       url: `${baseUrl}`,
       images: [
         {
@@ -31,8 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       site: '@ordlite',
-      title: 'OrdLite.io | Information and Stats for Ordinals on Litecoin',
-      description: `Explore Ordinals Lite Info: Discover current stats and facts about Ordinals on the Litecoin blockchain, featuring over 22 million inscriptions and 22 GB of data stored on-chain. Learn about the historical Inscription #0 and Litecoin's advanced features like MWEB and Taproot for improved privacy and scalability.`,
+      title: 'OrdLite.io | Information and Stats for Ordinals Lite',
+      description: `Stats & info on Litecoin Ordinals: inscriptions, storage, fees, media types.`,
       images: [imageUrl],
       creator: '@ordlite'
     },
@@ -40,8 +40,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 function page() {
-  const title = 'OrdLite.io | Information and Stats for Ordinals on Litecoin';
-  const description = `Explore Ordinals Lite Info: Discover current stats and facts about Ordinals on the Litecoin blockchain, featuring over 22 million inscriptions and 22 GB of data stored on-chain. Learn about the historical Inscription #0 and Litecoin's advanced features like MWEB and Taproot for improved privacy and scalability.`
+  const title = 'OrdLite.io | Information and Stats for Ordinals Lite';
+  const description = `Stats & info on Litecoin Ordinals: inscriptions, storage, fees, media types.`
   return (
     <>
       <Head>

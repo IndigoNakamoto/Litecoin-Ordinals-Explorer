@@ -36,11 +36,11 @@ interface Inscription {
 
 // export const metadata: Metadata = {
 //   title: 'OrdLite.io | Ordinals Explorer for Litecoin',
-//   description: 'Explore the files secured by Ordinals on Litecoin - The most reliable blockchain with unmatched 100% uptime.',
+//   description: 'Explore the files secured by Ordinals Lite - The most reliable blockchain with unmatched 100% uptime.',
 //   twitter: {
 //     card: 'summary_large_image',
 //     title: 'OrdLite.io | Ordinals Explorer for Litecoin',
-//     description: 'Explore the files secured by Ordinals on Litecoin - The most reliable blockchain with unmatched 100% uptime.',
+//     description: 'Explore the files secured by Ordinals Lite - The most reliable blockchain with unmatched 100% uptime.',
 //     creator: '@ordlite',
 //     images: ['https://www.ordlite.io/social_background2.jpg'], // Must be an absolute URL
 //   },
@@ -54,11 +54,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: 'OrdLite.io | Ordinals Explorer for Litecoin',
-    description: 'Explore the files secured by Ordinals on Litecoin - The most reliable blockchain with unmatched 100% uptime.',
+    description: 'Explore the files secured by Ordinals Lite - The most reliable blockchain with unmatched 100% uptime.',
     // OpenGraph Tags for better reach on social media
     openGraph: {
       title: 'OrdLite.io | Ordinals Explorer for Litecoin',
-      description: 'Explore the files secured by Ordinals on Litecoin - The most reliable blockchain with unmatched 100% uptime.',
+      description: 'Explore the files secured by Ordinals Lite - The most reliable blockchain with unmatched 100% uptime.',
       url: `${baseUrl}`,
       images: [
         {
@@ -75,7 +75,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       site: '@ordlite',
       title: 'OrdLite.io | Ordinals Explorer for Litecoin',
-      description: 'Explore the files secured by Ordinals on Litecoin - The most reliable blockchain with unmatched 100% uptime.',
+      description: 'Explore the files secured by Ordinals Lite - The most reliable blockchain with unmatched 100% uptime.',
       images: [imageUrl],
       creator: '@ordlite'
     },
@@ -129,7 +129,7 @@ export default async function Page() {
   // const inscriptions:Inscription[] = []
   // Forward fetched data to your Client Component
   const title = 'OrdLite.io | Ordinals Explorer for Litecoin';
-  const description = 'Explore the files secured by Ordinals on Litecoin - The most reliable blockchain with unmatched 100% uptime.';
+  const description = 'Explore the files secured by Ordinals Lite - The most reliable blockchain with unmatched 100% uptime.';
   return (
     <>
       <Head>

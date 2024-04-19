@@ -151,7 +151,7 @@ export default function StatsPage() {
   }, [checkForNewBlock, fetchData]);
 
   const title = `Ordinals Lite Statistics | OrdLite.io`;
-  const description = 'Explore real-time stats of Ordinals on Litecoin. Secure, immutable, and decentralized network powered by Scrypt miners.';
+  const description = 'Explore real-time stats of Ordinals Lite. Secure, immutable, and decentralized network powered by Scrypt miners.';
 
   return (
     <div>

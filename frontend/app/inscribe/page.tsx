@@ -10,11 +10,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
     return {
         title: 'OrdLite.io | Inscribe on Litecoin with Ordinals',
-        description: `Upload and secure your files with Ordinals on Litecoin - The longest running public blockchain with 100% uptime.`,
+        description: `Upload and secure your files with Ordinals Lite - The longest running public blockchain with 100% uptime.`,
         // OpenGraph Tags for better reach on social media
         openGraph: {
             title: 'OrdLite.io | Inscribe on Litecoin with Ordinals',
-            description: `Upload and secure your files with Ordinals on Litecoin - The longest running public blockchain with 100% uptime.`,
+            description: `Upload and secure your files with Ordinals Lite - The longest running public blockchain with 100% uptime.`,
             url: `${baseUrl}`,
             images: [
                 {
@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
             card: 'summary_large_image',
             site: '@ordlite',
             title: 'OrdLite.io | Inscribe on Litecoin with Ordinals',
-            description: `Upload and secure your files with Ordinals on Litecoin - The longest running public blockchain with 100% uptime.`,
+            description: `Upload and secure your files with Ordinals Lite - The longest running public blockchain with 100% uptime.`,
             images: [imageUrl],
             creator: '@ordlite'
         },
@@ -40,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 function page() {
     const title = 'OrdLite.io | Inscribe on Litecoin with Ordinals';
-    const description = `Upload and secure your files with Ordinals on Litecoin - The longest running public blockchain with 100% uptime.`
+    const description = `Upload and secure your files with Ordinals Lite - The longest running public blockchain with 100% uptime.`
     return (
         <>
             <Head>
