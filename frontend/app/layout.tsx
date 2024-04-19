@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Menu from './components/menu';
-import StickyFooter from "./components/StickyFooter";
+// import StickyFooter from "./components/StickyFooter";
 import Footer from './components/Footer'
 // import Head from 'next/head'; // Import Head
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,6 +35,7 @@ export default function RootLayout({
             <Footer/>
           </div>
         </body>
+        <GoogleAnalytics gaId="G-Y984KPF2G9" />
       </html>
     </>
   );
