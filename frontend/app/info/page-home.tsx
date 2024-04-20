@@ -80,45 +80,53 @@ function StatsCard({ count, title }: StatsCardPropsType) {
 }
 
 
+const SkeletonLoader = ({ className, title }: { className: string, title: string }) => {
+  return (
+    <motion.div
+      className={`animate-pulse ${className} bg-black rounded w-60 max-h-max`}
+      initial={{ backgroundPosition: '0% 0' }}
+      animate={{ backgroundPosition: '100% 100%' }}
+      transition={{ repeat: Infinity, duration: .5, ease: 'linear' }}
+    >
+
+      <Typography
+        className="text-5xl md:text-5xl font-bold text-white" placeholder={undefined}        >
+        {0}
+      </Typography>
+
+      <Typography variant="h6" color="white" className="mt-1 font-medium mb-0 pb-0 text-white" placeholder={undefined}>
+        {title}
+      </Typography>
+    </motion.div>
+  );
+};
 
 
 export default function StatsPage() {
   const [contentTypeDistribution, setContentTypeDistribution] = useState<ContentTypeDistribution[]>([]);
   const [generalStats, setGeneralStats] = useState<GeneralStat>({});
   const [currentBlockHeight, setCurrentBlockHeight] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // State to track loading
 
   const fetchData = useCallback(async () => {
-
-    const totalStats = await fetchStats('stats/totals');
-
-
-    // Fetch each stat and update state accordingly
-
-    setGeneralStats(prevStats => ({
-      ...prevStats,
-      totalContentLength: totalStats.totalContentLength
-    }));
-
-    setGeneralStats(prevStats => ({
-      ...prevStats,
-      totalInscriptions: parseInt(totalStats.totalInscriptions)
-    }));
-
-    setGeneralStats(prevStats => ({
-      ...prevStats,
-      totalGenesisFee: parseInt(totalStats.totalGenesisFee)
-    }));
-
-    const distributionResponse = totalStats.contentTypesMapped
-    // Since the data is wrapped under a "distribution" key, extract it directly
-    if (distributionResponse && Array.isArray(distributionResponse)) {
-      setContentTypeDistribution(distributionResponse);
-    } else {
-      // console.error('Expected an array for content type distribution, received:', distributionResponse);
-      setContentTypeDistribution([]); // Fallback to an empty array
+    setIsLoading(true);
+    try {
+      const totalStats = await fetchStats('stats/totals');
+      // handle setting state based on fetched data
+      setGeneralStats({
+        totalContentLength: totalStats.totalContentLength,
+        totalInscriptions: parseInt(totalStats.totalInscriptions, 10),
+        totalGenesisFee: parseInt(totalStats.totalGenesisFee, 10),
+      });
+      setContentTypeDistribution(totalStats.contentTypesMapped || []);
+    } finally {
+      setIsLoading(false);
     }
-
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const fetchBlockHeight = async (): Promise<number | null> => {
     try {
@@ -168,6 +176,8 @@ export default function StatsPage() {
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content="https://www.ordlite.io/social_background2.jpg" />
       </Head>
+
+      {/* TODO: We want to refactor this whole section to use shimmer while waiting for the data to load using tailwind. Use Animate pulse. Create a skeleton.*/}
       <section className="container mx-auto grid gap-10 px-4 py-10 lg:grid-cols-1 lg:gap-16 lg:pt-14 xl:grid-cols-2 justify-between">
 
         <div className=''>
@@ -179,18 +189,27 @@ export default function StatsPage() {
           <Typography variant="lead" className="text-gray-500 pb-10" placeholder={undefined}>
             The current state of Ordinals on the Litecoin Blockchain
           </Typography>
-          <div className="grid grid-cols-1 gap-8 gap-x-28 text-white">
-            <StatsCard key="inscriptions" count={(generalStats.totalInscriptions ?? 0).toLocaleString()} title="Inscriptions" />
-            <StatsCard key="gbStoredData" count={String(formatBytesToGB(Number(generalStats.totalContentLength ?? 0)))} title="GB stored on-chain" />
-            <StatsCard key="ltcFeesPaid" count={String(formatLitsToLitecoin(Number(generalStats.totalGenesisFee ?? 0)))} title="LTC fees paid to Scrypt miners" />
-          </div>
-        </div>
 
+          {/* The numb */}
+          {isLoading ? (
+            <div className="grid grid-cols-1 gap-8 text-white">
+              <SkeletonLoader className="h-24" title='Inscriptions' />
+              <SkeletonLoader className="h-24" title='GB stored on-chain' />
+              <SkeletonLoader className="h-24" title='LTC fees paid to Scrypt miners' />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-8 gap-x-28 text-white">
+              <StatsCard key="inscriptions" count={(generalStats.totalInscriptions ?? 0).toLocaleString()} title="Inscriptions" />
+              <StatsCard key="gbStoredData" count={String(formatBytesToGB(Number(generalStats.totalContentLength ?? 0)))} title="GB stored on-chain" />
+              <StatsCard key="ltcFeesPaid" count={String(formatLitsToLitecoin(Number(generalStats.totalGenesisFee ?? 0)))} title="LTC fees paid to Scrypt miners" />
+            </div>
+          )}
+        </div>
         <div className='xl:py-14'>
-          {/* <Typography variant="h4" className="mb-6 underline underline-offset-1 text-white font-medium" placeholder={undefined}>
+          <Typography variant="h4" className="mb-6 underline underline-offset-1 text-white font-medium" placeholder={undefined}>
             File Count
-          </Typography> */}
-          <div className="grid grid-cols-2 md:grid-cols-2 gap-x-24 min-w-2xl max-w-3xl pt-16">
+          </Typography>
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-x-24 min-w-2xl max-w-3xl">
             {contentTypeDistribution.map((item) => (
               <motion.div
                 key={item.content_type_type}
@@ -208,6 +227,8 @@ export default function StatsPage() {
           </div>
         </div>
       </section>
+
+
       <section className="container mx-auto grid gap-10 lg:grid-cols-1 lg:gap-20 xl:grid-cols-1 p-4">
         <div>
           <Typography
@@ -225,11 +246,6 @@ export default function StatsPage() {
             className="mt-3 w-full !text-gray-500 lg:w-11/12" placeholder={undefined}          >
             The very first inscription, Inscription #0, featured on Litecoin was the groundbreaking Mimblewimble White Paper, heralding a significant evolution in Litecoin&apos;s capabilities. With the activation of MWEB and Taproot at block 2,257,920, Litecoin has transformed into a fully integrated digital currency, enhancing user privacy, scalability, and security through specialized block space dedicated to Fungible Transactions.
           </Typography>
-          {/* <Typography
-            variant="lead"
-            className="mt-3 w-full !text-gray-500 lg:w-11/12" placeholder={undefined}          >
-            Introducing the groundbreaking Mimblewimble Extension Block (MWEB) feature, Litecoin has set a new standard for transaction privacy and efficiency. By allocating a highly prunable block space for fungible transactions, MWEB cleverly removes competition for space within the base and the SegWit blocks, which are crucial for the support of ordinals. This innovation not only enhances transaction privacy but also optimizes the network&apos;s overall performance and scalability.
-          </Typography> */}
         </div>
         <div className="w-full bg-black">
           <Typography variant="h4" className="mb-6 text-white underline underline-offset-1 font-medium" placeholder={undefined}>
