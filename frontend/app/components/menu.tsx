@@ -24,7 +24,7 @@ const Menu = () => {
 
 
   const handleButtonClick = () => {
-    sendGAEvent({event: 'connect_wallet', category: 'user', value: 'connect wallet'})
+    sendGAEvent({ event: 'connect_wallet', category: 'user', value: 'connect wallet' })
     setIsModalOpen(true);
   };
   const toggleMobileMenu = () => {
@@ -127,11 +127,11 @@ const Menu = () => {
       {showMobileMenu && (
         <div className="fixed top-0 left-0 flex flex-col w-screen h-screen bg-black bg-opacity-50 backdrop-filter backdrop-blur-3xl z-50 ">
           <div className='w-full p-4 flex justify-end'>
-          <IconButton variant="gradient" onClick={toggleMobileMenu} className="lg:hidden m-4 justify-end" placeholder={undefined}>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-          </IconButton>
+            <IconButton variant="gradient" onClick={toggleMobileMenu} className="lg:hidden m-4 justify-end" placeholder={undefined}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
+            </IconButton>
           </div>
           <div className="p-10 pt-20">
             {/* I want this IconButton */}
@@ -150,7 +150,11 @@ const Menu = () => {
                     Info
                   </Link>
                 </div>
-
+                <div className="flex-initial">
+                  <Link href="/inscribe" passHref onClick={toggleMobileMenu} className="hover:text-blue-600 text-white font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
+                    Inscribe
+                  </Link>
+                </div>
                 <div className="flex-initial">
                   <Link href="https://ynohtna92.github.io/ord-litecoin/" passHref target="_blank" className="hover:text-blue-600 text-white font-semibold py-2 px-4 rounded-xl  transition-colors duration-300 ease-in-out">
                     Get Started
@@ -181,7 +185,7 @@ const Menu = () => {
                     />
                   </IconButton>
                 </Link>
-                <Link href="https://x.com/ordlite" target="_blank"  passHref>
+                <Link href="https://x.com/ordlite" target="_blank" passHref>
                   <IconButton variant="gradient" className="rounded-full bg-gradient-to-br from-white to-gray-500" placeholder={undefined}>
                     <Image
                       src="/logos/x.svg"
