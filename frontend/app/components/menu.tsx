@@ -5,6 +5,7 @@ import Image from "next/legacy/image"; // Import Next.js Image component for opt
 import { Button, IconButton } from "@material-tailwind/react";
 import ConnectModal from './ConnectModal';
 import { ProfileMenu } from './ProfileMenu';
+import { sendGAEvent } from '@next/third-parties/google'
 
 const Menu = () => {
   const [connected, setConnected] = useState('false');
@@ -23,6 +24,7 @@ const Menu = () => {
 
 
   const handleButtonClick = () => {
+    sendGAEvent({event: 'connect_wallet', category: 'user', value: 'connect wallet'})
     setIsModalOpen(true);
   };
   const toggleMobileMenu = () => {

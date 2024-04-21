@@ -12,6 +12,7 @@ import {
 } from "@material-tailwind/react";
 
 import Image from 'next/image';
+import { sendGAEvent } from '@next/third-parties/google'
 
 
 interface ModalProps {
@@ -76,10 +77,11 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 // Check if the request was successful
                 if (response.ok) {
                     // Account created successfully
-                    const newAccount = await response.json();
+                    // const newAccount = await response.json();
                     localStorage.setItem('connected', 'true');
                     localStorage.setItem('provider', 'litescribe')
                     localStorage.setItem('username', requestedAccounts[0]);
+                    sendGAEvent({event: 'wallet_connected', category: 'user', value: requestedAccounts[0]})
                     window.location.href = '/account';
                     // console.log('New account created:', newAccount);
                     // Do something with the newly created account if needed
@@ -155,14 +157,6 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 </div>
 
             </DialogBody>
-            {/* <DialogFooter className="justify-between gap-2">
-                <Typography variant="small" color="gray" className="font-normal">
-                    New to Litecoin wallets?
-                </Typography>
-                <Button variant="outlined" size="sm">
-                    Learn More
-                </Button>
-            </DialogFooter> */}
         </Dialog>
     );
 };
