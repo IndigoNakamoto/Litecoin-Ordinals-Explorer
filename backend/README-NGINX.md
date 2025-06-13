@@ -1,7 +1,7 @@
 # NGINX config 
 
 server {
-    server_name ordlite.io www.ordlite.io;
+    server_name Litecoin-Ordinals-Explorer www.Litecoin-Ordinals-Explorer;
 
     location / {
         proxy_pass http://localhost:3000; # Assuming your Next.js app runs on port 3000
@@ -13,26 +13,26 @@ server {
     }
 
     listen 443 ssl; # managed by Certbot
-    ssl_certificate /etc/letsencrypt/live/ordlite.io/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/ordlite.io/privkey.pem; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/Litecoin-Ordinals-Explorer/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/Litecoin-Ordinals-Explorer/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 
 
 }
 server {
-    if ($host = www.ordlite.io) {
+    if ($host = www.Litecoin-Ordinals-Explorer) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
 
-    if ($host = ordlite.io) {
+    if ($host = Litecoin-Ordinals-Explorer) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
 
     listen 80;
-    server_name ordlite.io www.ordlite.io;
+    server_name Litecoin-Ordinals-Explorer www.Litecoin-Ordinals-Explorer;
     return 404; # managed by Certbot
 
 
@@ -41,7 +41,7 @@ server {
 }
 server {
     listen 8080;
-    server_name ordlite.io www.ordlite.io;
+    server_name Litecoin-Ordinals-Explorer www.Litecoin-Ordinals-Explorer;
 
     location / {
         proxy_pass http://localhost:3000; # Your Next.js application
@@ -54,6 +54,3 @@ server {
 
     # Your SSL configurations for HTTPS will remain in the server block that listens on 443
 }
-
-
-

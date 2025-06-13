@@ -26,12 +26,12 @@ Before you begin, ensure you have the following installed:
 ## 3. Getting Started / Local Development Setup
 
 ### 3.1. Clone the Repository
-Clone the main ordlite.io repository or your fork:
+Clone the main Litecoin-Ordinals-Explorer repository or your fork:
 ```bash
-git clone https://github.com/your-username/ordlite.io.git # Example: your fork
+git clone https://github.com/your-username/Litecoin-Ordinals-Explorer.git # Example: your fork
 # or
-# git clone https://github.com/official-ordlite-repo/ordlite.io.git # Replace with the actual main repository URL
-cd ordlite.io/backend
+# git clone https://github.com/IndigoNakamoto/Litecoin-Ordinals-Explorer.git # Replace with the actual main repository URL
+cd Litecoin-Ordinals-Explorer/backend
 ```
 
 ### 3.2. Install Dependencies
@@ -201,12 +201,12 @@ This is a basic guide for deploying the backend to a Virtual Private Server (VPS
 Ensure Docker, Docker Compose, Git, Node.js, Litecoin Core (`litecoind`), and `ord` are installed and configured on your VPS.
 
 ### 7.2. Clone Project
-Clone the main ordlite.io repository or your fork:
+Clone the main Litecoin-Ordinals-Explorer repository or your fork:
 ```bash
-git clone https://github.com/your-username/ordlite.io.git # Example: your fork
+git clone https://github.com/your-username/Litecoin-Ordinals-Explorer.git # Example: your fork
 # or
-# git clone https://github.com/official-ordlite-repo/ordlite.io.git # Replace with the actual main repository URL
-cd ordlite.io/backend
+# git clone https://github.com/IndigoNakamoto/Litecoin-Ordinals-Explorer.git # Replace with the actual main repository URL
+cd Litecoin-Ordinals-Explorer/backend
 ```
 
 ### 7.3. Configuration

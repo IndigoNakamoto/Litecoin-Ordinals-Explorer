@@ -38,7 +38,6 @@ const storage = multer.diskStorage({
     });
   
     // Create invoice
-    // https://www.payment.ordlite.io/api/v1/stores/{storeId}/invoices
     // send invoice to client
   
     // Inscribe manager will poll for new invoices every 5 seconds

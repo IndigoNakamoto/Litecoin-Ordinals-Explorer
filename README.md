@@ -8,7 +8,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contributing
 
-Contributions are welcome! If you'd like to contribute to ordlite.io, please follow these general guidelines:
+Contributions are welcome! If you'd like to contribute to Litecoin-Ordinals-Explorer, please follow these general guidelines:
 
 1.  Fork the repository.
 2.  Create a new branch for your feature or bug fix (`git checkout -b feature/your-feature-name`).
