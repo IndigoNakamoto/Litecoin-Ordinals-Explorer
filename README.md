@@ -2,7 +2,7 @@
 
 > **⚠️ Project Archived ⚠️**
 >
-> This project is no longer actively maintained. The code is provided as-is for educational and archival purposes. The live site at OrdLite.io is no longer active. Pull requests and issues will not be reviewed. Feel free to fork the repository for your own use.
+> This project is no longer actively maintained. The code is provided as-is for educational and archival purposes. The live site at OrdLite.io is no longer active or associated with this project. Pull requests and issues will not be reviewed. Feel free to fork the repository for your own use.
 
 ## Project History
 
