@@ -88,7 +88,7 @@ docker compose --profile litecoin up -d --build
   - `LITECOIN_RPC_USER` / `LITECOIN_RPC_PASS` = `litecoin` / `litecoin` for this compose stack
 
 - **ord-litecoin image:** Compose **builds** from **[ynohtna92/ord-litecoin](https://github.com/ynohtna92/ord-litecoin)** using the repo’s `Dockerfile` (default git ref **`0.20.1-litecoin`**; override with **`ORD_LITECOIN_GIT_REF`** in `backend/docker/.env`). There is no reliance on third-party Docker Hub mirrors. **First `up --build`** compiles Rust (`cargo build --release`) — expect several minutes and high CPU; after that the tagged image is reused. On **Apple Silicon**, the binary is **native ARM64** inside the container. **`ORD_LITECOIN_GIT_REF`** is also used as the Docker **image tag**; prefer **tags or commit SHAs**, not branch names containing **`/`**.
-- **`litecoind`:** no `platform:` pin; see `docker image inspect litecoinproject/litecoin-core:latest` for `Architecture` if you need to confirm amd64 vs arm64.
+- **`litecoind`:** [`litecoinproject/litecoin-core:latest`](https://hub.docker.com/r/litecoinproject/litecoin-core) is **linux/amd64** only (no arm64 in the manifest). Compose sets **`platform: linux/amd64`** so Docker Desktop on Apple Silicon **emulates** x86_64 instead of printing a mismatch warning. For a **native** node on an M-series Mac, run `litecoind` on the host and point ord at its RPC instead of this service.
 
 ## Mainnet / testnet
 

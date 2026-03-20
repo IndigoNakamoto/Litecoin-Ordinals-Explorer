@@ -54,6 +54,8 @@ services:
   # Litecoin Core regtest + ord-litecoin HTTP API (profile: litecoin)
   litecoind:
     profiles: ["litecoin"]
+    # Hub tag is single-arch linux/amd64 only; set platform so Apple Silicon doesn't warn and emulates explicitly.
+    platform: linux/amd64
     image: litecoinproject/litecoin-core:latest
     # Image entrypoint always appends -datadir="$LITECOIN_DATA" LAST (overrides inline -datadir).
     environment:
