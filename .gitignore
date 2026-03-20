@@ -1,4 +1,6 @@
 backend/node_modules
+# Never commit secrets — root .env was accidentally in the initial commit; rotate any keys that were in it.
+/.env
 backend/.env
 backend/uploads
 database
