@@ -15,6 +15,43 @@ alwaysApply: false
   - **`litecoin`**: **regtest** + ord on **8080** / RPC **19443** for fast local iteration.
   - **BTCPay:** `backend/docker/btcpay/README.md`.
 
+### Mainnet suggested flow (IBD → ord)
+
+Use profile **`litecoin-mainnet`**. IBD needs **large disk** and **a long time**; ord builds its own index in a separate volume.
+
+1. **Node only** (let Core sync without ord):
+
+   ```bash
+   docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d litecoind-mainnet
+   # or: bash scripts/docker-explorer-compose.sh --profile litecoin-mainnet up -d litecoind-mainnet
+   ```
+
+2. **When chain progress is far enough** (RPC stable; sync may still be running), **start ord**:
+
+   ```bash
+   docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d ord-litecoin-mainnet
+   # or: bash scripts/docker-explorer-compose.sh --profile litecoin-mainnet up -d ord-litecoin-mainnet
+   ```
+
+   First time ord may need **`--build`** if the image does not exist yet.
+
+3. **Or everything at once:** ord **waits** on the node Compose **healthcheck** (RPC up — not “fully synced”):
+
+   ```bash
+   docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d --build
+   ```
+
+**`backend/.env`** for this profile (defaults match compose **dev** credentials; change beyond local):
+
+```env
+ORD_LITECOIN_URL=http://127.0.0.1:8081
+LITECOIN_RPC_PORT=9332
+LITECOIN_RPC_USER=litecoin
+LITECOIN_RPC_PASS=litecoin
+```
+
+If **`LITECOIN_MAINNET_ORD_HTTP_PORT`** in `backend/docker/.env` is not **8081**, set **`ORD_LITECOIN_URL`** to that host port. Longer context: **`backend/docker/README.md`**, **`MISSION_CONTROL.md`**.
+
 ## Commands
 
 All **`docker compose`** examples assume **repository root** as cwd (or use the wrapper).
