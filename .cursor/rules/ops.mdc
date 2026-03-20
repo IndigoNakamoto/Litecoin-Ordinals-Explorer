@@ -8,17 +8,19 @@ alwaysApply: false
 
 ## Stack
 
-- Postgres for local/dev is in **`backend/docker/docker-compose.yml`** (published on host **`15432`** by default via **`EXPLORER_POSTGRES_PORT`**, so **5432** stays free for other projects). Litecoin + **ord-litecoin**: profile **`litecoin`**. BTCPay: **`backend/docker/btcpay/README.md`**.
+- **Compose files:** `backend/docker/docker-compose.yml` (project **`litecoin-ordinals-dev`**) and `test-docker-compose.yml` (**`litecoin-ordinals-test`**). Do not rely on the implicit folder name `docker` as the project name.
+- **Postgres host port** defaults to **`15432`** (`EXPLORER_POSTGRES_PORT` in `backend/docker/.env`). **`DATABASE_URL`** in `backend/.env` must be a full URL (`postgresql://user:pass@127.0.0.1:<port>/db`) matching that port.
+- **Litecoin + ord:** compose profile **`litecoin`**. **BTCPay:** `backend/docker/btcpay/README.md`.
 
-## Health and verification
+## Commands
 
-- **`scripts/health-check.sh`**: Docker postgres up + Prisma DB reachability (uses `DATABASE_URL` or compose-default URL).
-- **`scripts/verify-inscription-gate.sh`**: ord-litecoin HTTP smoke + `prisma validate` + optional inscription id check.
+- From repo root: **`bash scripts/docker-explorer-compose.sh …`** (wraps `docker compose -f backend/docker/docker-compose.yml`).
+- **`scripts/health-check.sh`** / **`verify-inscription-gate.sh`** load **`backend/docker/.env`** when present so the DB port matches compose.
 
 ## Secrets
 
-- No RPC passwords, BTCPay secrets, or webhook secrets in git. Use env files (gitignored) and reference variable names only in docs.
+- No real passwords or webhook secrets in git; use gitignored **`.env`** files.
 
-## CI suggestion
+## CI
 
-- Run `bash scripts/health-check.sh` and `bash scripts/verify-inscription-gate.sh` in CI when `ORD_LITECOIN_URL` (and DB) are available; otherwise run `prisma validate` only jobs.
+- Run health + verify scripts when DB and ord are available; otherwise at least **`npx prisma validate`** in `backend/`.

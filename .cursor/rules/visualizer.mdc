@@ -9,6 +9,7 @@ alwaysApply: false
 ## Data contracts
 
 - Prefer API responses that match **Prisma / documented DTOs**. Do not assume legacy Sequelize fields (e.g. `User.address` where the schema uses `email`).
+- **JSON shapes:** backends may return **`{ error }`** or non-array bodies. For list UIs, normalize with **`Array.isArray`** before spread/`map` (see `app/page-home.tsx`).
 - When wiring forms or types, check **`backend/prisma/schema.prisma`** and backend route handlers—not only `frontend/types.ts`.
 
 ## UX
