@@ -115,6 +115,16 @@ docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet u
 1. **`litecoind-mainnet`** downloads and validates the **mainnet** chain with **`-txindex=1`** (large disk; think **100+ GB** and hours to days depending on CPU/disk). RPC is **`127.0.0.1:9332`**; data is in Docker volume **`litecoin_mainnet`**.
 2. After the node is **healthy** (RPC answering `getblockcount`), **`ord-litecoin-mainnet`** starts and builds its own index in volume **`ord_litecoin_mainnet_data`**. HTTP is **`http://127.0.0.1:8081`** by default (regtest ord stays on **8080** if you use that profile separately).
 
+### Docker Desktop: “No space left on device” (macOS / Windows)
+
+If Litecoin logs show **`Fatal LevelDB error` … `No space left on device`** under **`/data/indexes/txindex`** but **Finder still shows free space on the Mac**, the limit is almost always **Docker’s virtual disk**, not the whole drive.
+
+1. **Docker Desktop** → **Settings** → **Resources** → increase **Disk image size** (or **Virtual disk limit**). Plan for **mainnet + `txindex` + ord index + images**: **≥ 250 GB** is safer than “just enough”; **512 GB** if you keep other large images/volumes.
+2. **Apply & restart** Docker Desktop.
+3. **Free space inside Docker** (optional, before expanding): `docker builder prune` and `docker image prune` reclaim build cache and unused images — does **not** shrink the Litecoin volume, but helps on tight setups.
+
+After a crash from disk full, the **txindex** LevelDB may be **corrupt**. If the node won’t start cleanly: stop the container, expand disk, then either run **`litecoin-cli -reindex`** (slow) or **remove** volume **`litecoin_mainnet`** and **resync from scratch** (nuclear). Back up nothing you can’t re-download.
+
 **Backend `backend/.env`** when using this profile:
 
 - `ORD_LITECOIN_URL=http://127.0.0.1:8081` (or your **`LITECOIN_MAINNET_ORD_HTTP_PORT`**)
