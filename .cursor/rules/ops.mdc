@@ -17,8 +17,31 @@ alwaysApply: false
 
 ## Commands
 
-- From repo root: **`bash scripts/docker-explorer-compose.sh …`** (wraps `docker compose -f backend/docker/docker-compose.yml`).
-- **`scripts/health-check.sh`** / **`verify-inscription-gate.sh`** load **`backend/docker/.env`** when present so the DB port matches compose.
+All **`docker compose`** examples assume **repository root** as cwd (or use the wrapper).
+
+### Wrapper (preferred)
+
+- **`bash scripts/docker-explorer-compose.sh up -d postgres`** — dev DB only.
+- **`bash scripts/docker-explorer-compose.sh --profile litecoin-mainnet up -d litecoind-mainnet`** — mainnet node only (IBD).
+- **`bash scripts/docker-explorer-compose.sh --profile litecoin-mainnet up -d ord-litecoin-mainnet`** — start **ord** after the node is up (same profile; builds/pulls image if needed).
+- **`bash scripts/docker-explorer-compose.sh --profile litecoin-mainnet up -d --build`** — Postgres + mainnet node + ord (ord waits on node healthcheck; first ord build can take minutes).
+- **`bash scripts/docker-explorer-compose.sh --profile litecoin up -d --build`** — regtest **`litecoind`** + **`ord-litecoin`** (**8080**).
+
+### Raw `docker compose` (equivalent)
+
+```bash
+docker compose -f backend/docker/docker-compose.yml up -d postgres
+docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d litecoind-mainnet
+docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d ord-litecoin-mainnet
+docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d --build
+docker compose -f backend/docker/docker-compose.yml --profile litecoin up -d --build
+```
+
+### Handy
+
+- **Recreate mainnet node:** add **`--force-recreate litecoind-mainnet`** to the same `up` line.
+- **Logs:** `docker compose -f backend/docker/docker-compose.yml logs -f litecoind-mainnet` or **`ord-litecoin-mainnet`**.
+- **`scripts/health-check.sh`** / **`verify-inscription-gate.sh`** load **`backend/docker/.env`** when present so the DB port matches compose; for the gate, set **`ORD_LITECOIN_URL`** (e.g. **8081** mainnet ord, **8080** regtest).
 
 ## Secrets
 
