@@ -18,8 +18,9 @@
 #       - "-c"
 #       - "shared_buffers=${POSTGRES_SHARED_BUFFERS}"  # Pass shared_buffers value as a command line argument
 
-# Default: Postgres only. Add Litecoin + ord indexer:
-#   docker compose --profile litecoin up -d
+# Default: Postgres only.
+#   Regtest (local dev):  docker compose --profile litecoin up -d
+#   Mainnet (real sync): docker compose --profile litecoin-mainnet up -d --build
 #
 # Host port for Postgres defaults to 15432 so another project's :5432 does not conflict.
 # Override in backend/docker/.env: EXPLORER_POSTGRES_PORT=5432
@@ -122,6 +123,72 @@ services:
       - server
       - --http-port=80
 
+  # --- Mainnet: full Litecoin chain sync + ord (separate volumes and ports from regtest) ---
+  litecoind-mainnet:
+    profiles: ["litecoin-mainnet"]
+    platform: linux/amd64
+    image: litecoinproject/litecoin-core:latest
+    environment:
+      LITECOIN_DATA: /data
+    volumes:
+      - litecoin_mainnet:/data
+    ports:
+      - "${LITECOIN_MAINNET_RPC_PORT:-9332}:9332"
+      - "${LITECOIN_MAINNET_P2P_PORT:-9333}:9333"
+    command:
+      - litecoind
+      - -printtoconsole
+      - -txindex=1
+      - -server=1
+      - -rpcbind=0.0.0.0
+      - -rpcport=9332
+      - -rpcallowip=0.0.0.0/0
+      - -rpcuser=litecoin
+      - -rpcpassword=litecoin
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "litecoin-cli",
+          "-datadir=/data",
+          "-rpcconnect=127.0.0.1",
+          "-rpcport=9332",
+          "-rpcuser=litecoin",
+          "-rpcpassword=litecoin",
+          "getblockcount",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  ord-litecoin-mainnet:
+    profiles: ["litecoin-mainnet"]
+    build:
+      context: https://github.com/ynohtna92/ord-litecoin.git#${ORD_LITECOIN_GIT_REF:-0.20.1-litecoin}
+      dockerfile: Dockerfile
+    image: litecoin-ordinals-dev-ord-litecoin:${ORD_LITECOIN_GIT_REF:-0.20.1-litecoin}
+    depends_on:
+      litecoind-mainnet:
+        condition: service_healthy
+    volumes:
+      - ord_litecoin_mainnet_data:/data
+    ports:
+      - "${LITECOIN_MAINNET_ORD_HTTP_PORT:-8081}:80"
+    environment:
+      RUST_LOG: ${RUST_LOG:-info}
+    command:
+      - /usr/local/bin/ord
+      - --chain=mainnet
+      - --litecoin-rpc-url=http://litecoind-mainnet:9332
+      - --litecoin-rpc-username=litecoin
+      - --litecoin-rpc-password=litecoin
+      - --data-dir=/data
+      - server
+      - --http-port=80
+
 volumes:
   litecoin_regtest:
   ord_litecoin_data:
+  litecoin_mainnet:
+  ord_litecoin_mainnet_data:

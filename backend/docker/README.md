@@ -4,7 +4,7 @@
 
 | File | Purpose |
 |------|--------|
-| **`docker-compose.yml`** | Primary dev DB (**Postgres on host `15432` by default**) and optional **`litecoin` profile** (`litecoind` + `ord-litecoin`). |
+| **`docker-compose.yml`** | Primary dev DB (**Postgres `15432`**) and optional **`litecoin`** (regtest) or **`litecoin-mainnet`** (real chain sync + ord). |
 | **`test-docker-compose.yml`** | Secondary Postgres for tests (**host `5444`** → container `5432`), user/db `test` / `test`. Does **not** start Litecoin or ord. |
 
 Each file sets a **different Compose project name** (`litecoin-ordinals-dev` vs `litecoin-ordinals-test`), so you never get two unrelated files fighting over the same container name (`docker-postgres-1`).
@@ -19,8 +19,11 @@ bash scripts/docker-explorer-compose.sh up -d postgres
 # Main dev (Postgres only) — container like litecoin-ordinals-dev-postgres-1, host port 15432
 docker compose -f docker-compose.yml up -d postgres
 
-# Optional: regtest + ord (same file, extra services)
+# Optional: regtest + ord (instant local chain)
 docker compose -f docker-compose.yml --profile litecoin up -d
+
+# Optional: mainnet Litecoin Core + ord (IBD + ord index — see "Mainnet" section below)
+docker compose -f docker-compose.yml --profile litecoin-mainnet up -d --build
 
 # Test DB — container like litecoin-ordinals-test-postgres-1, host port 5444
 docker compose -f test-docker-compose.yml up -d
@@ -40,6 +43,9 @@ When **other** containers are already on your machine (BTCPay, another Postgres,
 | **8080** | `ord-litecoin` HTTP |
 | **19443** | `litecoind` RPC (regtest) |
 | **19444** | `litecoind` P2P (regtest) |
+| **9332** | `litecoind-mainnet` RPC — override with **`LITECOIN_MAINNET_RPC_PORT`** in `backend/docker/.env` if in use |
+| **9333** | `litecoind-mainnet` P2P — override with **`LITECOIN_MAINNET_P2P_PORT`** |
+| **8081** | `ord-litecoin-mainnet` HTTP — override with **`LITECOIN_MAINNET_ORD_HTTP_PORT`** |
 | **5444** | `postgres` in **`test-docker-compose.yml`** only |
 
 BTCPay’s official stack typically wants **80/443** and its own Postgres/NBXplorer — run it as a **separate compose project** (different directory or `COMPOSE_PROJECT_NAME`) and point the explorer backend at your ord/LTC RPC URLs over the Docker bridge or `host.docker.internal`. See **`btcpay/README.md`**.
@@ -90,13 +96,42 @@ docker compose --profile litecoin up -d --build
 - **ord-litecoin image:** Compose **builds** from **[ynohtna92/ord-litecoin](https://github.com/ynohtna92/ord-litecoin)** using the repo’s `Dockerfile` (default git ref **`0.20.1-litecoin`**; override with **`ORD_LITECOIN_GIT_REF`** in `backend/docker/.env`). There is no reliance on third-party Docker Hub mirrors. **First `up --build`** compiles Rust (`cargo build --release`) — expect several minutes and high CPU; after that the tagged image is reused. On **Apple Silicon**, the binary is **native ARM64** inside the container. **`ORD_LITECOIN_GIT_REF`** is also used as the Docker **image tag**; prefer **tags or commit SHAs**, not branch names containing **`/`**.
 - **`litecoind`:** [`litecoinproject/litecoin-core:latest`](https://hub.docker.com/r/litecoinproject/litecoin-core) is **linux/amd64** only (no arm64 in the manifest). Compose sets **`platform: linux/amd64`** so Docker Desktop on Apple Silicon **emulates** x86_64 instead of printing a mismatch warning. For a **native** node on an M-series Mac, run `litecoind` on the host and point ord at its RPC instead of this service.
 
-## Mainnet / testnet
+## Litecoin Core mainnet + ord (profile `litecoin-mainnet`)
 
-Do **not** use this compose file for production mainnet without hardening (credentials, firewall, resource limits). For mainnet you would typically:
+Use this when you want a **real chain sync** first (IBD), then **ord** indexing the same node.
 
-1. Run Litecoin Core with `-txindex=1`, sync the chain, secure RPC.
-2. Point ord-litecoin at that node (`--litecoin-rpc-url`, and remove `--regtest`).
-3. Set `LITECOIN_RPC_PORT` (e.g. **9332** mainnet) and `ORD_LITECOIN_URL` to your ord HTTP URL.
+```bash
+# From repo root (recommended)
+docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d --build
+
+# Chain only (no ord yet): let the node sync before starting the indexer API
+docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d litecoind-mainnet
+# Later:
+docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d ord-litecoin-mainnet
+```
+
+**What happens**
+
+1. **`litecoind-mainnet`** downloads and validates the **mainnet** chain with **`-txindex=1`** (large disk; think **100+ GB** and hours to days depending on CPU/disk). RPC is **`127.0.0.1:9332`**; data is in Docker volume **`litecoin_mainnet`**.
+2. After the node is **healthy** (RPC answering `getblockcount`), **`ord-litecoin-mainnet`** starts and builds its own index in volume **`ord_litecoin_mainnet_data`**. HTTP is **`http://127.0.0.1:8081`** by default (regtest ord stays on **8080** if you use that profile separately).
+
+**Backend `backend/.env`** when using this profile:
+
+- `ORD_LITECOIN_URL=http://127.0.0.1:8081` (or your **`LITECOIN_MAINNET_ORD_HTTP_PORT`**)
+- `LITECOIN_RPC_PORT=9332`
+- `LITECOIN_RPC_USER` / `LITECOIN_RPC_PASS` = `litecoin` / `litecoin` (change for anything beyond local dev)
+
+**Apple Silicon:** `litecoind-mainnet` uses the **amd64** Hub image under emulation — **mainnet IBD will be slow**. For serious sync, prefer **native** Litecoin Core on the host and point ord at `host.docker.internal:9332` (advanced; not wired in this compose file).
+
+**Security:** default RPC user/pass and `rpcallowip` are **dev-only**. Do **not** expose **9332** to the internet.
+
+## Mainnet / testnet (BYO node)
+
+Do **not** use this compose for **production** mainnet without hardening. If you run your own Core + ord outside Docker:
+
+1. Litecoin Core with **`-txindex=1`**, sync, secure RPC.
+2. ord with **`--chain mainnet`** and **`--litecoin-rpc-url`**.
+3. Set `LITECOIN_RPC_PORT` (e.g. **9332**) and `ORD_LITECOIN_URL` to your ord HTTP URL.
 
 ## BTCPay Server
 
