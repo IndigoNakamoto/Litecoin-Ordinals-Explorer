@@ -1,0 +1,30 @@
+---
+description: "@Inscriber — BTCPay webhooks, ord-litecoin client, inscription jobs"
+globs: backend/app/services/**/*.ts,backend/src/inscribe*.ts,backend/**/ord-litecoin.ts
+alwaysApply: false
+---
+
+# Inscriber (@Inscriber)
+
+## Before you edit
+
+- Run **`scripts/verify-inscription-gate.sh`** (and **`scripts/health-check.sh`** if DB checks are needed) before changing:
+  - `backend/app/utils/ord-litecoin.ts` or `backend/util/ord-litecoin.ts`
+  - `backend/src/prismaInscriptionUpdater.ts`
+  - `backend/app/services/InscribeService.ts`
+  - `backend/prisma/schema.prisma` or `backend/prisma/migrations/**`
+
+## BTCPay webhooks
+
+- Verify **HMAC** against the **raw request body** BTCPay signed—not a re-serialized `JSON.stringify` of `body` (whitespace/order breaks verification).
+- Handle webhooks **idempotently** (retries are normal).
+- **`subscribeToWebhook`** must use a full base URL for the BTCPay host (no bare `/api/v1/...` without `axios` `baseURL`).
+
+## Inscription pipeline
+
+- **`inscribeFiles` and related stubs are not production** until implemented: logging only is insufficient.
+- **`Invoice` / `File`**: Sequelize `File.invoiceId` references internal `Invoice.id` (integer); BTCPay’s id string maps to **`Invoice.invoiceId`**—keep that distinction explicit.
+
+## ord-litecoin
+
+- Ordinal rules live in the **ord-litecoin HTTP service**, not in this repo’s fetch helpers; helpers must stay thin and env-driven (`ORD_LITECOIN_URL`).

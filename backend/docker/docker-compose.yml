@@ -18,7 +18,10 @@
 #       - "-c"
 #       - "shared_buffers=${POSTGRES_SHARED_BUFFERS}"  # Pass shared_buffers value as a command line argument
 
-version: '3'
+# Default: Postgres only. Add Litecoin + ord indexer:
+#   docker compose --profile litecoin up -d
+#
+# See README.md in this directory and backend/docker/btcpay/README.md for BTCPay.
 
 services:
   postgres:
@@ -40,13 +43,68 @@ services:
       - "shared_buffers=128000"
       - "-c"
       - "work_mem=256000"
-      
-  # litecoind:
-  #   image: litecoinproject/litecoin-core
-  #   command:
-  #     - -printtoconsole
-  #     - -regtest=1
-  #     - -txindex=1
-  #     - -server=1
-  #     - -rpcserialversion=1
-  #     - -rpcallowip=127.0.0.1
+
+  # Litecoin Core regtest + ord-litecoin HTTP API (profile: litecoin)
+  litecoind:
+    profiles: ["litecoin"]
+    image: litecoinproject/litecoin-core:latest
+    volumes:
+      - litecoin_regtest:/data
+    ports:
+      - "19443:19443"
+      - "19444:19444"
+    command:
+      - litecoind
+      - -printtoconsole
+      - -regtest=1
+      - -txindex=1
+      - -server=1
+      - -datadir=/data
+      - -rpcbind=0.0.0.0
+      - -rpcport=19443
+      - -rpcallowip=0.0.0.0/0
+      - -rpcuser=litecoin
+      - -rpcpassword=litecoin
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "litecoin-cli",
+          "-regtest",
+          "-rpcconnect=127.0.0.1",
+          "-rpcport=19443",
+          "-rpcuser=litecoin",
+          "-rpcpassword=litecoin",
+          "getblockcount",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 6
+      start_period: 20s
+
+  ord-litecoin:
+    profiles: ["litecoin"]
+    # linux/amd64 image; on Apple Silicon Docker runs via emulation unless you build locally.
+    image: fiftysix/ord-litecoin:0.20.1
+    depends_on:
+      litecoind:
+        condition: service_healthy
+    volumes:
+      - ord_litecoin_data:/data
+    ports:
+      - "8080:80"
+    environment:
+      RUST_LOG: ${RUST_LOG:-info}
+      ORD_LITECOIN_RPC_USERNAME: litecoin
+      ORD_LITECOIN_RPC_PASSWORD: litecoin
+    command:
+      - /usr/local/bin/ord
+      - --regtest
+      - --litecoin-rpc-url=http://litecoind:19443
+      - --data-dir=/data
+      - server
+      - --http-port=80
+
+volumes:
+  litecoin_regtest:
+  ord_litecoin_data:

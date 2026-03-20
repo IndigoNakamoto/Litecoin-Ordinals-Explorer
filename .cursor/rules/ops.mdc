@@ -1,0 +1,24 @@
+---
+description: "@Ops — Docker, env, health checks, CI"
+globs: backend/docker/**/*,scripts/**/*,.github/**/*,**/Dockerfile*
+alwaysApply: false
+---
+
+# Ops (@Ops)
+
+## Stack
+
+- Postgres for local/dev is defined in **`backend/docker/docker-compose.yml`** (service **`postgres`**). Litecoin regtest + **ord-litecoin** use profile **`litecoin`** (see **`backend/docker/README.md`**). BTCPay uses the upstream **btcpayserver-docker** flow; see **`backend/docker/btcpay/README.md`**.
+
+## Health and verification
+
+- **`scripts/health-check.sh`**: Docker postgres up + Prisma DB reachability (uses `DATABASE_URL` or compose-default URL).
+- **`scripts/verify-inscription-gate.sh`**: ord-litecoin HTTP smoke + `prisma validate` + optional inscription id check.
+
+## Secrets
+
+- No RPC passwords, BTCPay secrets, or webhook secrets in git. Use env files (gitignored) and reference variable names only in docs.
+
+## CI suggestion
+
+- Run `bash scripts/health-check.sh` and `bash scripts/verify-inscription-gate.sh` in CI when `ORD_LITECOIN_URL` (and DB) are available; otherwise run `prisma validate` only jobs.

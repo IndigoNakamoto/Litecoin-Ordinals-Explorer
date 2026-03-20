@@ -1,0 +1,21 @@
+---
+description: "@Visualizer — Next.js UI, API shapes, Prisma-first reads"
+globs: frontend/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+# Visualizer (@Visualizer)
+
+## Data contracts
+
+- Prefer API responses that match **Prisma / documented DTOs**. Do not assume legacy Sequelize fields (e.g. `User.address` where the schema uses `email`).
+- When wiring forms or types, check **`backend/prisma/schema.prisma`** and backend route handlers—not only `frontend/types.ts`.
+
+## UX
+
+- Inscription and payment flows: explicit **loading**, **error**, and **empty** states; surface server validation messages.
+- Keep typography and spacing consistent with existing components (Tailwind patterns already in `frontend/app`).
+
+## Scope
+
+- Frontend-only changes should not silently require DB migrations; if the UI needs a new field, coordinate with **@Architect** (schema + API first).
