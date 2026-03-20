@@ -17,8 +17,9 @@ The explorer is **Prisma + PostgreSQL** for indexed data, **`ord-litecoin` over 
 
 ### ORM and schema
 
-- [ ] Resolve **Prisma vs Sequelize** overlap: one write path per aggregate (start with `Inscription`, `User`, `Invoice`).
-- [ ] Fix **`backend/src/prismaInscriptionUpdater.ts`** to use the current Prisma client API (`inscription`, `updateProgress`, etc.—not `inscriptions` / `update_progress`).
+- [x] **Inscription reads** use Prisma ([`backend/app/controllers/inscriptions.ts`](backend/app/controllers/inscriptions.ts)); **indexer** uses [`npm run indexer`](backend/package.json) → [`backend/src/prismaInscriptionUpdater.ts`](backend/src/prismaInscriptionUpdater.ts).
+- [ ] Resolve remaining **Sequelize** usage (other models / legacy routes).
+- [x] Revival migration applied: [`backend/prisma/migrations/20260320120000_revival_full_schema`](backend/prisma/migrations/20260320120000_revival_full_schema) (drops legacy `inscriptions` / `update_progress`, creates full `schema.prisma` layout). **Warning:** destructive on existing dev DB; re-run only on disposable DBs.
 - [ ] Align **`Invoice` / `InscribeStatus`** semantics between BTCPay flow and Prisma `Invoice` model.
 
 ### Migrations and database

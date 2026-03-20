@@ -11,7 +11,7 @@ import NodeCache from 'node-cache';
 
 
 const app = express();
-const port = 3005;
+const port = Number(process.env.PORT) || 3005;
 const cache = new NodeCache({ stdTTL: 300, checkperiod: 120 });
 
 // import usersRouter from './app/routes/users';

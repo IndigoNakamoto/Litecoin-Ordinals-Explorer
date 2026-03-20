@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
-import createInscriptionsWithStatsTypeAndCounts from '../prisma/prismaClient'
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 async function main() {
     // const inscription = await createInscriptionsWithStatsTypeAndCounts([{

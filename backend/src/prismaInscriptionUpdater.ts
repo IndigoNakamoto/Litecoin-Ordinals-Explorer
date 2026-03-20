@@ -1,170 +1,189 @@
+import 'dotenv/config';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { getInscriptionData, getBlockHeight, getBlockInscriptionsPage } from '../util/ord-litecoin';
 
 const prisma = new PrismaClient();
 
-interface ContentTypeCounts {
-    [key: string]: number;
-}
-
-interface ContentTypeTypeCounts {
-    [key: string]: number;
-}
+const PROGRESS_KEY = 'indexer_cursor';
 
 let shutdownRequested = false;
 
 process.on('SIGINT', () => {
-    console.log('Shutdown signal received. Finishing current block before shutting down...');
+    console.log('Shutdown signal received. Finishing current page...');
     shutdownRequested = true;
 });
 
 process.on('SIGTERM', () => {
-    console.log('Shutdown signal received. Finishing current block before shutting down...');
+    console.log('Shutdown signal received. Finishing current page...');
     shutdownRequested = true;
 });
 
-async function getLastProcessedBlock(): Promise<number> {
-    const progress = await prisma.inscriptions.findFirst({
-        orderBy: {
-            inscription_number: 'desc'
-        }
+async function getCursor(): Promise<{ block: number; page: number }> {
+    const row = await prisma.updateProgress.findUnique({
+        where: { progress_key: PROGRESS_KEY },
     });
-    return progress?.genesis_height ?? 0;
+    return {
+        block: row?.last_processed_block ?? 0,
+        page: row?.last_processed_page ?? 0,
+    };
 }
 
-async function updateLastProcessedBlock(blockNumber: number, pageIndex: number): Promise<void> {
-    try {
-        // Upsert query: inserts or updates the last processed block and page
-        await prisma.update_progress.upsert({
-            where: { progress_key: 'last_processed_block' },
-            update: {
-                last_processed_block: blockNumber,
-                last_processed_page: pageIndex,
-            },
-            create: {
-                progress_key: 'last_processed_block',
-                last_processed_block: blockNumber,
-                last_processed_page: pageIndex,
-            },
-        });
-        console.log(`Updated progress to block ${blockNumber}, page ${pageIndex}`);
-    } catch (error) {
-        console.error('Error updating last processed block and page:', error);
-        throw error;
+async function setCursor(block: number, page: number): Promise<void> {
+    await prisma.updateProgress.upsert({
+        where: { progress_key: PROGRESS_KEY },
+        create: {
+            progress_key: PROGRESS_KEY,
+            last_processed_block: block,
+            last_processed_page: page,
+        },
+        update: {
+            last_processed_block: block,
+            last_processed_page: page,
+        },
+    });
+}
+
+function mapOrdJsonToCreateInput(raw: unknown): Prisma.InscriptionCreateManyInput | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const o = raw as Record<string, unknown>;
+
+    const inscription_id = String(o.inscription_id ?? o.id ?? '');
+    if (!inscription_id) return null;
+
+    const content_type = String(o.content_type ?? 'application/octet-stream');
+    const [mimePrimary] = content_type.split('/');
+    const content_type_type =
+        o.content_type_type != null && String(o.content_type_type)
+            ? String(o.content_type_type)
+            : mimePrimary || null;
+
+    const outputRaw = o.output_value ?? o.output ?? 0;
+    let output_value: bigint;
+    if (typeof outputRaw === 'bigint') output_value = outputRaw;
+    else output_value = BigInt(Math.max(0, Math.floor(Number(outputRaw)) || 0));
+
+    const tsRaw = o.timestamp;
+    let timestamp = 0;
+    if (typeof tsRaw === 'number' && !Number.isNaN(tsRaw)) timestamp = Math.floor(tsRaw);
+    else if (typeof tsRaw === 'string') {
+        const n = Date.parse(tsRaw);
+        timestamp = Number.isNaN(n) ? 0 : Math.floor(n / 1000);
     }
+
+    return {
+        address: String(o.address ?? ''),
+        content_length: Math.max(0, Math.floor(Number(o.content_length ?? 0))),
+        content_type,
+        content_type_type,
+        genesis_fee: Math.max(0, Math.floor(Number(o.genesis_fee ?? 0))),
+        genesis_height: Math.max(0, Math.floor(Number(o.genesis_height ?? 0))),
+        inscription_number: Math.floor(Number(o.inscription_number ?? o.number ?? 0)),
+        next: o.next != null && o.next !== '' ? String(o.next) : null,
+        output_value,
+        parent: o.parent != null && o.parent !== '' ? String(o.parent) : null,
+        previous: o.previous != null && o.previous !== '' ? String(o.previous) : null,
+        script_pubkey: String(o.script_pubkey ?? ''),
+        metadata: o.metadata != null ? String(o.metadata) : null,
+        charms: Array.isArray(o.charms) ? o.charms.map(String) : [],
+        genesis_address:
+            o.genesis_address != null && o.genesis_address !== '' ? String(o.genesis_address) : null,
+        inscription_id,
+        children: Array.isArray(o.children) ? o.children.map(String) : [],
+        processed: Boolean(o.processed ?? false),
+        rune: o.rune != null && o.rune !== '' ? String(o.rune) : null,
+        sat: o.sat != null && o.sat !== '' ? String(o.sat) : null,
+        satpoint: String(o.satpoint ?? ''),
+        timestamp,
+        nsfw: Boolean(o.nsfw ?? false),
+    };
 }
 
-async function storeInscriptionsBatch(inscriptions: Array<Prisma.inscriptionsUncheckedCreateInput>) {
+async function storeInscriptionsBatch(rows: Prisma.InscriptionCreateManyInput[]): Promise<void> {
+    if (rows.length === 0) return;
+
     let totalGenesisFee = 0;
     let totalContentLength = 0;
-    const contentTypeCounts: ContentTypeCounts = {};
-    const contentTypeTypeCounts: ContentTypeTypeCounts = {};
+    for (const r of rows) {
+        totalGenesisFee += Number(r.genesis_fee ?? 0);
+        totalContentLength += Number(r.content_length ?? 0);
+    }
 
-    // Process inscriptions to include content_type_type and aggregate counts
-    const modifiedInscriptions: Array<Prisma.inscriptionsUncheckedCreateInput & { content_type_type: string }> = inscriptions.map(inscription => {
-        const [type] = (inscription.content_type ?? '').split('/'); // Extract "type" from "type/subtype"
-        totalGenesisFee += Number(inscription.genesis_fee ?? 0);
-        totalContentLength += inscription.content_length ?? 0;
-
-        // Count occurrences of content_type
-        contentTypeCounts[inscription.content_type ?? ''] = (contentTypeCounts[inscription.content_type ?? ''] ?? 0) + 1;
-        // Count occurrences of content_type_type
-        contentTypeTypeCounts[type] = (contentTypeTypeCounts[type] ?? 0) + 1;
-
-        return {
-            ...inscription,
-            content_type_type: type,
-        };
+    await prisma.inscription.createMany({
+        data: rows,
+        skipDuplicates: true,
     });
 
-    // Insert modified inscriptions with createMany
-    const result = await prisma.inscriptions.createMany({
-        data: modifiedInscriptions,
-    });
-
-    // Update aggregate statistics in InscriptionStats
-    // Assume there's a singleton pattern or specific record for updating
     await prisma.inscriptionStats.upsert({
-        where: { id: 1 }, // Example condition, adjust based on your schema's identification strategy
-        update: {
-            totalGenesisFee: { increment: totalGenesisFee },
-            totalContentLength: { increment: totalContentLength },
-        },
+        where: { id: 1 },
         create: {
-            totalGenesisFee,
-            totalContentLength,
+            id: 1,
+            totalGenesisFee: BigInt(totalGenesisFee),
+            totalContentLength: BigInt(totalContentLength),
+        },
+        update: {
+            totalGenesisFee: { increment: BigInt(totalGenesisFee) },
+            totalContentLength: { increment: BigInt(totalContentLength) },
         },
     });
-
-    return result;
 }
 
+async function runLoop(): Promise<void> {
+    let b = 0;
+    let p = 0;
+    const cursor = await getCursor();
+    b = cursor.block;
+    p = cursor.page;
 
-
-async function main() {
-    let lastProcessedBlock = await getLastProcessedBlock();
-    if (lastProcessedBlock === 0) {
-        // Handle the case when no last processed block is found
-        // Set a default value or perform a specific action
-        lastProcessedBlock = 2425360; // Example default value
+    const start =
+        process.env.INDEXER_START_HEIGHT != null && process.env.INDEXER_START_HEIGHT !== ''
+            ? parseInt(process.env.INDEXER_START_HEIGHT, 10)
+            : NaN;
+    if (b === 0 && p === 0 && !Number.isNaN(start) && start > 0) {
+        b = start;
     }
 
     const currentHeight = await getBlockHeight();
     const CONFIRMATIONS_REQUIRED = 1;
-    const safeHeight = currentHeight - CONFIRMATIONS_REQUIRED;
+    const safeHeight = Math.max(0, currentHeight - CONFIRMATIONS_REQUIRED);
 
-    for (let blockNumber = lastProcessedBlock; blockNumber <= safeHeight && !shutdownRequested; blockNumber++) {
-        let pageNumber = 0;
-        if (blockNumber === lastProcessedBlock) {
-            // Resume from the last processed page
-            const lastProcessedPage = await getLastProcessedBlock();
-            if (lastProcessedPage !== null) {
-                pageNumber = lastProcessedPage + 1;
+    console.log(`Indexer: cursor block=${b} page=${p}, chain safeHeight=${safeHeight}`);
+
+    while (b <= safeHeight && !shutdownRequested) {
+        const { inscriptions: ids, more } = await getBlockInscriptionsPage(b, p);
+
+        const rows: Prisma.InscriptionCreateManyInput[] = [];
+        for (const inscriptionId of ids) {
+            try {
+                const raw = await getInscriptionData(inscriptionId);
+                const row = mapOrdJsonToCreateInput(raw);
+                if (row) rows.push(row);
+            } catch (err) {
+                console.error(`Error fetching inscription ${inscriptionId}:`, err);
             }
         }
 
-        let more = true;
-
-        while (more && !shutdownRequested) {
-            const { inscriptions, more: morePages } = await getBlockInscriptionsPage(blockNumber, pageNumber);
-            const inscriptionsData = [];
-
-            for (const inscriptionId of inscriptions) {
-                try {
-                    console.log('Get inscription: ', inscriptionId)
-                    const inscriptionData = await getInscriptionData(inscriptionId);
-                    console.log('Got inscription: ', inscriptionData.inscription_number)
-                    inscriptionsData.push(inscriptionData);
-                } catch (error) {
-                    console.error(`Error fetching inscription ${inscriptionId}:`, error);
-                }
-            }
-
-            if (inscriptionsData.length > 0) {
-                await storeInscriptionsBatch(inscriptionsData);
-            }
-
-            console.log(`Block: ${blockNumber} - Page: ${pageNumber}`);
-
-            more = morePages;
-            pageNumber++;
+        if (rows.length > 0) {
+            await storeInscriptionsBatch(rows);
         }
 
-        await updateLastProcessedBlock(blockNumber, pageNumber - 1);
-        console.log('Updated Inscriptions Table \n')
-
-        if (shutdownRequested) {
-            console.log('Shutdown requested, finishing up...');
-            break;
+        if (more) {
+            p += 1;
+        } else {
+            b += 1;
+            p = 0;
         }
+        await setCursor(b, p);
+        console.log(`Progress: next block=${b} page=${p} (more=${more})`);
     }
+
+    console.log('Indexer finished or shut down.');
 }
 
-
-main()
-    .catch(e => {
-        console.error(e.message)
-    }).finally(async () => {
-        await prisma.$disconnect()
-    }
-    )
+runLoop()
+    .catch((e) => {
+        console.error(e);
+        process.exitCode = 1;
+    })
+    .finally(async () => {
+        await prisma.$disconnect();
+    });

@@ -38,13 +38,31 @@ async function litecoinRpcGetBlockCount(): Promise<number> {
     return data.result;
 }
 
-async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number) {
+/** Normalized ord response for `/inscriptions/block/:height/:page` (ord versions differ). */
+export type BlockInscriptionsPage = { inscriptions: string[]; more: boolean };
+
+async function getBlockInscriptionsPage(
+    blockNumber: number,
+    pageNumber: number,
+): Promise<BlockInscriptionsPage> {
     const url = `${ORD_LITECOIN_URL}/inscriptions/block/${blockNumber}/${pageNumber}`;
     const response = await fetch(url, { headers: { Accept: 'application/json' } });
     if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    return response.json();
+    const raw: unknown = await response.json();
+    if (Array.isArray(raw)) {
+        const ids = raw.map((x) => String(x));
+        return { inscriptions: ids, more: ids.length >= 100 };
+    }
+    if (raw && typeof raw === 'object') {
+        const o = raw as Record<string, unknown>;
+        const idsRaw = o.inscriptions ?? o.ids;
+        const list = Array.isArray(idsRaw) ? idsRaw.map((x) => String(x)) : [];
+        const more = Boolean(o.more ?? o.more_pages ?? list.length >= 100);
+        return { inscriptions: list, more };
+    }
+    return { inscriptions: [], more: false };
 }
 
 async function getInscriptionData(inscriptionId: string) {
