@@ -28,4 +28,4 @@ alwaysApply: false
 ## ord-litecoin
 
 - Ordinal rules live in the **ord-litecoin HTTP service**, not in this repo’s fetch helpers; helpers stay thin and env-driven (`ORD_LITECOIN_URL`).
-- **Litecoin Core RPC** for `getBlockHeight` is implemented with **`fetch` + JSON-RPC** in `backend/util/ord-litecoin.ts` (do not reintroduce **`bitcoin-json-rpc`** unless you fix ESM/`ts-node` compatibility).
+- **`getBlockHeight`** uses **ord `GET /status`** (JSON `height`) first, then **Litecoin RPC** `getblockcount` via **`fetch` + JSON-RPC**. Do not add **`@mempool/mempool.js`** or **`bitcoin-json-rpc`** back to this path — they break **`ts-node`** / ESM interop after routine `npm` upgrades.

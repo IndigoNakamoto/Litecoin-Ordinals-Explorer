@@ -1,7 +1,7 @@
 // backend/util/ord-litecoin.ts — HTTP client for ord-litecoin + optional Litecoin Core RPC for block height.
+// (Do not import @mempool/mempool.js here: it pulls bitcoin-json-rpc, which breaks ts-node under Node ESM rules.)
 
 import fetch from 'isomorphic-fetch';
-import mempoolJS from '@mempool/mempool.js';
 
 const ORD_LITECOIN_URL = (process.env.ORD_LITECOIN_URL || 'http://127.0.0.1:8080').replace(/\/$/, '');
 
@@ -36,6 +36,32 @@ async function litecoinRpcGetBlockCount(): Promise<number> {
         throw new Error('Invalid getblockcount RPC response');
     }
     return data.result;
+}
+
+/** Block height ord has indexed (from GET /status, JSON). Safer than chain tip for inscription paging while ord syncs. */
+function parseOrdStatusHeight(raw: unknown): number | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const o = raw as Record<string, unknown>;
+    for (const key of ['height', 'block_height', 'latest_height', 'max_height'] as const) {
+        const v = o[key];
+        if (typeof v === 'number' && Number.isFinite(v)) return Math.floor(v);
+        if (typeof v === 'string' && /^\d+$/.test(v)) return parseInt(v, 10);
+    }
+    return null;
+}
+
+async function getBlockHeightFromOrdStatus(): Promise<number> {
+    const url = `${ORD_LITECOIN_URL}/status`;
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) {
+        throw new Error(`ord /status HTTP ${res.status}`);
+    }
+    const raw: unknown = await res.json();
+    const h = parseOrdStatusHeight(raw);
+    if (h == null) {
+        throw new Error('ord /status JSON missing numeric height');
+    }
+    return h;
 }
 
 /** Normalized ord response for `/inscriptions/block/:height/:page` (ord versions differ). */
@@ -97,6 +123,12 @@ async function getInscriptionContent(inscriptionId: string, contentType: string)
 async function getBlockHeight(): Promise<number> {
     const rpcEnabled = (process.env.LITECOIN_RPC_ENABLED ?? 'true').toLowerCase() !== 'false';
 
+    try {
+        return await getBlockHeightFromOrdStatus();
+    } catch (ordError) {
+        console.error('Error fetching block height via ord /status:', ordError);
+    }
+
     if (rpcEnabled) {
         try {
             return await litecoinRpcGetBlockCount();
@@ -105,17 +137,9 @@ async function getBlockHeight(): Promise<number> {
         }
     }
 
-    try {
-        const { bitcoin } = mempoolJS({
-            hostname: 'litecoinspace.org',
-            network: 'mainnet',
-        });
-        const mempoolBlockHeight = await bitcoin.blocks.getBlockHeight({ height: 0 });
-        return Number(mempoolBlockHeight);
-    } catch (mempoolError) {
-        console.error('Error fetching block height via mempoolJS:', mempoolError);
-        throw new Error('Failed to fetch block height from RPC (if enabled) and mempool fallback');
-    }
+    throw new Error(
+        'Failed to fetch block height: ord /status unreachable and Litecoin RPC failed or LITECOIN_RPC_ENABLED=false',
+    );
 }
 
 export { getBlockInscriptionsPage, getInscriptionData, getBlockHeight, getInscriptionContent, ORD_LITECOIN_URL };

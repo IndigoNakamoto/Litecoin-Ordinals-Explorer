@@ -33,7 +33,6 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
-    "@mempool/mempool.js": "^2.3.0",
     "@metamask/sdk-react": "^0.15.0",
     "@prisma/adapter-pg": "^5.10.2",
     "@prisma/client": "^5.10.2",

@@ -100,6 +100,19 @@ BTCPay is **not** in this compose file (its official stack is multi-service). Fo
 
 ## Troubleshooting
 
+### You only have Postgres + `npm run dev` running
+
+That is enough to hit **`GET /inscriptions`** from an **empty** DB or seeded data, but **not** for live ordinals content or **`npm run indexer`**. You also need **ord-litecoin** (and usually **litecoind**) for the `litecoin` profile, plus `ORD_LITECOIN_URL` / RPC vars in **`backend/.env`**. From **repo root**: `bash scripts/docker-explorer-compose.sh --profile litecoin up -d --build`.
+
+### `scripts/docker-explorer-compose.sh: No such file or directory`
+
+The helper lives under **`scripts/` at the repository root**. If your shell is in **`backend/docker`**, use `bash ../../scripts/docker-explorer-compose.sh …` or `cd` to the root first.
+
+### Prisma: `DATABASE_URL` must start with `postgresql://`
+
+Empty or typo’d URLs in **`backend/.env`** break `prisma migrate` / `generate`. Match compose:  
+`postgresql://ord_lite_user:ord_lite_pass@127.0.0.1:15432/ord_lite_db?schema=public`
+
 ### `open .../backend/docker-compose.yml: no such file or directory`
 
 The file lives under **`backend/docker/`**, not `backend/`. Use `cd backend/docker`, or `bash scripts/docker-explorer-compose.sh` from the repo root.
