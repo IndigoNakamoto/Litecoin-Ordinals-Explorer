@@ -28,11 +28,16 @@ export interface Inscription {
 }
 
 interface HomeProps {
-    initialInscriptions: Inscription[];
+    /** Server may pass [] if the API returns an error object or non-array JSON. */
+    initialInscriptions: Inscription[] | unknown;
+}
+
+function asInscriptionList(value: unknown): Inscription[] {
+    return Array.isArray(value) ? value : [];
 }
 
 export default function Home({ initialInscriptions }: HomeProps) {
-    const [inscriptions, setInscriptions] = useState<Inscription[]>(initialInscriptions);
+    const [inscriptions, setInscriptions] = useState<Inscription[]>(() => asInscriptionList(initialInscriptions));
     const [loading, setLoading] = useState(false);
     const [filter, setFilter] = useState({ sortOrder: 'oldest', contentType: '', contentTypeType: '', page: 1, cursed: false });
     const [showScrollButton, setShowScrollButton] = useState(false);
@@ -99,15 +104,22 @@ export default function Home({ initialInscriptions }: HomeProps) {
             // Complete URL with query parameters
             const url = `${baseUrl}?${queryParams}`;
     
-            // Fetch the data from the backend
             const response = await fetch(url);
-            const data = await response.json();
-    
-            // Concatenate the new data with the existing inscriptions
-            setInscriptions(prevInscriptions => [...prevInscriptions, ...data]);
-    
-            // Check if the number of fetched items is less than 100, indicating no more inscriptions to load
-            setHasMore(data.length === 100);
+            const data: unknown = await response.json();
+            const pageItems = asInscriptionList(data);
+
+            if (!response.ok) {
+                console.error('Inscriptions request failed:', data);
+                setHasMore(false);
+                return;
+            }
+
+            setInscriptions((prevInscriptions) => [
+                ...asInscriptionList(prevInscriptions),
+                ...pageItems,
+            ]);
+
+            setHasMore(pageItems.length === 100);
         } catch (error) {
             console.error("Failed to fetch inscriptions:", error);
             // Handle error (e.g., show error message to user)

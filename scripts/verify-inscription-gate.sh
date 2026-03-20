@@ -27,8 +27,17 @@ load_env() {
 
 load_env
 
+DOCKER_ENV="$REPO_ROOT/backend/docker/.env"
+if [[ -f "$DOCKER_ENV" ]]; then
+  set -a
+  # shellcheck source=/dev/null
+  source "$DOCKER_ENV"
+  set +a
+fi
+EXPLORER_POSTGRES_PORT="${EXPLORER_POSTGRES_PORT:-15432}"
+
 # Prisma CLI still resolves env("DATABASE_URL") in schema during validate.
-export DATABASE_URL="${DATABASE_URL:-postgresql://ord_lite_user:ord_lite_pass@127.0.0.1:5432/ord_lite_db}"
+export DATABASE_URL="${DATABASE_URL:-postgresql://ord_lite_user:ord_lite_pass@127.0.0.1:${EXPLORER_POSTGRES_PORT}/ord_lite_db}"
 
 ORD_BASE="${ORD_LITECOIN_URL:-http://127.0.0.1:80}"
 ORD_BASE="${ORD_BASE%/}"

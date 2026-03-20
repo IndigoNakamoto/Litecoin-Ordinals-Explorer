@@ -21,13 +21,20 @@
 # Default: Postgres only. Add Litecoin + ord indexer:
 #   docker compose --profile litecoin up -d
 #
+# Host port for Postgres defaults to 15432 so another project's :5432 does not conflict.
+# Override in backend/docker/.env: EXPLORER_POSTGRES_PORT=5432
+#
 # See README.md in this directory and backend/docker/btcpay/README.md for BTCPay.
+#
+# Explicit project name so this stack does not collide with test-docker-compose.yml
+# (same folder would otherwise default to project "docker" for both).
+name: litecoin-ordinals-dev
 
 services:
   postgres:
     image: postgres:14
     ports:
-      - "5432:5432"
+      - "${EXPLORER_POSTGRES_PORT:-15432}:5432"
     volumes:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ../../database/postgres_data:/var/lib/postgresql/data

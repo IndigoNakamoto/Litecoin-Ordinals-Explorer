@@ -14,6 +14,15 @@ die() {
 
 [[ -f "$COMPOSE_FILE" ]] || die "missing compose file: $COMPOSE_FILE"
 
+DOCKER_DIR="$(dirname "$COMPOSE_FILE")"
+if [[ -f "$DOCKER_DIR/.env" ]]; then
+  set -a
+  # shellcheck source=/dev/null
+  source "$DOCKER_DIR/.env"
+  set +a
+fi
+EXPLORER_POSTGRES_PORT="${EXPLORER_POSTGRES_PORT:-15432}"
+
 if ! command -v docker >/dev/null 2>&1; then
   die "docker not found in PATH"
 fi
@@ -25,8 +34,8 @@ if ! docker compose -f "$COMPOSE_FILE" ps --status running --services | grep -qx
   die "service 'postgres' is not running. Start with: docker compose -f $COMPOSE_FILE up -d postgres"
 fi
 
-# Default URL matches backend/docker/docker-compose.yml when DATABASE_URL unset
-export DATABASE_URL="${DATABASE_URL:-postgresql://ord_lite_user:ord_lite_pass@127.0.0.1:5432/ord_lite_db}"
+# Default host port matches EXPLORER_POSTGRES_PORT / docker-compose.yml when DATABASE_URL unset
+export DATABASE_URL="${DATABASE_URL:-postgresql://ord_lite_user:ord_lite_pass@127.0.0.1:${EXPLORER_POSTGRES_PORT}/ord_lite_db}"
 
 if [[ ! -d "$BACKEND_DIR/node_modules/@prisma/client" ]]; then
   echo "==> Prisma client missing; run: (cd backend && npm ci && npx prisma generate)" >&2

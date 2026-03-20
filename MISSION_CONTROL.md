@@ -24,8 +24,9 @@ The explorer is **Prisma + PostgreSQL** for indexed data, **`ord-litecoin` over 
 ### Migrations and database
 
 - [ ] `cd backend && npx prisma migrate status` against real `DATABASE_URL`.
-- [ ] Document **`DATABASE_URL`** for local Docker:  
-  `postgresql://ord_lite_user:ord_lite_pass@localhost:5432/ord_lite_db` (see `backend/docker/docker-compose.yml`).
+- [ ] Document **`DATABASE_URL`** for local Docker (default **host port 15432**, not 5432):  
+  `postgresql://ord_lite_user:ord_lite_pass@127.0.0.1:15432/ord_lite_db` — override with **`EXPLORER_POSTGRES_PORT`** in `backend/docker/.env` if needed (see `backend/docker/README.md`).
+- [ ] Know which compose file you use: **`backend/docker/docker-compose.yml`** (main + optional `litecoin`) vs **`backend/docker/test-docker-compose.yml`** (Postgres on **5444**). Port and stack layout: **`backend/docker/README.md`**.
 
 ### ord-litecoin and RPC
 

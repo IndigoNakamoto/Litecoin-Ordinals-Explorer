@@ -8,7 +8,7 @@ alwaysApply: false
 
 ## Stack
 
-- Postgres for local/dev is defined in **`backend/docker/docker-compose.yml`** (service **`postgres`**). Litecoin regtest + **ord-litecoin** use profile **`litecoin`** (see **`backend/docker/README.md`**). BTCPay uses the upstream **btcpayserver-docker** flow; see **`backend/docker/btcpay/README.md`**.
+- Postgres for local/dev is in **`backend/docker/docker-compose.yml`** (published on host **`15432`** by default via **`EXPLORER_POSTGRES_PORT`**, so **5432** stays free for other projects). Litecoin + **ord-litecoin**: profile **`litecoin`**. BTCPay: **`backend/docker/btcpay/README.md`**.
 
 ## Health and verification
 

@@ -1,7 +1,6 @@
 // backend/util/ord-litecoin.ts — HTTP client for ord-litecoin + optional Litecoin Core RPC for block height.
 
 import fetch from 'isomorphic-fetch';
-import BitcoinJsonRpc from 'bitcoin-json-rpc';
 import mempoolJS from '@mempool/mempool.js';
 
 const ORD_LITECOIN_URL = (process.env.ORD_LITECOIN_URL || 'http://127.0.0.1:8080').replace(/\/$/, '');
@@ -13,6 +12,30 @@ function litecoinRpcUrl(): string {
     const host = process.env.LITECOIN_RPC_HOST || '127.0.0.1';
     const port = process.env.LITECOIN_RPC_PORT || '19443';
     return `${protocol}://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${host}:${port}`;
+}
+
+async function litecoinRpcGetBlockCount(): Promise<number> {
+    const res = await fetch(litecoinRpcUrl(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'getblockcount',
+            params: [],
+        }),
+    });
+    if (!res.ok) {
+        throw new Error(`Litecoin RPC HTTP ${res.status}`);
+    }
+    const data = (await res.json()) as { result?: number; error?: { message?: string } };
+    if (data.error?.message) {
+        throw new Error(data.error.message);
+    }
+    if (typeof data.result !== 'number') {
+        throw new Error('Invalid getblockcount RPC response');
+    }
+    return data.result;
 }
 
 async function getBlockInscriptionsPage(blockNumber: number, pageNumber: number) {
@@ -58,9 +81,7 @@ async function getBlockHeight(): Promise<number> {
 
     if (rpcEnabled) {
         try {
-            const rpc = new BitcoinJsonRpc(litecoinRpcUrl());
-            const blockHeight = await rpc.getBlockCount();
-            return Number(blockHeight);
+            return await litecoinRpcGetBlockCount();
         } catch (rpcError) {
             console.error('Error fetching block height via RPC:', rpcError);
         }

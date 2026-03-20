@@ -76,10 +76,12 @@ async function fetchInscriptions(filter: FilterType) {
   // Complete URL with query parameters
   const url = `${baseUrl}?${queryParams}`;
 
-  // Fetch the data from the backend
   const response = await fetch(url);
-  const data = await response.json();
-  return data
+  const data: unknown = await response.json();
+  if (!response.ok || !Array.isArray(data)) {
+    return [];
+  }
+  return data as Inscription[];
 }
 
 // This is a Server Component
