@@ -91,8 +91,13 @@ services:
 
   ord-litecoin:
     profiles: ["litecoin"]
-    # linux/amd64 image; on Apple Silicon Docker runs via emulation unless you build locally.
-    image: fiftysix/ord-litecoin:0.20.1
+    # Build from upstream https://github.com/ynohtna92/ord-litecoin (no third-party Hub image).
+    # Pin with ORD_LITECOIN_GIT_REF in backend/docker/.env (default: tag 0.20.1-litecoin).
+    # First start runs a Rust release build (CPU + time); later starts reuse the image.
+    build:
+      context: https://github.com/ynohtna92/ord-litecoin.git#${ORD_LITECOIN_GIT_REF:-0.20.1-litecoin}
+      dockerfile: Dockerfile
+    image: litecoin-ordinals-dev-ord-litecoin:${ORD_LITECOIN_GIT_REF:-0.20.1-litecoin}
     depends_on:
       litecoind:
         condition: service_healthy

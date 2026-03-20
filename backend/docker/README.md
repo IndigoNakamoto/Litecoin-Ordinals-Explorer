@@ -63,8 +63,11 @@ If you set `EXPLORER_POSTGRES_PORT` in **`backend/docker/.env`**, use that port 
 Runs a **local regtest** node (RPC **19443**) and **[ord-litecoin](https://github.com/ynohtna92/ord-litecoin)** with HTTP on **http://127.0.0.1:8080** (container port 80).
 
 ```bash
-docker compose --profile litecoin up -d
+# First time (or after changing ORD_LITECOIN_GIT_REF): build ord from upstream source
+docker compose --profile litecoin up -d --build
 ```
+
+`--build` can be omitted on later starts if the `litecoin-ordinals-dev-ord-litecoin:*` image is already present.
 
 - **First start:** ord builds its index against an empty regtest chain; this is quick. Mine blocks when you need spendable coins:
 
@@ -80,7 +83,8 @@ docker compose --profile litecoin up -d
   - `LITECOIN_RPC_PORT=19443` (regtest; mainnet default is **9332**)
   - `LITECOIN_RPC_USER` / `LITECOIN_RPC_PASS` = `litecoin` / `litecoin` for this compose stack
 
-- **Image note:** `fiftysix/ord-litecoin:0.20.1` is **linux/amd64**. On Apple Silicon, Docker uses QEMU (slower) or build an **arm64** image from [ynohtna92/ord-litecoin](https://github.com/ynohtna92/ord-litecoin) and replace the `image:` in `docker-compose.yml`.
+- **ord-litecoin image:** Compose **builds** from **[ynohtna92/ord-litecoin](https://github.com/ynohtna92/ord-litecoin)** using the repo’s `Dockerfile` (default git ref **`0.20.1-litecoin`**; override with **`ORD_LITECOIN_GIT_REF`** in `backend/docker/.env`). There is no reliance on third-party Docker Hub mirrors. **First `up --build`** compiles Rust (`cargo build --release`) — expect several minutes and high CPU; after that the tagged image is reused. On **Apple Silicon**, the binary is **native ARM64** inside the container. **`ORD_LITECOIN_GIT_REF`** is also used as the Docker **image tag**; prefer **tags or commit SHAs**, not branch names containing **`/`**.
+- **`litecoind`:** no `platform:` pin; see `docker image inspect litecoinproject/litecoin-core:latest` for `Architecture` if you need to confirm amd64 vs arm64.
 
 ## Mainnet / testnet
 
