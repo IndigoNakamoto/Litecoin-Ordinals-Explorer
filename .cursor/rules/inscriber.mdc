@@ -28,4 +28,5 @@ alwaysApply: false
 ## ord-litecoin
 
 - Ordinal rules live in the **ord-litecoin HTTP service**, not in this repo’s fetch helpers; helpers stay thin and env-driven (`ORD_LITECOIN_URL`).
+- **Env by stack:** **`litecoin-mainnet`** profile → `ORD_LITECOIN_URL` typically **`http://127.0.0.1:8081`**, **`LITECOIN_RPC_PORT=9332`**. **`litecoin`** (regtest) → **`http://127.0.0.1:8080`**, **`19443`**. Align with **`backend/docker/README.md`** and **`MISSION_CONTROL.md`** (mainnet node before ord).
 - **`getBlockHeight`** uses **ord `GET /status`** (JSON `height`) first, then **Litecoin RPC** `getblockcount` via **`fetch` + JSON-RPC**. Do not add **`@mempool/mempool.js`** or **`bitcoin-json-rpc`** back to this path — they break **`ts-node`** / ESM interop after routine `npm` upgrades.

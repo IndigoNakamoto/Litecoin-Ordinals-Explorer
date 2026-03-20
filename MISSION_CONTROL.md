@@ -6,6 +6,16 @@ Living checklist for bringing the explorer back to production. Update the **Deci
 
 The explorer is **Prisma + PostgreSQL** for indexed data, **`ord-litecoin` over HTTP** for ordinal content and chain-adjacent reads, and **BTCPay Server** for the optional user inscriber path. Sequelize models remain **transitional** until fully migrated away.
 
+### Chain stack order (default)
+
+**Production-like local work:** **Litecoin Core mainnet first**, then **ord-litecoin**.
+
+1. Run **`litecoind-mainnet`** (compose profile **`litecoin-mainnet`**) and let **IBD** progress — headers, then blocks — with **`-txindex=1`** (large disk and time). RPC **9332**.
+2. When the node is reliably answering RPC (sync can still be in progress), start **`ord-litecoin-mainnet`** so ord can index against that node. HTTP defaults to **8081** on the host.
+3. Point **`backend/.env`** at that stack: **`ORD_LITECOIN_URL=http://127.0.0.1:8081`**, **`LITECOIN_RPC_PORT=9332`**, same **`LITECOIN_RPC_USER` / `LITECOIN_RPC_PASS`** as compose for dev.
+
+**Fast iteration (no mainnet IBD):** profile **`litecoin`** — **regtest** `litecoind` (**19443**) + **ord** on **8080**. Details: **`backend/docker/README.md`**.
+
 ---
 
 ## Revival checklist
@@ -29,11 +39,23 @@ The explorer is **Prisma + PostgreSQL** for indexed data, **`ord-litecoin` over 
   `postgresql://ord_lite_user:ord_lite_pass@127.0.0.1:15432/ord_lite_db` — override with **`EXPLORER_POSTGRES_PORT`** in `backend/docker/.env` if needed (see `backend/docker/README.md`).
 - [ ] Know which compose file you use: **`backend/docker/docker-compose.yml`** (main + optional `litecoin`) vs **`backend/docker/test-docker-compose.yml`** (Postgres on **5444**). Port and stack layout: **`backend/docker/README.md`**.
 
-### ord-litecoin and RPC
+### Litecoin mainnet + ord-litecoin (preferred path)
 
-- [ ] Bring up **Litecoin + ord** locally: `docker compose -f backend/docker/docker-compose.yml --profile litecoin up -d` (see **`backend/docker/README.md`**).
-- [ ] Set **`ORD_LITECOIN_URL`** (e.g. `http://127.0.0.1:8080` for compose) and **`LITECOIN_RPC_*`** to match your node (**19443** regtest in compose; **9332** typical mainnet).
-- [ ] Confirm **`scripts/verify-inscription-gate.sh`** passes against your ord HTTP endpoint.
+- [ ] Start **mainnet node only** until you are ready for ord:  
+  `docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d litecoind-mainnet`  
+  (see **`backend/docker/README.md`** — ports **9332/9333**, volume **`litecoin_mainnet`**).
+- [ ] After RPC is stable, start **ord**:  
+  `docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d ord-litecoin-mainnet`  
+  (or `up -d` for the full profile). Ord HTTP default: **8081**.
+- [ ] Set **`ORD_LITECOIN_URL=http://127.0.0.1:8081`** (or your **`LITECOIN_MAINNET_ORD_HTTP_PORT`**) and **`LITECOIN_RPC_PORT=9332`** (+ user/pass matching compose).
+
+### Regtest shortcut (optional)
+
+- [ ] For **regtest** only: `docker compose -f backend/docker/docker-compose.yml --profile litecoin up -d` — **`ORD_LITECOIN_URL=http://127.0.0.1:8080`**, **`LITECOIN_RPC_PORT=19443`**.
+
+### Gates
+
+- [ ] Confirm **`scripts/verify-inscription-gate.sh`** passes once **ord** is up (set **`ORD_LITECOIN_URL`** for **8080** or **8081** accordingly; script also reads **`backend/docker/.env`**).
 
 ### BTCPay
 
@@ -85,4 +107,5 @@ If ord-litecoin is intentionally down, do not merge protocol changes until the s
 
 | Date | Decision |
 |------|----------|
+| 2026-03-20 | **Mainnet-first chain stack:** default workflow is **`litecoin-mainnet`** — sync **Litecoin Core mainnet** (`litecoind-mainnet`), then **ord** (`ord-litecoin-mainnet`). Regtest profile **`litecoin`** remains for quick dev. Documented in **`backend/docker/README.md`** and **`.cursor/rules/ops.mdc`**. |
 | — | *Add rows as you decide (e.g. “Prisma is system of record for explorer data.”)* |

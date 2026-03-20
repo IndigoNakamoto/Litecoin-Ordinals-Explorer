@@ -15,6 +15,7 @@ alwaysApply: true
 - After any `schema.prisma` change: run `npx prisma generate` and fix **all** `PrismaClient` usage (model names are singular camelCase in the client, e.g. `inscription`, `updateProgress`).
 - **Do not** assume Sequelize tables match Prisma models (`User`, `Invoice`, `Inscription` differ today). Cross-check both before queries or FKs.
 - Read **root `MISSION_CONTROL.md`** before large backend changes; run **`scripts/health-check.sh`** and **`scripts/verify-inscription-gate.sh`** before touching protocol/indexer paths listed there.
+- **Chain dependencies:** indexer and inscription HTTP helpers assume a running **ord** backed by a synced (or syncing) **Litecoin** node. Default ops order is **mainnet Core first, then ord** (`MISSION_CONTROL.md`); regtest is the shortcut profile.
 
 ## Anti-patterns
 

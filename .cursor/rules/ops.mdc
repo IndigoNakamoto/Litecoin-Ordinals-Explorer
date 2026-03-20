@@ -10,7 +10,10 @@ alwaysApply: false
 
 - **Compose files:** `backend/docker/docker-compose.yml` (project **`litecoin-ordinals-dev`**) and `test-docker-compose.yml` (**`litecoin-ordinals-test`**). Do not rely on the implicit folder name `docker` as the project name.
 - **Postgres host port** defaults to **`15432`** (`EXPLORER_POSTGRES_PORT` in `backend/docker/.env`). **`DATABASE_URL`** in `backend/.env` must be a full URL (`postgresql://user:pass@127.0.0.1:<port>/db`) matching that port.
-- **Litecoin + ord:** compose profile **`litecoin`**. **BTCPay:** `backend/docker/btcpay/README.md`.
+- **Litecoin + ord (two profiles):**
+  - **`litecoin-mainnet`** (default for production-like work): **`litecoind-mainnet`** (RPC **9332**, IBD first) → **`ord-litecoin-mainnet`** (HTTP **8081**). Start node, let sync advance, then ord — see root **`MISSION_CONTROL.md`**.
+  - **`litecoin`**: **regtest** + ord on **8080** / RPC **19443** for fast local iteration.
+  - **BTCPay:** `backend/docker/btcpay/README.md`.
 
 ## Commands
 
