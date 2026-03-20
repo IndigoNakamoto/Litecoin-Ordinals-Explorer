@@ -55,6 +55,9 @@ services:
   litecoind:
     profiles: ["litecoin"]
     image: litecoinproject/litecoin-core:latest
+    # Image entrypoint always appends -datadir="$LITECOIN_DATA" LAST (overrides inline -datadir).
+    environment:
+      LITECOIN_DATA: /data
     volumes:
       - litecoin_regtest:/data
     ports:
@@ -66,7 +69,6 @@ services:
       - -regtest=1
       - -txindex=1
       - -server=1
-      - -datadir=/data
       - -rpcbind=0.0.0.0
       - -rpcport=19443
       - -rpcallowip=0.0.0.0/0
@@ -77,6 +79,7 @@ services:
         [
           "CMD",
           "litecoin-cli",
+          "-datadir=/data",
           "-regtest",
           "-rpcconnect=127.0.0.1",
           "-rpcport=19443",

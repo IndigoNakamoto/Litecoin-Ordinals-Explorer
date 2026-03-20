@@ -72,11 +72,15 @@ docker compose --profile litecoin up -d --build
 - **First start:** ord builds its index against an empty regtest chain; this is quick. Mine blocks when you need spendable coins:
 
   ```bash
-  docker compose exec litecoind litecoin-cli -regtest -rpcuser=litecoin -rpcpassword=litecoin getnewaddress
-  docker compose exec litecoind litecoin-cli -regtest -rpcuser=litecoin -rpcpassword=litecoin generatetoaddress 101 "<address>"
+  docker compose exec litecoind litecoin-cli -datadir=/data -regtest -rpcuser=litecoin -rpcpassword=litecoin getnewaddress
+  docker compose exec litecoind litecoin-cli -datadir=/data -regtest -rpcuser=litecoin -rpcpassword=litecoin generatetoaddress 101 "<address>"
   ```
 
+  (`-datadir=/data` matches `LITECOIN_DATA` in `docker-compose.yml`; the image entrypoint appends this path — without it, `litecoin-cli` would look in `~/.litecoin` and miss the node’s regtest dir.)
+
   From the host, if `litecoin-cli` is installed with matching `-rpcport` / credentials, you can run the same commands against `127.0.0.1:19443`.
+
+- **Litecoin Core log noise on first run:** messages like `Failed to open ... banlist.dat`, `peers.dat`, `mempool file`, `Invalid or missing ...; recreating` are **normal** on a fresh datadir. `Unable to bind to 127.0.0.1:19444` often appears when P2P already bound to `0.0.0.0:19444` inside the container — **harmless** for regtest if RPC (`19443`) is healthy.
 
 - **Backend env:** copy `backend/docker/.env.example` values into `backend/.env` (or repo root `.env`). Use:
   - `ORD_LITECOIN_URL=http://127.0.0.1:8080`
