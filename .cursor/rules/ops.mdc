@@ -41,16 +41,6 @@ Use profile **`litecoin-mainnet`**. IBD needs **large disk** and **a long time**
    docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet up -d --build
    ```
 
-**`backend/.env`** for this profile (defaults match compose **dev** credentials; change beyond local):
-
-```env
-ORD_LITECOIN_URL=http://127.0.0.1:8081
-LITECOIN_RPC_PORT=9332
-LITECOIN_RPC_USER=litecoin
-LITECOIN_RPC_PASS=litecoin
-```
-
-If **`LITECOIN_MAINNET_ORD_HTTP_PORT`** in `backend/docker/.env` is not **8081**, set **`ORD_LITECOIN_URL`** to that host port. Longer context: **`backend/docker/README.md`**, **`MISSION_CONTROL.md`**.
 
 ## Commands
 
