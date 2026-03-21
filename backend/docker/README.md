@@ -135,6 +135,34 @@ After a crash from disk full, the **txindex** LevelDB may be **corrupt**. If the
 
 **Security:** default RPC user/pass and `rpcallowip` are **dev-only**. Do **not** expose **9332** to the internet.
 
+### ord logs: `not valid bitcoin tx` / `parse failed` / `channel closed`
+
+These usually mean **ord could not decode** a `getrawtransaction` result (batch JSON-RPC). Common causes:
+
+1. **Node still catching up** — **`txindex`** and block files can be **incomplete** during IBD/reindex. **Wait** until **`verificationprogress`** is essentially **1.0** and **`initialblockdownload`** is **false**, then **restart** ord:  
+   `docker compose … restart ord-litecoin-mainnet`  
+   Optionally **delete** volume **`ord_litecoin_mainnet_data`** and start ord again so the index rebuilds on a fully synced node.
+
+2. **Litecoin-specific txs** (e.g. **MWEB** / edge formats) — **ord-litecoin** may still choke on some txs; check [ynohtna92/ord-litecoin issues](https://github.com/ynohtna92/ord-litecoin/issues). If **`litecoin-cli getrawtransaction <txid>`** works but ord fails, it’s likely an **indexer** / fork bug, not your RPC.
+
+**Check sync (from repo root):**
+
+```bash
+docker compose -f backend/docker/docker-compose.yml exec litecoind-mainnet \
+  litecoin-cli -datadir=/data getblockchaininfo
+```
+
+Confirm **`initialblockdownload: false`** and **`verificationprogress`** near **1**.
+
+**Test the failing tx:**
+
+```bash
+docker compose -f backend/docker/docker-compose.yml exec litecoind-mainnet \
+  litecoin-cli -datadir=/data getrawtransaction 7d02fe85b69ff575d2f1b5819ea69710e66a4a709b271d58ae65429372c9a509
+```
+
+If this errors, fix **Core** first (sync / txindex). If it succeeds, treat as **ord** / version mismatch and search upstream or try a different **ord-litecoin** / **Litecoin Core** pairing.
+
 ## Mainnet / testnet (BYO node)
 
 Do **not** use this compose for **production** mainnet without hardening. If you run your own Core + ord outside Docker:
