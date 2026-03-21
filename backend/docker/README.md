@@ -93,7 +93,8 @@ docker compose --profile litecoin up -d --build
   - `LITECOIN_RPC_PORT=19443` (regtest; mainnet default is **9332**)
   - `LITECOIN_RPC_USER` / `LITECOIN_RPC_PASS` = `litecoin` / `litecoin` for this compose stack
 
-- **ord-litecoin image:** Compose **builds** from **[ynohtna92/ord-litecoin](https://github.com/ynohtna92/ord-litecoin)** using the repo’s `Dockerfile` (default git ref **`0.20.1-litecoin`**; override with **`ORD_LITECOIN_GIT_REF`** in `backend/docker/.env`). There is no reliance on third-party Docker Hub mirrors. **First `up --build`** compiles Rust (`cargo build --release`) — expect several minutes and high CPU; after that the tagged image is reused. On **Apple Silicon**, the binary is **native ARM64** inside the container. **`ORD_LITECOIN_GIT_REF`** is also used as the Docker **image tag**; prefer **tags or commit SHAs**, not branch names containing **`/`**.
+- **ord-litecoin image:** Compose **builds** from a local wrapper in **`backend/docker/ord-litecoin-patched`**, which clones **[ynohtna92/ord-litecoin](https://github.com/ynohtna92/ord-litecoin)** at **`ORD_LITECOIN_GIT_REF`**, applies our local fetcher patch, and then compiles it. That patch adds better batch-decode diagnostics and per-tx fallback for valid Litecoin transactions that previously killed the indexer. There is no reliance on third-party Docker Hub mirrors. **First `up --build`** compiles Rust (`cargo build --release`) — expect several minutes and high CPU; after that the tagged image is reused. On **Apple Silicon**, the binary is **native ARM64** inside the container. **`ORD_LITECOIN_GIT_REF`** is also used as the Docker **image tag**; prefer **tags or commit SHAs**, not branch names containing **`/`**.
+- **RPC concurrency:** ord now starts with **`--litecoin-rpc-limit=2`** by default in this repo. That is intentionally lower than upstream’s default because Docker Desktop + long-running RPC floods were hitting intermittent **`Resource temporarily unavailable (os error 11)`** transport failures during indexing. Override with **`ORD_LITECOIN_RPC_LIMIT`** in **`backend/docker/.env`** if you want to experiment.
 - **`litecoind`:** [`litecoinproject/litecoin-core:latest`](https://hub.docker.com/r/litecoinproject/litecoin-core) is **linux/amd64** only (no arm64 in the manifest). Compose sets **`platform: linux/amd64`** so Docker Desktop on Apple Silicon **emulates** x86_64 instead of printing a mismatch warning. For a **native** node on an M-series Mac, run `litecoind` on the host and point ord at its RPC instead of this service.
 
 ## Litecoin Core mainnet + ord (profile `litecoin-mainnet`)
@@ -113,7 +114,7 @@ docker compose -f backend/docker/docker-compose.yml --profile litecoin-mainnet u
 **What happens**
 
 1. **`litecoind-mainnet`** downloads and validates the **mainnet** chain with **`-txindex=1`** (large disk; think **100+ GB** and hours to days depending on CPU/disk). RPC is **`127.0.0.1:9332`**; data is in Docker volume **`litecoin_mainnet`**.
-2. After the node is **healthy** (RPC answering `getblockcount`), **`ord-litecoin-mainnet`** starts and builds its own index in volume **`ord_litecoin_mainnet_data`**. HTTP is **`http://127.0.0.1:8081`** by default (regtest ord stays on **8080** if you use that profile separately).
+2. After the node is **healthy** (RPC answering `getblockcount`), **`ord-litecoin-mainnet`** starts and builds its own index in volume **`ord_litecoin_mainnet_data`**. HTTP is **`http://127.0.0.1:8081`** by default (regtest ord stays on **8080** if you use that profile separately). This repo also starts ord with **`--litecoin-rpc-limit=2`** by default to reduce RPC connection pressure while the node is busy.
 
 ### Docker Desktop: “No space left on device” (macOS / Windows)
 
@@ -143,7 +144,7 @@ These usually mean **ord could not decode** a `getrawtransaction` result (batch 
    `docker compose … restart ord-litecoin-mainnet`  
    Optionally **delete** volume **`ord_litecoin_mainnet_data`** and start ord again so the index rebuilds on a fully synced node.
 
-2. **Specific txs** — ord can index most of the chain; **individual** txs may still fail strict deserialization while **Core** serves them fine. Check [ynohtna92/ord-litecoin issues](https://github.com/ynohtna92/ord-litecoin/issues). If **`getrawtransaction <txid>`** works but ord fails, it’s an **indexer / version** issue — see **Index stops mid-chain** below.
+2. **Specific txs** — ord can index most of the chain; **individual** txs may still fail strict deserialization while **Core** serves them fine. In this repo we locally patch `ord-litecoin` to handle Litecoin **MWEB / HogEx** optional transaction payloads by deserializing the canonical transaction layer and dropping the MWEB extension bytes that `ord` does not use for ordinal tracking. Check [ynohtna92/ord-litecoin issues](https://github.com/ynohtna92/ord-litecoin/issues). If **`getrawtransaction <txid>`** works but ord fails, it’s an **indexer / version** issue — see **Index stops mid-chain** below.
 
 **`docker exec` and RPC auth:** `compose exec` often runs **`litecoin-cli` as root**. The **` .cookie`** file under **`/data`** is owned by user **`litecoin`**, so the CLI will not see it unless you pass the same credentials as **`litecoind`** (see compose: **`rpcuser` / `rpcpassword`**). Use **`-rpcuser=litecoin -rpcpassword=litecoin`** (and **`-rpcport=9332`**, **`-rpcconnect=127.0.0.1`**) on **mainnet**. Do **not** add **`-regtest`** for **`litecoind-mainnet`**.
 
@@ -172,7 +173,7 @@ If this errors, fix **Core** first (sync / txindex). If it succeeds, treat as **
 
 ### Index stops mid-chain: `data not consumed entirely` / `not valid bitcoin tx`
 
-**ord-litecoin can index far past MWEB** — many deployments have done so. A failure at a given height is **not** “MWEB makes ord impossible”; it means **at least one transaction** in that block (or batch) serializes in a way **ord’s strict `rust-bitcoin`-style decoder** rejects (**extra trailing bytes** → “data not consumed entirely”). Most txs decode fine; **one bad hit** in a batched RPC pass can abort the updater (`channel closed`).
+**ord-litecoin can index far past MWEB** — many deployments have done so. A failure at a given height is **not** “MWEB makes ord impossible”; it means **at least one transaction** in that block (or batch) serializes in a way **ord’s strict `rust-bitcoin`-style decoder** rejects (**extra trailing bytes** → “data not consumed entirely”). In practice here, the offenders were **Litecoin HogEx transactions** whose serialized form includes an **MWEB extension payload** after the canonical tx data. Most txs decode fine; **one bad hit** in a batched RPC pass can abort the updater (`channel closed`).
 
 Likely classes of cause (hypotheses to verify with the **exact txid** from the log):
 
@@ -184,13 +185,13 @@ Likely classes of cause (hypotheses to verify with the **exact txid** from the l
 
 1. **Confirm Core serves the tx** (same RPC flags as above):  
    `getrawtransaction <txid-from-log> false`  
-   If Core returns hex, the next step is **ord / fork / version**, not **`txindex`**.
+   If Core returns hex, the next step is **ord / fork / version**, not **`txindex`**. If `decoderawtransaction` shows **`witness_mweb_hogaddr`**, you are looking at a HogEx / MWEB bridge transaction rather than a normal ordinal-bearing tx.
 
 2. **Upstream / forks:** open or follow an issue on **[ynohtna92/ord-litecoin](https://github.com/ynohtna92/ord-litecoin/issues)** with **block height**, **txid**, **Core version**, **ord tag/commit**, and the error line. A fix is **per-encoding**, not “turn off MWEB.”
 
 3. **Testing only:** **`--height-limit`** skips everything after block *N* — not a production fix for a full explorer.
 
-If no patched **ord-litecoin** exists yet for that tx shape, you’re blocked on **indexer code**, not on “sync harder.”
+This repo now carries a local patch for that HogEx / MWEB case. If you still hit a different tx shape after that, you’re blocked on **indexer code**, not on “sync harder.”
 
 ## Mainnet / testnet (BYO node)
 

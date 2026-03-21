@@ -97,13 +97,18 @@ services:
 
   ord-litecoin:
     profiles: ["litecoin"]
-    # Build from upstream https://github.com/ynohtna92/ord-litecoin (no third-party Hub image).
-    # Pin with ORD_LITECOIN_GIT_REF in backend/docker/.env (default: tag 0.20.1-litecoin).
-    # First start runs a Rust release build (CPU + time); later starts reuse the image.
+    # Build from the local patched wrapper in backend/docker/ord-litecoin-patched.
+    # That wrapper clones upstream https://github.com/ynohtna92/ord-litecoin and applies
+    # local fetcher fixes/logging before compiling.
+    # Keep RPC concurrency low on Docker Desktop to avoid "Resource temporarily unavailable"
+    # socket failures while ord is hammering Litecoin Core.
     build:
-      context: https://github.com/ynohtna92/ord-litecoin.git#${ORD_LITECOIN_GIT_REF:-0.20.1-litecoin}
+      context: ./ord-litecoin-patched
       dockerfile: Dockerfile
+      args:
+        ORD_LITECOIN_GIT_REF: ${ORD_LITECOIN_GIT_REF:-0.20.1-litecoin}
     image: litecoin-ordinals-dev-ord-litecoin:${ORD_LITECOIN_GIT_REF:-0.20.1-litecoin}
+    restart: unless-stopped
     depends_on:
       litecoind:
         condition: service_healthy
@@ -119,6 +124,7 @@ services:
       - /usr/local/bin/ord
       - --regtest
       - --litecoin-rpc-url=http://litecoind:19443
+      - --litecoin-rpc-limit=${ORD_LITECOIN_RPC_LIMIT:-2}
       - --data-dir=/data
       - server
       - --http-port=80
@@ -165,9 +171,12 @@ services:
   ord-litecoin-mainnet:
     profiles: ["litecoin-mainnet"]
     build:
-      context: https://github.com/ynohtna92/ord-litecoin.git#${ORD_LITECOIN_GIT_REF:-0.20.1-litecoin}
+      context: ./ord-litecoin-patched
       dockerfile: Dockerfile
+      args:
+        ORD_LITECOIN_GIT_REF: ${ORD_LITECOIN_GIT_REF:-0.20.1-litecoin}
     image: litecoin-ordinals-dev-ord-litecoin:${ORD_LITECOIN_GIT_REF:-0.20.1-litecoin}
+    restart: unless-stopped
     depends_on:
       litecoind-mainnet:
         condition: service_healthy
@@ -183,6 +192,7 @@ services:
       - --litecoin-rpc-url=http://litecoind-mainnet:9332
       - --litecoin-rpc-username=litecoin
       - --litecoin-rpc-password=litecoin
+      - --litecoin-rpc-limit=${ORD_LITECOIN_RPC_LIMIT:-2}
       - --data-dir=/data
       - server
       - --http-port=80
