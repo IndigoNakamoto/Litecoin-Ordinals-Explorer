@@ -170,6 +170,22 @@ docker compose -f backend/docker/docker-compose.yml exec litecoind-mainnet \
 
 If this errors, fix **Core** first (sync / txindex). If it succeeds, treat as **ord** / version mismatch and search upstream or try a different **ord-litecoin** / **Litecoin Core** pairing.
 
+### Index stops around height ~2.42M with `data not consumed entirely` / `not valid bitcoin tx`
+
+**MWEB** is **active** on mainnet from height **2265984** (see `getblockchaininfo` → `softforks.mweb`). **ord-litecoin** (as of tag **`0.20.1-litecoin`**, same as **`master`**) still uses Bitcoin-style transaction decoding for batched **`getrawtransaction`** results. Some **post-MWEB** blocks include txs whose serialized form **does not fully parse** as a strict **`rust-bitcoin`** `Transaction`, so the indexer **errors and disconnects** (your `Failed deserialize` / `channel closed` lines). **Litecoin Core is fine**; this is an **indexer gap**.
+
+**What you can do:**
+
+1. **Confirm Core serves the tx** (same RPC flags as above):  
+   `getrawtransaction a23a443affd86489d2e69ce8365c4206a4112e4bb32fd68dd742d25f3c983fd9 true`  
+   If Core returns JSON/hex, the failure is **100% on ord’s parser**.
+
+2. **Upstream / forks:** open or follow an issue on **[ynohtna92/ord-litecoin](https://github.com/ynohtna92/ord-litecoin/issues)** (include **block height**, **txid**, error text). Watch for a **newer release** or community fork that handles **MWEB / unconsumed bytes**; then bump **`ORD_LITECOIN_GIT_REF`** and **`--build`** the ord image.
+
+3. **Not a real fix — testing only:** ord supports **`--height-limit`** to index only up to block *N*. Stopping **before** problematic heights avoids the crash but **drops all later inscriptions** — useless for a full mainnet explorer.
+
+Until upstream fixes deserialization for those txs, **a complete mainnet ord index may not be achievable** with stock **0.20.1-litecoin**.
+
 ## Mainnet / testnet (BYO node)
 
 Do **not** use this compose for **production** mainnet without hardening. If you run your own Core + ord outside Docker:
