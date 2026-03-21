@@ -145,11 +145,16 @@ These usually mean **ord could not decode** a `getrawtransaction` result (batch 
 
 2. **Litecoin-specific txs** (e.g. **MWEB** / edge formats) — **ord-litecoin** may still choke on some txs; check [ynohtna92/ord-litecoin issues](https://github.com/ynohtna92/ord-litecoin/issues). If **`litecoin-cli getrawtransaction <txid>`** works but ord fails, it’s likely an **indexer** / fork bug, not your RPC.
 
+**`docker exec` and RPC auth:** `compose exec` often runs **`litecoin-cli` as root**. The **` .cookie`** file under **`/data`** is owned by user **`litecoin`**, so the CLI will not see it unless you pass the same credentials as **`litecoind`** (see compose: **`rpcuser` / `rpcpassword`**). Use **`-rpcuser=litecoin -rpcpassword=litecoin`** (and **`-rpcport=9332`**, **`-rpcconnect=127.0.0.1`**) on **mainnet**. Do **not** add **`-regtest`** for **`litecoind-mainnet`**.
+
+**`txindex`:** **`litecoind-mainnet`** already runs with **`-txindex=1`** in [`docker-compose.yml`](docker-compose.yml). If you changed Core outside compose, ensure **`txindex=1`** is set before a full sync (otherwise you need **`-reindex`** to rebuild the tx index).
+
 **Check sync (from repo root):**
 
 ```bash
 docker compose -f backend/docker/docker-compose.yml exec litecoind-mainnet \
-  litecoin-cli -datadir=/data getblockchaininfo
+  litecoin-cli -datadir=/data -rpcconnect=127.0.0.1 -rpcport=9332 \
+  -rpcuser=litecoin -rpcpassword=litecoin getblockchaininfo
 ```
 
 Confirm **`initialblockdownload: false`** and **`verificationprogress`** near **1**.
@@ -158,7 +163,9 @@ Confirm **`initialblockdownload: false`** and **`verificationprogress`** near **
 
 ```bash
 docker compose -f backend/docker/docker-compose.yml exec litecoind-mainnet \
-  litecoin-cli -datadir=/data getrawtransaction 7d02fe85b69ff575d2f1b5819ea69710e66a4a709b271d58ae65429372c9a509
+  litecoin-cli -datadir=/data -rpcconnect=127.0.0.1 -rpcport=9332 \
+  -rpcuser=litecoin -rpcpassword=litecoin \
+  getrawtransaction 7d02fe85b69ff575d2f1b5819ea69710e66a4a709b271d58ae65429372c9a509
 ```
 
 If this errors, fix **Core** first (sync / txindex). If it succeeds, treat as **ord** / version mismatch and search upstream or try a different **ord-litecoin** / **Litecoin Core** pairing.

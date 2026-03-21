@@ -66,6 +66,7 @@ docker compose -f backend/docker/docker-compose.yml --profile litecoin up -d --b
 
 ### Handy
 
+- **`litecoin-cli` via `exec` (mainnet):** pass **`-rpcuser=litecoin -rpcpassword=litecoin -rpcconnect=127.0.0.1 -rpcport=9332 -datadir=/data`** — `exec` runs as root and cannot read **`litecoin`**’s **`.cookie`** in **`/data`** without explicit auth. Regtest uses **`-regtest`** and **`-rpcport=19443`** instead.
 - **Recreate mainnet node:** add **`--force-recreate litecoind-mainnet`** to the same `up` line.
 - **Logs:** `docker compose -f backend/docker/docker-compose.yml logs -f litecoind-mainnet` or **`ord-litecoin-mainnet`**.
 - **`scripts/health-check.sh`** / **`verify-inscription-gate.sh`** load **`backend/docker/.env`** when present so the DB port matches compose; for the gate, set **`ORD_LITECOIN_URL`** (e.g. **8081** mainnet ord, **8080** regtest).
