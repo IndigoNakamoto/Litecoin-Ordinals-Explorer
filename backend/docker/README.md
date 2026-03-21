@@ -143,7 +143,7 @@ These usually mean **ord could not decode** a `getrawtransaction` result (batch 
    `docker compose … restart ord-litecoin-mainnet`  
    Optionally **delete** volume **`ord_litecoin_mainnet_data`** and start ord again so the index rebuilds on a fully synced node.
 
-2. **Litecoin-specific txs** (e.g. **MWEB** / edge formats) — **ord-litecoin** may still choke on some txs; check [ynohtna92/ord-litecoin issues](https://github.com/ynohtna92/ord-litecoin/issues). If **`litecoin-cli getrawtransaction <txid>`** works but ord fails, it’s likely an **indexer** / fork bug, not your RPC.
+2. **Specific txs** — ord can index most of the chain; **individual** txs may still fail strict deserialization while **Core** serves them fine. Check [ynohtna92/ord-litecoin issues](https://github.com/ynohtna92/ord-litecoin/issues). If **`getrawtransaction <txid>`** works but ord fails, it’s an **indexer / version** issue — see **Index stops mid-chain** below.
 
 **`docker exec` and RPC auth:** `compose exec` often runs **`litecoin-cli` as root**. The **` .cookie`** file under **`/data`** is owned by user **`litecoin`**, so the CLI will not see it unless you pass the same credentials as **`litecoind`** (see compose: **`rpcuser` / `rpcpassword`**). Use **`-rpcuser=litecoin -rpcpassword=litecoin`** (and **`-rpcport=9332`**, **`-rpcconnect=127.0.0.1`**) on **mainnet**. Do **not** add **`-regtest`** for **`litecoind-mainnet`**.
 
@@ -170,21 +170,27 @@ docker compose -f backend/docker/docker-compose.yml exec litecoind-mainnet \
 
 If this errors, fix **Core** first (sync / txindex). If it succeeds, treat as **ord** / version mismatch and search upstream or try a different **ord-litecoin** / **Litecoin Core** pairing.
 
-### Index stops around height ~2.42M with `data not consumed entirely` / `not valid bitcoin tx`
+### Index stops mid-chain: `data not consumed entirely` / `not valid bitcoin tx`
 
-**MWEB** is **active** on mainnet from height **2265984** (see `getblockchaininfo` → `softforks.mweb`). **ord-litecoin** (as of tag **`0.20.1-litecoin`**, same as **`master`**) still uses Bitcoin-style transaction decoding for batched **`getrawtransaction`** results. Some **post-MWEB** blocks include txs whose serialized form **does not fully parse** as a strict **`rust-bitcoin`** `Transaction`, so the indexer **errors and disconnects** (your `Failed deserialize` / `channel closed` lines). **Litecoin Core is fine**; this is an **indexer gap**.
+**ord-litecoin can index far past MWEB** — many deployments have done so. A failure at a given height is **not** “MWEB makes ord impossible”; it means **at least one transaction** in that block (or batch) serializes in a way **ord’s strict `rust-bitcoin`-style decoder** rejects (**extra trailing bytes** → “data not consumed entirely”). Most txs decode fine; **one bad hit** in a batched RPC pass can abort the updater (`channel closed`).
+
+Likely classes of cause (hypotheses to verify with the **exact txid** from the log):
+
+- **Wire-format edge case** (Litecoin-specific witness / extension / version quirk) that **Core accepts** but **ord**’s parser does not.
+- **Batch JSON-RPC** returning a value ord mis-parses (less common; compare **hex** from **`getrawtransaction <txid> false`** vs what ord expects).
+- **Version skew** between **Litecoin Core** (e.g. **0.21.4** in Docker) and the **ord-litecoin** release you built — worth matching what public indexers run, if documented.
 
 **What you can do:**
 
 1. **Confirm Core serves the tx** (same RPC flags as above):  
-   `getrawtransaction a23a443affd86489d2e69ce8365c4206a4112e4bb32fd68dd742d25f3c983fd9 true`  
-   If Core returns JSON/hex, the failure is **100% on ord’s parser**.
+   `getrawtransaction <txid-from-log> false`  
+   If Core returns hex, the next step is **ord / fork / version**, not **`txindex`**.
 
-2. **Upstream / forks:** open or follow an issue on **[ynohtna92/ord-litecoin](https://github.com/ynohtna92/ord-litecoin/issues)** (include **block height**, **txid**, error text). Watch for a **newer release** or community fork that handles **MWEB / unconsumed bytes**; then bump **`ORD_LITECOIN_GIT_REF`** and **`--build`** the ord image.
+2. **Upstream / forks:** open or follow an issue on **[ynohtna92/ord-litecoin](https://github.com/ynohtna92/ord-litecoin/issues)** with **block height**, **txid**, **Core version**, **ord tag/commit**, and the error line. A fix is **per-encoding**, not “turn off MWEB.”
 
-3. **Not a real fix — testing only:** ord supports **`--height-limit`** to index only up to block *N*. Stopping **before** problematic heights avoids the crash but **drops all later inscriptions** — useless for a full mainnet explorer.
+3. **Testing only:** **`--height-limit`** skips everything after block *N* — not a production fix for a full explorer.
 
-Until upstream fixes deserialization for those txs, **a complete mainnet ord index may not be achievable** with stock **0.20.1-litecoin**.
+If no patched **ord-litecoin** exists yet for that tx shape, you’re blocked on **indexer code**, not on “sync harder.”
 
 ## Mainnet / testnet (BYO node)
 
