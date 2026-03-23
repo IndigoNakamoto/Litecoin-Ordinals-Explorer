@@ -5,6 +5,7 @@ import cors from 'cors';
 import * as mimeTypes from 'mime-types'; // Import mime-types package
 import fs from 'fs';
 import NodeCache from 'node-cache';
+import { getBlockHeight } from './util/ord-litecoin';
 
 // import updateInscriptions from './app/services/InscriptionUpdateService';
 
@@ -41,6 +42,16 @@ app.use('/inscriptions', inscriptionRouter);
 app.use('/stats', stats);
 app.use('/upload', upload);
 app.use('/invoice', invoice);
+
+app.get('/blockHeight', async (_req: Request, res: Response) => {
+    try {
+        const blockHeight = await getBlockHeight();
+        res.json({ blockHeight });
+    } catch (error) {
+        console.error('Error fetching block height:', error);
+        res.status(500).json({ error: 'Failed to fetch block height' });
+    }
+});
 
 // Start the server
 app.listen(port, () => {

@@ -17,6 +17,20 @@ const ModelViewer = ({ modelUrl }: { modelUrl: string }) => {
     formattedInscriptionNumber: string;
   }
 
+const getOrdContentBaseUrl = () => {
+    const configured = process.env.NEXT_PUBLIC_ORD_BASE_URL?.trim();
+    if (configured) {
+        return configured.replace(/\/$/, '');
+    }
+
+    if (typeof window !== 'undefined') {
+        const host = window.location.hostname === '0.0.0.0' ? '127.0.0.1' : window.location.hostname;
+        return `${window.location.protocol}//${host}:8081`;
+    }
+
+    return 'http://127.0.0.1:8081';
+};
+
 const useFetchContent = (inscription_id: string, content_type: string) => {
     const [content, setContent] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -25,7 +39,7 @@ const useFetchContent = (inscription_id: string, content_type: string) => {
     useEffect(() => {
         async function fetchData() {
             try {
-                const url = `http://0.0.0.0:80/content/${inscription_id}`;
+                const url = `${getOrdContentBaseUrl()}/content/${inscription_id}`;
                 const response = await fetch(url);
 
                 if (!response.ok) {
