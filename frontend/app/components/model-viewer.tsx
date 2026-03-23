@@ -1,48 +1,31 @@
-// import React, { Suspense } from 'react';
-// import { Canvas } from '@react-three/fiber';
-// import { OrbitControls, useGLTF, Environment, Gltf } from '@react-three/drei';
-// import { ThreeEvent } from '@react-three/fiber';
+'use client'
 
-// // Extend GLTF type to include the TypeScript definition for the 'scene' property
-// type GLTFResult = Gltf & {
-//   nodes: {
-//     [name: string]: THREE.Mesh;
-//   };
-//   materials: {
-//     [name: string]: THREE.Material;
-//   };
-//   scene: THREE.Scene; // Ensure 'scene' is recognized by TypeScript
-// };
+import React, { Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 
-// interface ModelProps {
-//   modelPath: string;
-// }
+interface ModelViewerProps {
+    modelUrl: string;
+}
 
-// // Correctly type the props for Model component
-// const Model: React.FC<ModelProps> = ({ modelPath }) => {
-//   const { scene } = useGLTF(modelPath) as GLTFResult; // Cast to GLTFResult to access 'scene'
-//   return <primitive object={scene} />;
-// };
+function Model({ modelUrl }: ModelViewerProps) {
+    const { scene } = useGLTF(modelUrl) as { scene: React.JSX.Element | any };
+    return <primitive object={scene} scale={1.2} />;
+}
 
-// interface ModelViewerProps {
-//   modelUrl: string;
-// }
+const ModelViewer: React.FC<ModelViewerProps> = ({ modelUrl }) => {
+    return (
+        <div className="h-[500px] w-full overflow-hidden rounded-xl bg-slate-950">
+            <Canvas camera={{ position: [0, 0, 4], fov: 45 }}>
+                <ambientLight intensity={1.1} />
+                <directionalLight position={[5, 5, 5]} intensity={1.4} />
+                <Suspense fallback={null}>
+                    <Model modelUrl={modelUrl} />
+                </Suspense>
+                <OrbitControls enablePan={false} />
+            </Canvas>
+        </div>
+    );
+};
 
-// // Correctly type the props for ModelViewer component
-// const ModelViewer: React.FC<ModelViewerProps> = ({ modelUrl }) => {
-//   return (
-//     <div style={{ height: '500px', width: '100%' }}>
-//       <Canvas>
-//         <ambientLight intensity={0.5} />
-//         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-//         <Suspense fallback={null}>
-//           <Model modelPath={modelUrl} />
-//           <Environment preset="sunset" />
-//         </Suspense>
-//         <OrbitControls />
-//       </Canvas>
-//     </div>
-//   );
-// };
-
-// export default ModelViewer;
+export default ModelViewer;

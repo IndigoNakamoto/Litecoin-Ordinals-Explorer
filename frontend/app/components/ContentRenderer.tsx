@@ -1,113 +1,167 @@
-// app/components/ContentRenderer.tsx
-import { useEffect, useState } from 'react';
-import Image from "next/legacy/image";
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF } from '@react-three/drei';
+'use client'
 
-// Component for rendering GLB/GLTF models
-const ModelViewer = ({ modelUrl }: { modelUrl: string }) => {
-    const { scene } = useGLTF(modelUrl) as any;
-    return <primitive object={scene} />;
-  };
-  
+import Image from 'next/image';
+import { useEffect, useMemo, useState } from 'react';
 
-  interface ContentRendererProps {
+import { buildOrdContentUrl } from '../lib/runtime';
+import ModelViewer from './model-viewer';
+
+interface ContentRendererProps {
     inscription_id: string;
     contentType: string;
     formattedInscriptionNumber: string;
-  }
+    shouldLoad?: boolean;
+    mode?: 'card' | 'detail';
+}
 
-const getOrdContentBaseUrl = () => {
-    const configured = process.env.NEXT_PUBLIC_ORD_BASE_URL?.trim();
-    if (configured) {
-        return configured.replace(/\/$/, '');
-    }
+const isTextContent = (contentType: string) =>
+    contentType.startsWith('text/') || contentType === 'application/json';
 
-    if (typeof window !== 'undefined') {
-        const host = window.location.hostname === '0.0.0.0' ? '127.0.0.1' : window.location.hostname;
-        return `${window.location.protocol}//${host}:8081`;
-    }
+const isModelContent = (contentType: string) =>
+    contentType === 'model/gltf-binary' || contentType === 'model/gltf+json';
 
-    return 'http://127.0.0.1:8081';
-};
+const Placeholder = ({ label }: { label: string }) => (
+    <div className="flex h-full min-h-[220px] w-full items-center justify-center bg-gradient-to-br from-slate-900 to-slate-700 p-4 text-center text-sm text-gray-300">
+        {label}
+    </div>
+);
 
-const useFetchContent = (inscription_id: string, content_type: string) => {
-    const [content, setContent] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+export const ContentRenderer: React.FC<ContentRendererProps> = ({
+    inscription_id,
+    contentType,
+    formattedInscriptionNumber,
+    shouldLoad = true,
+    mode = 'detail',
+}) => {
+    const [textContent, setTextContent] = useState<string | null>(null);
+    const [loadingText, setLoadingText] = useState(false);
     const [error, setError] = useState('');
 
+    const contentUrl = useMemo(
+        () => buildOrdContentUrl(inscription_id),
+        [inscription_id],
+    );
+
     useEffect(() => {
-        async function fetchData() {
-            try {
-                const url = `${getOrdContentBaseUrl()}/content/${inscription_id}`;
-                const response = await fetch(url);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
-                if (content_type.startsWith('image/') || content_type === 'application/pdf' || content_type.startsWith('video/') || content_type.startsWith('audio/')) {
-                    const blob = await response.blob();
-                    setContent(URL.createObjectURL(blob));
-                } else if (content_type.startsWith('text/') || content_type === 'application/json') {
-                    const text = await response.text();
-                    setContent(text);
-                } else   if (content_type === 'model/gltf-binary' || content_type === 'model/gltf+json') {
-                    return (
-                      <div style={{ height: '500px', width: '100%' }}>
-                        <Canvas>
-                          <ambientLight intensity={0.5} />
-                          <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-                          <pointLight position={[-10, -10, -10]} />
-                          {content && <ModelViewer modelUrl={content} />}
-                          <OrbitControls />
-                        </Canvas>
-                      </div>
-                    );
-                  }
-                else {
-                    setContent('Unsupported content type');
-                }
-            } catch (error) {
-                const message = error instanceof Error ? error.message : 'An unknown error occurred';
-                setError('Failed to load content. ' + message);
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
+        if (!shouldLoad || !isTextContent(contentType)) {
+            return;
         }
 
-        fetchData();
-    }, [inscription_id, content_type]);
+        let cancelled = false;
 
-    return { content, loading, error };
-};
+        const fetchTextContent = async () => {
+            try {
+                setLoadingText(true);
+                setError('');
+                const response = await fetch(contentUrl);
 
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
 
-export const ContentRenderer: React.FC<ContentRendererProps> = ({ inscription_id, contentType, formattedInscriptionNumber }) => {
-    // Moved useFetchContent hook inside ContentRenderer
-    const { content, loading, error } = useFetchContent(inscription_id, contentType);
+                const text = await response.text();
+                if (!cancelled) {
+                    setTextContent(text);
+                }
+            } catch (fetchError) {
+                const message = fetchError instanceof Error ? fetchError.message : 'Unknown error';
+                if (!cancelled) {
+                    setError(`Failed to load preview: ${message}`);
+                }
+            } finally {
+                if (!cancelled) {
+                    setLoadingText(false);
+                }
+            }
+        };
 
-    // Render logic remains the same, but now includes loading and error handling
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>{error}</p>;
-    if (!content) return <p>No preview available</p>;
+        fetchTextContent();
 
-    if (!content) return null;
+        return () => {
+            cancelled = true;
+        };
+    }, [contentType, contentUrl, shouldLoad]);
 
-    if (contentType.startsWith('image/')) {
-        return <Image src={content} alt={`Inscription ${formattedInscriptionNumber}`} layout="fill" objectFit="cover" />;
-    } else if (contentType.startsWith('text/') || contentType === 'application/json') {
-        return <pre className="text-white">{content}</pre>;
-    } else if (contentType === 'application/pdf') {
-        return <iframe src={content} width="100%" height="500px"></iframe>;
-    } else if (contentType.startsWith('video/')) {
-        return <video src={content} controls width="100%"></video>;
-    } else if (contentType.startsWith('audio/')) {
-        return <audio src={content} controls></audio>;
+    if (!shouldLoad) {
+        return <Placeholder label="Preview loads as you scroll" />;
     }
 
-    return <p className="text-white">Unsupported content type</p>;
+    if (loadingText) {
+        return <Placeholder label="Loading preview..." />;
+    }
+
+    if (error) {
+        return <p className="p-3 text-sm text-red-300">{error}</p>;
+    }
+
+    if (contentType.startsWith('image/')) {
+        return (
+            <Image
+                src={contentUrl}
+                alt={`Inscription ${formattedInscriptionNumber}`}
+                fill
+                unoptimized
+                sizes={mode === 'card' ? '(max-width: 768px) 50vw, 25vw' : '100vw'}
+                className="object-cover"
+            />
+        );
+    }
+
+    if (isTextContent(contentType)) {
+        if (!textContent) {
+            return <Placeholder label="No preview available" />;
+        }
+
+        return (
+            <pre
+                className={`w-full whitespace-pre-wrap break-words text-white ${mode === 'card' ? 'max-h-full overflow-hidden p-3 text-xs' : 'max-h-[500px] overflow-auto rounded-xl p-4 text-sm'}`}
+            >
+                {textContent}
+            </pre>
+        );
+    }
+
+    if (contentType === 'application/pdf') {
+        return (
+            <iframe
+                src={contentUrl}
+                width="100%"
+                height={mode === 'card' ? '100%' : '500'}
+                title={`Inscription ${formattedInscriptionNumber} PDF`}
+                className="min-h-[320px] w-full border-0"
+            />
+        );
+    }
+
+    if (contentType.startsWith('video/')) {
+        return (
+            <video
+                src={contentUrl}
+                controls
+                muted={mode === 'card'}
+                preload="metadata"
+                className="h-full w-full object-cover"
+            />
+        );
+    }
+
+    if (contentType.startsWith('audio/')) {
+        return (
+            <div className="flex h-full min-h-[220px] w-full items-center justify-center p-4">
+                <audio src={contentUrl} controls className="w-full" />
+            </div>
+        );
+    }
+
+    if (isModelContent(contentType)) {
+        if (mode === 'card') {
+            return <Placeholder label="3D model available" />;
+        }
+
+        return <ModelViewer modelUrl={contentUrl} />;
+    }
+
+    return <Placeholder label="Unsupported content type" />;
 };
 
 export default ContentRenderer;

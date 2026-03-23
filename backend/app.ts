@@ -1,4 +1,7 @@
 // app.ts
+// Load .env before any module reads process.env (e.g. util/ord-litecoin ORD_LITECOIN_URL at import time).
+import 'dotenv/config';
+
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 

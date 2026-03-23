@@ -3,6 +3,7 @@ import { Typography, Card } from "@material-tailwind/react";
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { InscriptionCard } from '../components/inscriptionCard'
+import { buildBackendUrl } from '../lib/runtime';
 
 
 interface ContentTypeDistribution {
@@ -17,26 +18,9 @@ interface GeneralStat {
   inscriptionNumberHighLow?: { high: number; low: number };
 }
 
-const getBackendBaseUrl = () => {
-  const configured =
-    process.env.NEXT_PUBLIC_BACKEND_URL?.trim() ||
-    process.env.NEXT_PUBLIC_API_URL?.trim();
-
-  if (configured) {
-    return configured.replace(/\/api\/?$/, '').replace(/\/$/, '');
-  }
-
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname === '0.0.0.0' ? '127.0.0.1' : window.location.hostname;
-    return `${window.location.protocol}//${host}:3005`;
-  }
-
-  return 'http://127.0.0.1:3005';
-};
-
 const fetchStats = async (endpoint: string): Promise<any> => {
   try {
-    const response = await fetch(`${getBackendBaseUrl()}/${endpoint}`);
+    const response = await fetch(buildBackendUrl(endpoint));
     if (!response.ok) throw new Error('Network response was not ok');
     return await response.json();
   } catch (error) {
@@ -139,7 +123,7 @@ export default function StatsPage() {
 
   const fetchBlockHeight = async (): Promise<number | null> => {
     try {
-      const response = await fetch(`${getBackendBaseUrl()}/blockHeight`);
+      const response = await fetch(buildBackendUrl('/blockHeight'));
       if (!response.ok) {
         throw new Error(`Network response was not ok (${response.status})`);
       }

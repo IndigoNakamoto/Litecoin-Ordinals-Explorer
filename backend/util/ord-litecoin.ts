@@ -3,7 +3,8 @@
 
 import fetch from 'isomorphic-fetch';
 
-const ORD_LITECOIN_URL = (process.env.ORD_LITECOIN_URL || 'http://127.0.0.1:8080').replace(/\/$/, '');
+// Default matches mainnet docker profile (ord on host 8081). Regtest profile uses 8080 — set ORD_LITECOIN_URL in .env.
+const ORD_LITECOIN_URL = (process.env.ORD_LITECOIN_URL || 'http://127.0.0.1:8081').replace(/\/$/, '');
 
 function litecoinRpcUrl(): string {
     const protocol = process.env.LITECOIN_RPC_PROTOCOL || 'http';

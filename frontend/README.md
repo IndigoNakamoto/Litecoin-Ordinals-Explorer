@@ -17,7 +17,7 @@ Before running the frontend, ensure that:
     ```
 3.  Open `.env.local` and update the public URLs to point to your running backend and ord instances. For example:
     ```env
-    NEXT_PUBLIC_API_URL="http://localhost:3001/api"
+    NEXT_PUBLIC_API_URL="http://localhost:3005/api"
     NEXT_PUBLIC_ORD_BASE_URL="http://127.0.0.1:8081"
     ```
 4.  Add any other necessary environment variables as described in `.env.example`.

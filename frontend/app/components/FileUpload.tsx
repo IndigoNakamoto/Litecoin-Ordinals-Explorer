@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useContext } from "react";
+import React, { ChangeEvent } from "react";
 import { Card } from "@material-tailwind/react"
 
 
@@ -14,9 +14,10 @@ const supportedMimeTypes = new Set([
 
 interface FileUploadProps {
     onFileSelect: (file: File) => void;
+    onErrorChange?: (message: string | null) => void;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
+const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect, onErrorChange }) => {
 
     const handleFileSelect = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -24,12 +25,12 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelect }) => {
         if (file) {
             const fileExtension = file?.name.split('.').pop()?.toLowerCase(); // Add null check for fileExtension
             if ((!supportedMimeTypes.has(file.type) && !['gltf', 'glb'].includes(fileExtension || ''))) { // Add null check for fileExtension
-                localStorage.setItem('fileError', 'Invalid file type. Please upload a file with a supported MIME type.');
+                onErrorChange?.('Invalid file type. Please upload a file with a supported MIME type.');
             } else if (file.size > 400 * 1000) { // Adjusted to 400 KB to match requirement
-                localStorage.setItem('fileError', 'File size exceeds the maximum limit of 400 KB.');
+                onErrorChange?.('File size exceeds the maximum limit of 400 KB.');
             } else {
                 onFileSelect(file);
-                localStorage.setItem('fileError', ''); // Clear any existing errors
+                onErrorChange?.(null);
             }
         }
     };

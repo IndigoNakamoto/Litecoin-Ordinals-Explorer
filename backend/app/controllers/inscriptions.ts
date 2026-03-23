@@ -12,6 +12,89 @@ function toJsonInscription(i: Inscription) {
     };
 }
 
+/** Ord `/inscription/:id` JSON varies by version; map common height aliases onto `genesis_height`. */
+function coerceFiniteInt(value: unknown): number | undefined {
+    if (value == null || value === '') return undefined;
+    const n = typeof value === 'number' ? value : Number(value);
+    if (!Number.isFinite(n)) return undefined;
+    return Math.floor(n);
+}
+
+/**
+ * Ord JSON often has `genesis_height: 0` but the real reveal height in `height`.
+ * Using `a ?? b` would keep 0 and never read `height` — prefer first strictly positive, else first defined.
+ */
+function pickFirstIntPreferPositive(...candidates: unknown[]): number | undefined {
+    let zeroOrFallback: number | undefined;
+    for (const c of candidates) {
+        const n = coerceFiniteInt(c);
+        if (n == null) continue;
+        if (n > 0) return n;
+        zeroOrFallback ??= n;
+    }
+    return zeroOrFallback;
+}
+
+function pickGenesisHeightFromOrd(ord: Record<string, unknown>): number | undefined {
+    const nested: unknown[] = [];
+    const genesis = ord.genesis;
+    if (genesis && typeof genesis === 'object' && !Array.isArray(genesis)) {
+        const g = genesis as Record<string, unknown>;
+        nested.push(g.height, g.block_height);
+    }
+
+    return pickFirstIntPreferPositive(
+        ord.height,
+        ord.genesis_height,
+        ord.block_height,
+        ord.blockheight,
+        ...nested,
+    );
+}
+
+/** Current ord API uses `fee`; older payloads may use `genesis_fee`. */
+function pickFeeFromOrd(ord: Record<string, unknown>): number | undefined {
+    return pickFirstIntPreferPositive(ord.fee, ord.genesis_fee);
+}
+
+/**
+ * Ord sometimes returns `height` / `genesis_fee` as 0 or omits them while Prisma has the indexed truth.
+ * `0 ?? db` keeps 0 — so only trust ord when it gives a positive value, else prefer DB when DB is positive.
+ */
+function mergeNumericPreferPositive(ordValue: number | undefined, dbValue: number): number {
+    if (ordValue != null && ordValue > 0) return ordValue;
+    if (dbValue > 0) return dbValue;
+    return ordValue ?? dbValue;
+}
+
+/**
+ * When ord is reachable we still merge DB fields so clients always get `genesis_height`
+ * (ord often exposes `height` only).
+ */
+function mergeOrdInscriptionWithDb(ord: unknown, db: Inscription) {
+    const base = toJsonInscription(db);
+    if (!ord || typeof ord !== 'object' || Array.isArray(ord)) {
+        return base;
+    }
+    const o = ord as Record<string, unknown>;
+    const ordHeight = pickGenesisHeightFromOrd(o);
+    const dbHeight = Number(base.genesis_height);
+    const genesisHeight = mergeNumericPreferPositive(ordHeight, dbHeight);
+
+    const ordFee = pickFeeFromOrd(o);
+    const dbFee = Number(base.genesis_fee);
+    const genesisFee = mergeNumericPreferPositive(ordFee, dbFee);
+
+    return {
+        ...base,
+        ...o,
+        genesis_height: genesisHeight,
+        genesis_fee: genesisFee,
+        output_value:
+            coerceFiniteInt(o.output_value) != null ? Number(o.output_value) : base.output_value,
+    };
+}
+
 export const getInscriptionById = async (req: Request, res: Response) => {
     try {
         const { inscriptionId } = req.params;
@@ -45,8 +128,14 @@ export const getInscriptionByNumber = async (req: Request, res: Response) => {
         });
         if (inscription) {
             try {
-                res.json(await getInscriptionData(inscription.inscription_id));
-            } catch {
+                const ord = await getInscriptionData(inscription.inscription_id);
+                res.json(mergeOrdInscriptionWithDb(ord, inscription));
+            } catch (err) {
+                console.warn(
+                    `[inscriptions/number] ord enrichment failed for #${inscriptionNumber} (${inscription.inscription_id}):`,
+                    err instanceof Error ? err.message : err,
+                    '- returning DB row only. Set ORD_LITECOIN_URL and ensure ord is listening (mainnet usually :8081, regtest :8080).',
+                );
                 res.json(toJsonInscription(inscription));
             }
         } else {

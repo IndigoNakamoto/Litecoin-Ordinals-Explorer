@@ -1,17 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
-    Button,
     Dialog,
     DialogHeader,
     DialogBody,
-    DialogFooter,
-    IconButton,
     Typography,
     MenuItem,
 } from "@material-tailwind/react";
 
 import { Alert } from "@material-tailwind/react";
+import { useRouter } from 'next/navigation';
+
+import { buildBackendUrl } from '../lib/runtime';
+import { notifyWalletSessionChanged } from '../lib/walletSession';
 
 interface ModalProps {
     isOpen: boolean;
@@ -32,10 +34,11 @@ interface Inscription {
 }
 
 const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
-
+    const router = useRouter();
 
     const [isLitescribeInstalled, setIsLitescribeInstalled] = useState(false);
     const [isConnectButtonDisabled, setIsConnectButtonDisabled] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (typeof window.litescribe !== 'undefined') {
@@ -86,6 +89,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
         if (typeof window.litescribe !== 'undefined') {
             setIsConnectButtonDisabled(true);
             setIsLitescribeInstalled(true);
+            setError(null);
             try {
                 const requestedAccounts = await window.litescribe.requestAccounts();
                 const getPublicKey = await window.litescribe.getPublicKey();
@@ -103,7 +107,7 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 };
 
                 // Make a POST request to your backend
-                const response = await fetch('http://localhost:3005/account', {
+                const response = await fetch(buildBackendUrl('/account'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -114,21 +118,32 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
                 // Check if the request was successful
                 if (response.ok) {
                     // Account created successfully
-                    const newAccount = await response.json();
+                    await response.json();
+                    localStorage.setItem('address', requestedAccounts[0]);
+                    localStorage.setItem('username', requestedAccounts[0]);
+                    localStorage.setItem('publicKey', String(getPublicKey ?? ''));
                     localStorage.setItem('connected', 'true');
-                    localStorage.setItem('provider', 'litescribe')
-                    window.location.href = '/account';
-                    // console.log('New account created:', newAccount);
-                    // Do something with the newly created account if needed
+                    localStorage.setItem('provider', 'litescribe');
+                    localStorage.setItem('balance', String(getBalance.total ?? 0));
+                    localStorage.setItem(
+                        'total',
+                        String(getInscriptions.total ?? getInscriptions.list?.length ?? 0),
+                    );
+                    localStorage.setItem('inscriptions', JSON.stringify(getInscriptions.list ?? []));
+                    notifyWalletSessionChanged();
+                    onClose();
+                    router.push('/account');
                 } else {
-                    // Handle error response from the server
-                    console.error('Failed to create account:', response.statusText);
+                    setError(`Failed to create account: ${response.statusText}`);
                 }
             } catch (error) {
-                console.error('Error creating account:', error);
+                const message = error instanceof Error ? error.message : 'Unknown wallet error';
+                setError(message);
+            } finally {
+                setIsConnectButtonDisabled(false);
             }
         } else {
-            console.log('LiteScribe is not installed. Please consider installing it.');
+            setError('LiteScribe is not installed. Please install the extension to continue.');
         }
     };
 
@@ -163,11 +178,18 @@ const ConnectModal: React.FC<ModalProps> = ({ isOpen, onClose }) => {
             </DialogHeader>
             <DialogBody className="overflow-y-scroll !px-5" placeholder={undefined}>
                 <div className="mb-6">
+                    {error && (
+                        <Alert color="red" className="mb-4">
+                            {error}
+                        </Alert>
+                    )}
                     <ul className="mt-3 -ml-2 flex flex-col gap-1">
                         <MenuItem className="mb-4 flex items-center justify-center gap-3 !py-4 shadow-md " onClick={handleClick} disabled={isConnectButtonDisabled} placeholder={undefined}>
-                            <img
+                            <Image
                                 src="/logos/litescribe-icon.png"
                                 alt="litescribe"
+                                width={24}
+                                height={24}
                                 className="h-6 w-6"
                             />
                             {isLitescribeInstalled ?

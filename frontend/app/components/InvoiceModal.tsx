@@ -1,34 +1,17 @@
-import { Dialog, DialogBody, DialogHeader } from "@material-tailwind/react";
-import React, { useState, useEffect } from 'react';
+'use client'
 
-const fetchInvoiceData = async (invoice_id: string) => {
-    // Mock data
-    const invoiceData = {
-        invoice_id: `invoice_${invoice_id}`,
-        user_id: `usere_${invoice_id}`,
-        status: 'pending',
-        created_at: '2024-02-02T12:00:00Z',
-        due_at: '2024-02-02T12:30:00Z',
-        user_email: 'satoshi@litecoin.com',
-        inscriptions: [
-            {
-                "commit": "20930da8aacf7807ed169e3639a1a5caeacfc2473d9974688828a9546d8f97b8",
-                "inscriptions": [
-                    {
-                        "id": "94c3cfcac9db3a097231c2ef64c884b75aad9dc88ec9e2152c9796105f34de5fi0",
-                        "location": "94c3cfcac9db3a097231c2ef64c884b75aad9dc88ec9e2152c9796105f34de5f:0:0"
-                    }
-                ],
-                "parent": null,
-                "reveal": "94c3cfcac9db3a097231c2ef64c884b75aad9dc88ec9e2152c9796105f34de5f",
-                "total_fees": 67403
-            },
-        ],
-        service_fee: 350000
-    };
+import { Dialog, DialogBody, DialogHeader, Typography } from "@material-tailwind/react";
+import React, { useEffect, useState } from 'react';
 
-    return invoiceData;
-};
+import { buildBackendUrl } from '../lib/runtime';
+
+interface InvoiceResponse {
+    invoiceId: string;
+    inscribeStatus?: string;
+    paymentStatus?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
 
 interface ModalProps {
     isOpen: boolean;
@@ -37,18 +20,40 @@ interface ModalProps {
 }
 
 const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
-    const [fetchedInvoice, setFetchedInvoice] = useState<any | null>(null);
+    const [fetchedInvoice, setFetchedInvoice] = useState<InvoiceResponse | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
-            const data = await fetchInvoiceData(invoiceId);
-            setFetchedInvoice(data);
+            if (!invoiceId) {
+                return;
+            }
+
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await fetch(buildBackendUrl(`/invoice/${invoiceId}`));
+
+                if (!response.ok) {
+                    throw new Error(`Unable to load invoice ${invoiceId}`);
+                }
+
+                const data = await response.json();
+                setFetchedInvoice(data);
+            } catch (fetchError) {
+                const message = fetchError instanceof Error ? fetchError.message : 'Unknown invoice error';
+                setError(message);
+                setFetchedInvoice(null);
+            } finally {
+                setLoading(false);
+            }
         };
 
         if (isOpen) {
             fetchData();
         }
-    }, [isOpen, invoiceId]);
+    }, [invoiceId, isOpen]);
 
     return (
         <Dialog open={isOpen} handler={onClose} placeholder={undefined}>
@@ -56,13 +61,30 @@ const InvoiceModal: React.FC<ModalProps> = ({ isOpen, onClose, invoiceId }) => {
                 Invoice Details
             </DialogHeader>
             <DialogBody placeholder={undefined}>
-                {/* Render your invoice details here */}
-                <p>Invoice ID: {fetchedInvoice?.invoice_id || "Loading..."}</p>
-                {/* Include other details as needed */}
+                {loading && <p>Loading invoice...</p>}
+                {error && <p className="text-red-500">{error}</p>}
+                {!loading && !error && fetchedInvoice && (
+                    <div className="space-y-3">
+                        <Typography placeholder={undefined}>
+                            Invoice ID: {fetchedInvoice.invoiceId}
+                        </Typography>
+                        <Typography placeholder={undefined}>
+                            Payment Status: {fetchedInvoice.paymentStatus ?? 'Unknown'}
+                        </Typography>
+                        <Typography placeholder={undefined}>
+                            Inscription Status: {fetchedInvoice.inscribeStatus ?? 'Pending'}
+                        </Typography>
+                        <Typography placeholder={undefined}>
+                            Created: {fetchedInvoice.createdAt ? new Date(fetchedInvoice.createdAt).toLocaleString() : 'Unknown'}
+                        </Typography>
+                        <Typography placeholder={undefined}>
+                            Updated: {fetchedInvoice.updatedAt ? new Date(fetchedInvoice.updatedAt).toLocaleString() : 'Unknown'}
+                        </Typography>
+                    </div>
+                )}
             </DialogBody>
         </Dialog>
     );
 };
-
 
 export default InvoiceModal;

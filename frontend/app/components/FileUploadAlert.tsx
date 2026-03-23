@@ -1,31 +1,32 @@
-// // Ensure to import useContext and InscribeOrderContext from your context file or parent component file
+'use client'
+
 import React from "react";
-import { Button } from "@material-tailwind/react";
-import { Card } from "@material-tailwind/react"
+import { Button, Card } from "@material-tailwind/react";
 
+interface FileUploadAlertProps {
+    error: string;
+    onClose: () => void;
+}
 
-const FileUploadAlert = async () => {
-    const error = await localStorage.getItem('fileError')
+const FileUploadAlert: React.FC<FileUploadAlertProps> = ({ error, onClose }) => {
     return (
-        <div className="w-full h-full">
-            {/* icon={<Icon />} */}
-            <Card placeholder={undefined} onClick={() => localStorage.setItem('fileError', '')}>
-                <div className="flex flex-col items-center justify-center w-full min-h-64 h-full max-h-96 border-1 border-gray-300 rounded-xl cursor-pointer bg-red-100 font-medium text-red-600   hover:bg-red-50">
-                    <h2 className="text-xl m-4 justify-center align-middle text-center">
-                        {error}
-                    </h2>
+        <div className="h-full w-full">
+            <Card placeholder={undefined}>
+                <div className="flex h-full min-h-64 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-1 border-gray-300 bg-red-100 font-medium text-red-600 hover:bg-red-50">
+                    <h2 className="m-4 text-center text-xl">{error}</h2>
                 </div>
                 <Button
                     variant="text"
                     color="white"
                     size="sm"
-                    className="!absolute top-3 right-3 text-gray-700 bg-red-50"
-                    onClick={() => localStorage.setItem('fileError', '')}
-                    placeholder={undefined}                >
+                    className="!absolute right-3 top-3 bg-red-50 text-gray-700"
+                    onClick={onClose}
+                    placeholder={undefined}
+                >
                     Close
                 </Button>
-            </Card >
-        </div >
+            </Card>
+        </div>
     );
 }
 
