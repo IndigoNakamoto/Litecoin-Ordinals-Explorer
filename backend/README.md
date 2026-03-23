@@ -162,19 +162,28 @@ Consult `package.json` for the definitive scripts for starting the application.
 
 These scripts handle ongoing data synchronization and maintenance.
 
-### 6.1. Inscription Update Service
-This service likely keeps inscription data synchronized with the blockchain/Ord index.
-```bash
-# From the backend directory
-# This seems to be the intended service for continuous updates:
-npx ts-node ./app/services/InscriptionUpdateService.ts
-```
-*(Review `InscriptionUpdateService.ts` for its exact behavior. The original README noted "change to setInterval later," implying it's a long-running service.)*
+### 6.1. Layer 3 indexer (Prisma / ord)
 
-Alternatively, `src/inscriptionUpdater.ts` might be a manual script or an older version:
+Canonical path: forward index from ord into Postgres (cursor in **`UpdateProgress`**, key **`indexer_cursor`**).
+
 ```bash
-# npx ts-node ./src/inscriptionUpdater.ts
+cd backend
+npm run indexer
 ```
+
+**Reconcile** — refresh existing rows from ord (fixes bad parses; sets **`ordSyncedAt`**). See **`backend/.env.example`** for **`RECONCILE_*`** env vars.
+
+```bash
+npm run indexer:reconcile
+```
+
+**Stats rollup** — realign **`InscriptionStats`** id `1` from live `SUM` on **`Inscription`** (optional after large reconciles):
+
+```bash
+npm run stats:rebuild
+```
+
+Legacy **`app/services/InscriptionUpdateService.ts`** (Sequelize) is not the main indexer; prefer **`npm run indexer`** above. See root **`MISSION_CONTROL.md`**.
 
 ### 6.2. Materialized View Updater
 This script refreshes materialized views, which can improve query performance.

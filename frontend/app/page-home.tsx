@@ -1,7 +1,7 @@
 'use client'
 
 import debounce from 'lodash/debounce';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Inscription } from '@/types';
 
@@ -39,6 +39,18 @@ export default function Home({ initialInscriptions }: HomeProps) {
 
     const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
     const hasMounted = useRef(false);
+    const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
+    const loadingRef = useRef(false);
+    const hasMoreRef = useRef(hasMore);
+    const infiniteScrollLockRef = useRef(false);
+
+    useEffect(() => {
+        loadingRef.current = loading;
+    }, [loading]);
+
+    useEffect(() => {
+        hasMoreRef.current = hasMore;
+    }, [hasMore]);
 
     const markVisibleCards = useMemo(
         () =>
@@ -89,29 +101,32 @@ export default function Home({ initialInscriptions }: HomeProps) {
             setLoading(true);
             setError(null);
 
-            const pageItems = await fetchInscriptions(filter);
+            try {
+                const pageItems = await fetchInscriptions(filter);
 
-            if (pageItems.length === 0) {
-                if (filter.page === 1) {
-                    setInscriptions([]);
-                    setError('No inscriptions matched this filter.');
+                if (pageItems.length === 0) {
+                    if (filter.page === 1) {
+                        setInscriptions([]);
+                        setError('No inscriptions matched this filter.');
+                    }
+
+                    setHasMore(false);
+                    return;
                 }
 
-                setHasMore(false);
+                setInscriptions((prev) =>
+                    filter.page === 1 ? pageItems : [...prev, ...pageItems],
+                );
+                setLoadedPreviewIds((prev) => {
+                    const next = filter.page === 1 ? new Set<string>() : new Set(prev);
+                    pageItems.slice(0, 8).forEach((item) => next.add(item.inscription_id));
+                    return next;
+                });
+                setHasMore(pageItems.length === EXPLORER_PAGE_SIZE);
+            } finally {
                 setLoading(false);
-                return;
+                infiniteScrollLockRef.current = false;
             }
-
-            setInscriptions((prev) =>
-                filter.page === 1 ? pageItems : [...prev, ...pageItems],
-            );
-            setLoadedPreviewIds((prev) => {
-                const next = filter.page === 1 ? new Set<string>() : new Set(prev);
-                pageItems.slice(0, 8).forEach((item) => next.add(item.inscription_id));
-                return next;
-            });
-            setHasMore(pageItems.length === EXPLORER_PAGE_SIZE);
-            setLoading(false);
         };
 
         fetchPage();
@@ -275,13 +290,21 @@ export default function Home({ initialInscriptions }: HomeProps) {
                 </button>
             )}
 
-            <div className="flex justify-center">
+            <div
+                ref={loadMoreSentinelRef}
+                className="flex min-h-8 flex-col items-center justify-center py-6"
+                aria-hidden
+            >
+                {loading && hasMore && (
+                    <p className="text-sm text-gray-400">Loading more…</p>
+                )}
                 {!loading && hasMore && (
                     <button
+                        type="button"
                         onClick={handleLoadMore}
-                        className="mt-4 w-40 rounded-lg bg-gradient-to-br from-blue-400 to-blue-700 px-4 py-2 text-white"
+                        className="mt-2 w-40 rounded-lg bg-gradient-to-br from-blue-400 to-blue-700 px-4 py-2 text-white"
                     >
-                        Load More
+                        Load more
                     </button>
                 )}
             </div>

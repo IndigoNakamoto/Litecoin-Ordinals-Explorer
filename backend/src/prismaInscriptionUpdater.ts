@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { getInscriptionData, getBlockHeight, getBlockInscriptionsPage } from '../util/ord-litecoin';
+import { mapOrdJsonToInscriptionCreateInput } from '../util/ordInscriptionJson';
 
 const prisma = new PrismaClient();
 
@@ -41,61 +42,6 @@ async function setCursor(block: number, page: number): Promise<void> {
             last_processed_page: page,
         },
     });
-}
-
-function mapOrdJsonToCreateInput(raw: unknown): Prisma.InscriptionCreateManyInput | null {
-    if (!raw || typeof raw !== 'object') return null;
-    const o = raw as Record<string, unknown>;
-
-    const inscription_id = String(o.inscription_id ?? o.id ?? '');
-    if (!inscription_id) return null;
-
-    const content_type = String(o.content_type ?? 'application/octet-stream');
-    const [mimePrimary] = content_type.split('/');
-    const content_type_type =
-        o.content_type_type != null && String(o.content_type_type)
-            ? String(o.content_type_type)
-            : mimePrimary || null;
-
-    const outputRaw = o.output_value ?? o.output ?? 0;
-    let output_value: bigint;
-    if (typeof outputRaw === 'bigint') output_value = outputRaw;
-    else output_value = BigInt(Math.max(0, Math.floor(Number(outputRaw)) || 0));
-
-    const tsRaw = o.timestamp;
-    let timestamp = 0;
-    if (typeof tsRaw === 'number' && !Number.isNaN(tsRaw)) timestamp = Math.floor(tsRaw);
-    else if (typeof tsRaw === 'string') {
-        const n = Date.parse(tsRaw);
-        timestamp = Number.isNaN(n) ? 0 : Math.floor(n / 1000);
-    }
-
-    return {
-        address: String(o.address ?? ''),
-        content_length: Math.max(0, Math.floor(Number(o.content_length ?? 0))),
-        content_type,
-        content_type_type,
-        genesis_fee: Math.max(0, Math.floor(Number(o.genesis_fee ?? 0))),
-        genesis_height: Math.max(0, Math.floor(Number(o.genesis_height ?? 0))),
-        inscription_number: Math.floor(Number(o.inscription_number ?? o.number ?? 0)),
-        next: o.next != null && o.next !== '' ? String(o.next) : null,
-        output_value,
-        parent: o.parent != null && o.parent !== '' ? String(o.parent) : null,
-        previous: o.previous != null && o.previous !== '' ? String(o.previous) : null,
-        script_pubkey: String(o.script_pubkey ?? ''),
-        metadata: o.metadata != null ? String(o.metadata) : null,
-        charms: Array.isArray(o.charms) ? o.charms.map(String) : [],
-        genesis_address:
-            o.genesis_address != null && o.genesis_address !== '' ? String(o.genesis_address) : null,
-        inscription_id,
-        children: Array.isArray(o.children) ? o.children.map(String) : [],
-        processed: Boolean(o.processed ?? false),
-        rune: o.rune != null && o.rune !== '' ? String(o.rune) : null,
-        sat: o.sat != null && o.sat !== '' ? String(o.sat) : null,
-        satpoint: String(o.satpoint ?? ''),
-        timestamp,
-        nsfw: Boolean(o.nsfw ?? false),
-    };
 }
 
 async function storeInscriptionsBatch(rows: Prisma.InscriptionCreateManyInput[]): Promise<void> {
@@ -155,7 +101,7 @@ async function runLoop(): Promise<void> {
         for (const inscriptionId of ids) {
             try {
                 const raw = await getInscriptionData(inscriptionId);
-                const row = mapOrdJsonToCreateInput(raw);
+                const row = mapOrdJsonToInscriptionCreateInput(raw);
                 if (row) rows.push(row);
             } catch (err) {
                 console.error(`Error fetching inscription ${inscriptionId}:`, err);
@@ -163,7 +109,8 @@ async function runLoop(): Promise<void> {
         }
 
         if (rows.length > 0) {
-            await storeInscriptionsBatch(rows);
+            const now = new Date();
+            await storeInscriptionsBatch(rows.map((r) => ({ ...r, ordSyncedAt: now })));
         }
 
         if (more) {
@@ -179,7 +126,37 @@ async function runLoop(): Promise<void> {
     console.log('Indexer finished or shut down.');
 }
 
-runLoop()
+function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * On fatal errors (DB, exhausted ord retries), wait with exponential backoff and resume from DB cursor.
+ * Env: INDEXER_RESTART_BASE_MS (2000), INDEXER_RESTART_MAX_MS (300000).
+ */
+async function runWithRestartBackoff(): Promise<void> {
+    const baseMs = Math.max(500, parseInt(process.env.INDEXER_RESTART_BASE_MS || '2000', 10) || 2000);
+    const maxMs = Math.max(baseMs, parseInt(process.env.INDEXER_RESTART_MAX_MS || String(300_000), 10) || 300_000);
+    let failureStreak = 0;
+
+    while (!shutdownRequested) {
+        try {
+            await runLoop();
+            return;
+        } catch (e) {
+            if (shutdownRequested) return;
+            failureStreak += 1;
+            console.error('Indexer loop failed:', e);
+            const exp = Math.min(maxMs, baseMs * Math.pow(2, Math.min(failureStreak - 1, 16)));
+            const jitter = Math.random() * Math.min(1500, baseMs);
+            const delay = Math.min(maxMs, Math.floor(exp + jitter));
+            console.warn(`Restarting indexer in ${delay}ms (failure streak ${failureStreak})…`);
+            await sleep(delay);
+        }
+    }
+}
+
+runWithRestartBackoff()
     .catch((e) => {
         console.error(e);
         process.exitCode = 1;

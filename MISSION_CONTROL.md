@@ -22,7 +22,7 @@ The explorer is **Prisma + PostgreSQL** for indexed data, **`ord-litecoin` over 
 2. When the node is far enough along (or RPC is stable), start **`ord-litecoin-mainnet`** so ord can build **layer 2**. HTTP defaults to **8081** on the host.
 3. Point **`backend/.env`** at **layer 2 + RPC**: **`ORD_LITECOIN_URL=http://127.0.0.1:8081`**, **`LITECOIN_RPC_PORT=9332`**, same **`LITECOIN_RPC_USER` / `LITECOIN_RPC_PASS`** as compose for dev.
 4. Run the API (`npm run dev`) and app as usual; optional **gates** (`health-check`, `verify-inscription-gate`) once ord answers.
-5. To populate **layer 3** (list/search in the explorer backed by Prisma): **`npm run indexer`** with **`DATABASE_URL`** set and migrations applied. Re-run or schedule as needed.
+5. To populate **layer 3** (list/search in the explorer backed by Prisma): **`npm run indexer`** with **`DATABASE_URL`** set and migrations applied. Re-run or schedule as needed. After ord-mapping fixes or bad rows, run **`npm run indexer:reconcile`** (see `backend/.env.example`) and optionally **`npm run stats:rebuild`** to realign **`InscriptionStats`** totals.
 
 **Fast iteration (no mainnet IBD):** profile **`litecoin`** — **regtest** `litecoind` (**19443**) + **ord** on **8080**. Details: **`backend/docker/README.md`**. If you only care about mainnet, stop the **`litecoin`** profile services to save CPU/RAM.
 
@@ -35,6 +35,8 @@ _Use this block as a living status; update checkboxes when your machine matches.
 - [ ] **`backend/.env`**: `ORD_LITECOIN_URL` + **`LITECOIN_RPC_PORT=9332`** aligned with mainnet stack.
 - [ ] **Postgres** + **`prisma migrate deploy`** against dev DB.
 - [ ] **`npm run indexer`**: filling **`Inscription`** for the explorer list API.
+- [ ] **`npx prisma migrate deploy`** applied (includes **`Inscription.ordSyncedAt`** / **`updatedAt`** for sync tracking).
+- [ ] Optional: **`npm run indexer:reconcile`** for backfill; **`npm run stats:rebuild`** after large reconciles.
 - [ ] **Regtest stack** (`litecoin` profile): stopped if unused, to avoid two Core + ord pairs on one machine.
 
 ---
@@ -89,6 +91,8 @@ _Use this block as a living status; update checkboxes when your machine matches.
 - [ ] With **mainnet ord** up and **`backend/.env`** pointing at **8081** + **9332**, run **`cd backend && npm run indexer`** to backfill **`Inscription`** (and progress in **`UpdateProgress`**).
 - [ ] Use **`UpdateProgress`** (or a single documented strategy) for “last processed block/page,” not only max `inscription_number`.
 - [ ] Run indexer against a test DB and verify row counts / samples.
+- [ ] **`npm run indexer:reconcile`** — repairs rows (default heuristic: `genesis_height = 0` OR `genesis_fee = 0`). Env: **`RECONCILE_HEURISTIC`** (`zeros` \| `stale` \| `scan`), **`RECONCILE_BATCH_SIZE`**, **`ORD_REQUEST_DELAY_MS`**, **`RECONCILE_RESET_CURSOR=1`** to restart cursors. Cursors live in **`UpdateProgress`** (`reconcile_*_cursor` keys).
+- [ ] **`npm run stats:rebuild`** — sets **`InscriptionStats`** id `1` totals from live **`SUM`** on **`Inscription`** (run after large reconciles; API `/stats` already aggregates from **`Inscription`** directly).
 
 ### User inscription pipeline
 
@@ -101,7 +105,9 @@ _Use this block as a living status; update checkboxes when your machine matches.
 **Before merging changes** to any of:
 
 - `backend/app/utils/ord-litecoin.ts`, `backend/util/ord-litecoin.ts`
-- `backend/src/prismaInscriptionUpdater.ts`
+- `backend/util/ordInscriptionJson.ts`, `backend/util/ordInscriptionMerge.ts`, `backend/util/inscriptionPrismaMaps.ts`
+- `backend/app/services/inscriptionService.ts`
+- `backend/src/prismaInscriptionUpdater.ts`, `backend/src/prismaInscriptionReconciler.ts`, `backend/src/prismaStatsRebuild.ts`
 - `backend/prisma/schema.prisma`, `backend/prisma/migrations/**`
 - `backend/app/services/InscribeService.ts`
 

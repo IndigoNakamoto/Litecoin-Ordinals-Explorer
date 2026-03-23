@@ -18,7 +18,8 @@ export const DEFAULT_EXPLORER_FILTERS: ExplorerFilters = {
   cursed: false,
 };
 
-export const EXPLORER_PAGE_SIZE = 24;
+/** Must match backend `limit` cap (`INSCRIPTION_LIST_LIMIT_MAX`); used for `hasMore` + offset math */
+export const EXPLORER_PAGE_SIZE = 100;
 
 const buildInscriptionsPath = (filter: ExplorerFilters) => {
   let path = '/inscriptions';

@@ -156,8 +156,12 @@ model Inscription {
   WalletAccount      WalletAccount? @relation(fields: [walletAccountId], references: [id])
   walletAccountId    Int?
   nsfw               Boolean        @default(false)
+  /// Last time this row was aligned with ord (indexer or reconciler).
+  ordSyncedAt        DateTime?
+  updatedAt          DateTime       @updatedAt
 
   @@index([content_length, content_type, genesis_fee, genesis_height, inscription_number, content_type_type])
+  @@index([ordSyncedAt])
 }
 
 model InscriptionStats {

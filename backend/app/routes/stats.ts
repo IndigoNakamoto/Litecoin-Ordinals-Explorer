@@ -1,23 +1,14 @@
 import express, { Request, Response } from 'express';
 import { getInscriptionStats } from '../controllers/stats';
-const NodeCache = require("node-cache");
-const statsCache = new NodeCache({ stdTTL: 600, checkperiod: 150 }); // Example: cache for 5 minutes or 300 seconds
 
 const router = express.Router();
 
-router.get('/totals', async (req: Request, res: Response) => {
-    // Try fetching the result from cache
-    let result = statsCache.get("inscriptionTotals");
-
-    if (result) {
-        // Cache hit, return the cached result
+router.get('/totals', async (_req: Request, res: Response) => {
+    try {
+        const result = await getInscriptionStats();
         res.json(result);
-    } else {
-        // Cache miss, fetch data from the controller
-        result = await getInscriptionStats();
-        // Cache the result for future requests
-        statsCache.set("inscriptionTotals", result);
-        res.json(result);
+    } catch {
+        res.status(500).json({ error: 'Failed to load inscription stats' });
     }
 });
 

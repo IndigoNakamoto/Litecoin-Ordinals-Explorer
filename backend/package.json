@@ -7,6 +7,8 @@
     "start": "nodemon --exec ts-node src/index.ts",
     "dev": "nodemon --exec ts-node app.ts",
     "indexer": "ts-node src/prismaInscriptionUpdater.ts",
+    "indexer:reconcile": "ts-node src/prismaInscriptionReconciler.ts",
+    "stats:rebuild": "ts-node src/prismaStatsRebuild.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "health-check": "bash ../scripts/health-check.sh",
     "verify:inscriptions": "bash ../scripts/verify-inscription-gate.sh"

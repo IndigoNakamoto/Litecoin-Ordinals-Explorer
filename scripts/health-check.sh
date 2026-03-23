@@ -48,4 +48,8 @@ if ! echo "SELECT 1" | npx prisma db execute --stdin 2>/dev/null; then
   die "prisma db execute failed — check DATABASE_URL and that Postgres accepts connections"
 fi
 
+echo "==> Prisma migrate status (informational)"
+npx prisma migrate status || echo "health-check: migrate status reported pending or drift — run: (cd backend && npx prisma migrate deploy)"
+
 echo "health-check: OK"
+echo "Tip: after pulling schema changes, run indexer (npm run indexer), reconciler if needed (npm run indexer:reconcile), and stats:rebuild if you reconciled many rows."

@@ -78,3 +78,4 @@ if [[ -n "${VERIFY_INSCRIPTION_ID:-}" ]]; then
 fi
 
 echo "verify-inscription-gate: OK"
+echo "Tip: after schema or ord-mapping changes, run (cd backend && npx prisma migrate deploy), then npm run indexer:reconcile if layer-3 rows need repair; npm run stats:rebuild optional."
